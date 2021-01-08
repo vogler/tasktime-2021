@@ -1,41 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import InputForm from './InputForm';
 
 interface AppProps {}
-
-function App({}: AppProps) {
-  // Create the count state.
+export default function App({}: AppProps) {
   const [count, setCount] = useState(0);
   // Create the counter (+1 every second).
   useEffect(() => {
     const timer = setTimeout(() => setCount(count + 1), 1000);
     return () => clearTimeout(timer);
   }, [count, setCount]);
-  // Return the App component.
+
+  const [todos, setTodos] = useState<string[]>([]);
+  const addTodo = (value: string) => {
+    setTodos([...todos, value]);
+    console.log(todos);
+  };
   return (
     <div className="App">
+      <InputForm placeholder='new todo...' submit={addTodo} />
+      {todos.map(todo => <li>{todo}</li>)}
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
         </p>
         <p>
           Page has been open for <code>{count}</code> seconds.
         </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </p>
       </header>
     </div>
   );
 }
-
-export default App;
