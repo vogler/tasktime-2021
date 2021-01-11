@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { HStack, Input, Button } from "@chakra-ui/react"
+import { HStack, Input, Button, IconButton, ButtonProps } from "@chakra-ui/react"
 // import { css, jsx } from '@emotion/react'
+import type { IconType } from 'react-icons';
+import { FaArrowRight } from 'react-icons/fa';
 
-export default function InputForm({ resetInput = true, ...p }: {
-      placeholder?: string,
+export default function InputForm({ IconOrText = FaArrowRight, resetInput = true, debug = false, ...p }: {
       submit?: (value: string) => void,
-      resetInput?: boolean
+      placeholder?: string,
+      IconOrText?: IconType | string, // needs to be uppercase, otherwise React assumes it's an HTML element
+      buttonProps?: ButtonProps,
+      resetInput?: boolean,
+      debug?: boolean
     }) {
   const [value, setValue] = useState('');
   const [error, setError] = useState('');
@@ -13,7 +18,7 @@ export default function InputForm({ resetInput = true, ...p }: {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    alert(`value: ${value}`);
+    if (debug) console.log(`InputForm.value = ${value}`);
     if (p.submit) p.submit(value);
     if (resetInput) setValue('');
   };
@@ -22,7 +27,10 @@ export default function InputForm({ resetInput = true, ...p }: {
     <form onSubmit={handleSubmit}>
         <HStack maxW="420px">
           <Input placeholder={p.placeholder} value={value} onChange={event => setValue(event.currentTarget.value)} autoFocus={true} /> // autoFocus does not work
-          <Button type="submit">add</Button>
+          { (typeof IconOrText === 'string') // using just Button with rightIcon and no text instead of IconButton has wrong spacing
+              ? <Button type="submit" {...p.buttonProps}>{IconOrText}</Button>
+              : <IconButton type="submit" aria-label="submit" icon={<IconOrText /> } {...p.buttonProps} />
+          }
         </HStack>
       </form>
   )

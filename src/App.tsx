@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import InputForm from './InputForm';
 
-interface AppProps {}
-export default function App({}: AppProps) {
+export default function App() {
   const [count, setCount] = useState(0);
   // Create the counter (+1 every second).
   useEffect(() => {
@@ -19,7 +18,7 @@ export default function App({}: AppProps) {
   return (
     <div className="App">
       <InputForm placeholder='new todo...' submit={addTodo} />
-      {todos.map(todo => <li>{todo}</li>)}
+      { todos.map(todo => <li key={todo}>{todo}</li>) }
       <header className="App-header">
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
