@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import InputForm from './InputForm';
 
-const delay = (time: number) => new Promise(res => setTimeout(res, time));
+// const delay = (time: number) => new Promise(res => setTimeout(res, time));
 
 export default function App() {
   const [count, setCount] = useState(0);
@@ -14,10 +14,11 @@ export default function App() {
 
   const [todos, setTodos] = useState<string[]>([]);
   const addTodo = async (value: string) => {
-    if (value == '') return 'Can not be empty';
-    await delay(2000);
-    console.log(todos);
+    if (value == '') return 'Todo is empty';
+    if (todos.includes(value)) return 'Todo exists';
+    // await delay(1000);
     setTodos([...todos, value]);
+    console.log(value, todos); // todos not updated yet here
   };
   return (
     <div className="App">
