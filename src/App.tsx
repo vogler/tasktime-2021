@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import InputForm from './InputForm';
 
+const delay = (time: number) => new Promise(res => setTimeout(res, time));
+
 export default function App() {
   const [count, setCount] = useState(0);
   // Create the counter (+1 every second).
@@ -11,9 +13,11 @@ export default function App() {
   }, [count, setCount]);
 
   const [todos, setTodos] = useState<string[]>([]);
-  const addTodo = (value: string) => {
-    setTodos([...todos, value]);
+  const addTodo = async (value: string) => {
+    if (value == '') return 'Can not be empty';
+    await delay(2000);
     console.log(todos);
+    setTodos([...todos, value]);
   };
   return (
     <div className="App">

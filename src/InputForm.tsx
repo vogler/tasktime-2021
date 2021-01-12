@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { HStack, Input, Button, IconButton, ButtonProps } from "@chakra-ui/react"
+import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage } from "@chakra-ui/react"
 // import { css, jsx } from '@emotion/react'
 import type { IconType } from 'react-icons';
 import { FaArrowRight } from 'react-icons/fa';
 
 export default function InputForm({ IconOrText = FaArrowRight, resetInput = true, debug = false, ...p }: {
-      submit?: (value: string) => void,
+      submit?: (value: string) => Promise<void | string>,
       placeholder?: string,
       IconOrText?: IconType | string, // needs to be uppercase, otherwise React assumes it's an HTML element
       buttonProps?: ButtonProps,
@@ -16,22 +16,34 @@ export default function InputForm({ IconOrText = FaArrowRight, resetInput = true
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (debug) console.log(`InputForm.value = ${value}`);
-    if (p.submit) p.submit(value);
-    if (resetInput) setValue('');
+    if (p.submit) {
+      setError('');
+      setIsLoading(true);
+      const e = await p.submit(value);
+      setIsLoading(false);
+      if (typeof e === 'string') {
+        setError(e);
+      } else {
+        if (resetInput) setValue('');
+      }
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      <FormControl isInvalid={error != ''}>
         <HStack maxW="420px">
           <Input placeholder={p.placeholder} value={value} onChange={event => setValue(event.currentTarget.value)} autoFocus={true} /> // autoFocus does not work
           { (typeof IconOrText === 'string') // using just Button with rightIcon and no text instead of IconButton has wrong spacing
-              ? <Button type="submit" {...p.buttonProps}>{IconOrText}</Button>
-              : <IconButton type="submit" aria-label="submit" icon={<IconOrText /> } {...p.buttonProps} />
+              ? <Button type="submit" isLoading={isLoading} {...p.buttonProps}>{IconOrText}</Button>
+              : <IconButton type="submit" isLoading={isLoading} aria-label="submit" icon={<IconOrText /> } {...p.buttonProps} />
           }
         </HStack>
+        <FormErrorMessage>{error}</FormErrorMessage>
+      </FormControl>
       </form>
   )
 }
