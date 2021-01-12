@@ -25,9 +25,6 @@ export default function App() {
       { todos.map(todo => <li key={todo}>{todo}</li>) }
       <header className="App-header">
         <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <p>
           Page has been open for <code>{count}</code> seconds.
         </p>
       </header>
