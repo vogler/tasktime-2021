@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import InputForm from './InputForm';
+import ThemeToggle from './ThemeToggle';
 
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));
 
 export default function App() {
-  const [count, setCount] = useState(0);
-  // Create the counter (+1 every second).
-  useEffect(() => {
-    const timer = setTimeout(() => setCount(count + 1), 1000);
-    return () => clearTimeout(timer);
-  }, [count, setCount]);
-
   const [todos, setTodos] = useState<string[]>([]);
+
   const addTodo = async (value: string) => {
     if (value == '') return 'Todo is empty';
     if (todos.includes(value)) return 'Todo exists';
@@ -20,6 +15,13 @@ export default function App() {
     setTodos([...todos, value]);
     console.log(value, todos); // todos not updated yet here
   };
+
+  const [count, setCount] = useState(0);
+  useEffect(() => { // count + 1 every second
+    const timer = setTimeout(() => setCount(count + 1), 1000);
+    return () => clearTimeout(timer);
+  }, [count, setCount]);
+
   return (
     <div className="App">
       <InputForm placeholder='new todo...' submit={addTodo} />
@@ -29,6 +31,7 @@ export default function App() {
           Page has been open for <code>{count}</code> seconds.
         </p>
       </header>
+      <ThemeToggle />
     </div>
   );
 }

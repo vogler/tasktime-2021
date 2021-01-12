@@ -16,6 +16,7 @@ export default function InputForm({ IconOrText = FaArrowRight, resetInput = true
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // use React Hook Form? https://chakra-ui.com/guides/integrations/with-hook-form
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (debug) console.log(`InputForm.value = ${value}`);
