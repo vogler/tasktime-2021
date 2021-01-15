@@ -1,5 +1,4 @@
-import React from 'react';
-import { useColorMode, Box, IconButton } from "@chakra-ui/react"
+import { useColorMode, IconButton } from "@chakra-ui/react"
 import { FaMoon, FaSun } from 'react-icons/fa';
 
 // light/dark mode is saved in localStorage.

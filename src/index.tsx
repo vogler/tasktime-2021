@@ -4,6 +4,8 @@ import { ChakraProvider } from "@chakra-ui/react"
 import App from './App';
 import './index.css';
 
+window.React = React; // so that we do not need to import React in every .tsx just to be able to use JSX
+
 ReactDOM.render(
   <React.StrictMode>
     <ChakraProvider>
