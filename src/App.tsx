@@ -26,11 +26,13 @@ export default function App() {
   return (
     <div className="App">
       <InputForm placeholder='new todo...' submit={addTodo} />
-      { todos.map(todo => <TodoItem todo={todo} key={todo} />) }
-      <header className="App-header">
-        <p>
-          Page has been open for <code>{count}</code> seconds.
-        </p>
+      { todos.length
+        ? todos.map(todo => <TodoItem todo={todo} key={todo} />)
+        : "No todos yet..."
+      }
+      <header className="App-footer">
+        Usage: click an item to edit it.
+        <p>Page has been open for <code>{count}</code> seconds.</p>
       </header>
       <ThemeToggle />
     </div>
