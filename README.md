@@ -4,7 +4,9 @@ This is a test project building some todo/time-tracking app using:
 
 - [Snowpack](https://www.snowpack.dev/) as a fast build tool (instead of webpack, Parcel)
 - [React](https://reactjs.org/) for a reactive UI
-- [chakra-ui](https://chakra-ui.com/) as UI component library; maybe try [Formik](https://formik.org/) for forms
+- [chakra-ui](https://chakra-ui.com/) as UI component library
+  - [react-icons](https://react-icons.github.io/react-icons)
+  - maybe try [Formik](https://formik.org/) for forms
 - [Prisma](https://www.prisma.io/) as ORM (instead of [TypeORM](https://github.com/typeorm/typeorm) which I had some issues [[1](https://github.com/typeorm/typeorm/issues/3238)] [[2](https://github.com/typeorm/typeorm/issues/4122)] with in https://github.com/vogler/syncmine)
   - sqlite as database
 
