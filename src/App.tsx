@@ -21,7 +21,7 @@ export default function App() {
   useEffect(() => { // count + 1 every second
     const timer = setTimeout(() => setCount(count + 1), 1000);
     return () => clearTimeout(timer);
-  }, [count, setCount]);
+  }, [count]);
 
   return (
     <div className="App">
