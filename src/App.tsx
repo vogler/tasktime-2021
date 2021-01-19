@@ -26,7 +26,7 @@ export default function App() {
 
   return (
     <div className="App">
-      <InputForm placeholder='new todo...' submit={addTodo} />
+      <InputForm placeholder="new todo..." submit={addTodo} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { todos.length
           ? todos.map(todo => <TodoItem todo={todo} key={todo} />)

@@ -1,8 +1,8 @@
-import { Box, ButtonGroup, Editable, EditableInput, EditableInputProps, EditablePreview, Flex, IconButton, Spacer, useEditableState } from "@chakra-ui/react"
-import React from "react";
+import { Box, ButtonGroup, Editable, EditableInput, EditablePreview, Flex, IconButton, Spacer, useEditableState } from '@chakra-ui/react';
+import React from 'react';
 import { FaCheck, FaRegEdit, FaRegTrashAlt, FaTimes } from 'react-icons/fa';
 
-type todo = string
+type todo = string;
 
 function EditableControls() { // TODO pull out into lib
   const p = useEditableState();
@@ -31,7 +31,7 @@ export default function InputForm({ todo }: { todo: todo }) {
         </Flex>
       </Editable>
       <Spacer />
-      <IconButton aria-label='delete' icon={<FaRegTrashAlt />} size="sm" variant="ghost" />
+      <IconButton aria-label="delete" icon={<FaRegTrashAlt />} size="sm" variant="ghost" />
     </Flex>
   )
 }

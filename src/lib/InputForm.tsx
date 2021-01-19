@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage } from "@chakra-ui/react"
+import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage } from '@chakra-ui/react';
 // import { css, jsx } from '@emotion/react'
 import type { IconType } from 'react-icons';
 import { FaArrowRight } from 'react-icons/fa';
@@ -54,5 +54,5 @@ export default function InputForm({ IconOrText = FaArrowRight, resetInput = true
         <FormErrorMessage>{error}</FormErrorMessage>
       </FormControl>
       </form>
-  )
+  );
 }
