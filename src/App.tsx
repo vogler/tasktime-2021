@@ -1,4 +1,4 @@
-import { Box, Center, Stack, Text } from '@chakra-ui/react';
+import { Box, Stack, Text } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import InputForm from './InputForm';

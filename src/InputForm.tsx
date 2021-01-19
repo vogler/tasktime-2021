@@ -43,8 +43,8 @@ export default function InputForm({ IconOrText = FaArrowRight, resetInput = true
 
   return (
     <form onSubmit={handleSubmit}>
-      <FormControl isRequired isInvalid={error != ''}>
-        <HStack maxW="420px">
+      <FormControl isRequired isInvalid={error != ''} w={332}>
+        <HStack>
           <Input placeholder={p.placeholder} value={value} onChange={event => setValue(event.currentTarget.value)} ref={inputRef} autoFocus={true} /> // autoFocus does not work
           { (typeof IconOrText === 'string') // using just Button with rightIcon and no text instead of IconButton has wrong spacing
               ? <Button type="submit" isLoading={isLoading} {...p.buttonProps}>{IconOrText}</Button>
