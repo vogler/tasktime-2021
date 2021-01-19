@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage } from '@chakra-ui/react';
+import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage, InputProps } from '@chakra-ui/react';
 // import { css, jsx } from '@emotion/react'
 import type { IconType } from 'react-icons';
 import { FaArrowRight } from 'react-icons/fa';
@@ -12,7 +12,7 @@ export const useFocus = () => {
 
 export default function ({ IconOrText = FaArrowRight, resetInput = true, debug = false, ...p }: {
       submit?: (value: string) => Promise<void | string>,
-      placeholder?: string,
+      inputProps?: InputProps,
       IconOrText?: IconType | string, // needs to be uppercase, otherwise React assumes it's an HTML element
       buttonProps?: ButtonProps,
       resetInput?: boolean,
@@ -45,7 +45,7 @@ export default function ({ IconOrText = FaArrowRight, resetInput = true, debug =
     <form onSubmit={handleSubmit}>
       <FormControl isRequired isInvalid={error != ''} w={332}>
         <HStack>
-          <Input placeholder={p.placeholder} value={value} onChange={event => setValue(event.currentTarget.value)} ref={inputRef} autoFocus={true} /> // autoFocus does not work
+          <Input value={value} onChange={event => setValue(event.currentTarget.value)} ref={inputRef} {...p.inputProps} />
           { (typeof IconOrText === 'string') // using just Button with rightIcon and no text instead of IconButton has wrong spacing
               ? <Button type="submit" isLoading={isLoading} {...p.buttonProps}>{IconOrText}</Button>
               : <IconButton type="submit" isLoading={isLoading} aria-label="submit" icon={<IconOrText /> } {...p.buttonProps} />

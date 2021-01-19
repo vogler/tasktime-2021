@@ -42,7 +42,7 @@ export default function () {
 
   return (
     <div className="App">
-      <InputForm placeholder="new todo..." submit={addTodo} />
+      <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { todos.length
           ? todos.map((todo, index) => <TodoItem todo={todo} key={todo.date} remove={delTodo(index)} change={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
