@@ -1,15 +1,17 @@
-import { Box, Stack, Text } from '@chakra-ui/react';
+import { Box, Button, Stack, Text } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import * as todo from './model/todo';
+import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));
 
 export default function () {
   const [todos, setTodos] = useState<todo.t[]>([todo.example]);
+  const [showDone, setShowDone] = useState(true);
 
   const addTodo = async (text: string) => {
     if (text == '') return 'Todo is empty';
@@ -45,10 +47,11 @@ export default function () {
       <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { todos.length
-          ? todos.map((todo, index) => <TodoItem todo={todo} key={todo.date} remove={delTodo(index)} change={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
+          ? todos.map((todo, index) => <TodoItem todo={todo} key={todo.date} del={delTodo(index)} set={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
           : "No todos yet..."
         }
       </Box>
+      <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
       <Stack color="gray.500" align="center">
         <Text>Usage: click an item to edit it.</Text>
         <Text>Page has been open for <code>{count}</code> seconds.</Text>
