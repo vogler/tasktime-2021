@@ -1,8 +1,8 @@
 import { Box, Stack, Text } from '@chakra-ui/react';
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import InputForm from './InputForm';
-import ThemeToggle from './ThemeToggle';
+import InputForm from './lib/InputForm';
+import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));

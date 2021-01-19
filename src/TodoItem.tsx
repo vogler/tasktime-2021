@@ -13,8 +13,9 @@ function EditableControls() { // TODO pull out into lib
     </ButtonGroup>
   ) : (
     <IconButton size="sm" icon={<FaRegEdit />} onClick={p.onEdit} aria-label="edit" variant="ghost" />
-  )
+  );
 }
+
 export default function InputForm({ todo }: { todo: todo }) {
   // submitOnBlur true (default) will also submit on Esc
   return (
