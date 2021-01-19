@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { Box, Center, Stack, Text } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import InputForm from './InputForm';
 import ThemeToggle from './ThemeToggle';
@@ -7,7 +8,7 @@ import TodoItem from './TodoItem';
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));
 
 export default function App() {
-  const [todos, setTodos] = useState<string[]>([]);
+  const [todos, setTodos] = useState<string[]>(['test 1', 'test 2']);
 
   const addTodo = async (value: string) => {
     if (value == '') return 'Todo is empty';
@@ -26,14 +27,16 @@ export default function App() {
   return (
     <div className="App">
       <InputForm placeholder='new todo...' submit={addTodo} />
-      { todos.length
-        ? todos.map(todo => <TodoItem todo={todo} key={todo} />)
-        : "No todos yet..."
-      }
-      <header className="App-footer">
-        Usage: click an item to edit it.
-        <p>Page has been open for <code>{count}</code> seconds.</p>
-      </header>
+      <Box shadow="md" borderWidth="1px" m="3" p="2">
+        { todos.length
+          ? todos.map(todo => <TodoItem todo={todo} key={todo} />)
+          : "No todos yet..."
+        }
+      </Box>
+      <Stack color="gray.500" align="center">
+        <Text>Usage: click an item to edit it.</Text>
+        <Text>Page has been open for <code>{count}</code> seconds.</Text>
+      </Stack>
       <ThemeToggle />
     </div>
   );

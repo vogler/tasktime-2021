@@ -6,18 +6,7 @@
 }
 
 .App code {
-  background: #0002;
+  background: #6662;
   padding: 4px 8px;
   border-radius: 4px;
-}
-
-.App-footer {
-  /* margin-top: 5vh; */
-  min-height: 3vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  /* font-size: calc(10px + 2vmin); */
-  color: #0003;
 }
