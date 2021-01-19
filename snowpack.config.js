@@ -8,22 +8,7 @@ module.exports = {
     '@snowpack/plugin-react-refresh',
     '@snowpack/plugin-typescript',
   ],
-  install: [
-    /* ... */
-  ],
-  installOptions: {
-    /* ... */
-  },
-  devOptions: {
-    /* ... */
-  },
-  buildOptions: {
-    /* ... */
-  },
-  proxy: {
-    /* ... */
-  },
-  alias: {
-    /* ... */
-  },
+  packageOptions: {
+    // source: 'remote',
+  }
 };
