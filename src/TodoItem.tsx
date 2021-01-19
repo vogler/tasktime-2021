@@ -16,11 +16,13 @@ function EditableControls() { // TODO pull out into lib
   );
 }
 
-export default function InputForm({ todo }: { todo: todo }) {
-  // submitOnBlur true (default) will also submit on Esc
+export default function ({ todo }: { todo: todo }) {
+  // submitOnBlur true (default) will also submit on Esc and when clicking the cancel button
   return (
     <Flex>
-      <Editable defaultValue={todo} w="300px">
+      <Editable defaultValue={todo} submitOnBlur={false} w="300px"
+        onCancel={p => console.log(`cancel: ${p}`)}
+        onSubmit={v => console.log(`submit: ${v}`)}>
         <Flex>
           <Box w="240px">
             <EditablePreview />
