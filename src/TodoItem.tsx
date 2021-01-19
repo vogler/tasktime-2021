@@ -26,7 +26,7 @@ export default function TodoItem({ todo, del, set }: { todo: todo.t, del: () => 
   return (
     <Flex opacity={todo.done ? '40%' : '100%'} >
       {/* <IconButton aria-label="drag to reorder" icon={<FaGripVertical />} size="sm" variant="ghost" /> */}
-      <Checkbox mr={2} onChange={e => {todo.done = e.target.checked; set(todo);}} />
+      <Checkbox mr={2} isChecked={todo.done} onChange={e => {todo.done = e.target.checked; set(todo);}} />
       <Editable defaultValue={todo.text} submitOnBlur={false} w="300px"
         onSubmit={submit}>
         <Flex>
