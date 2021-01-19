@@ -4,18 +4,34 @@ import './App.css';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
+import * as todo from './model/todo';
 
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));
 
-export default function App() {
-  const [todos, setTodos] = useState<string[]>(['test 1', 'test 2']);
+export default function () {
+  const [todos, setTodos] = useState<todo.t[]>([todo.example]);
 
-  const addTodo = async (value: string) => {
-    if (value == '') return 'Todo is empty';
-    if (todos.includes(value)) return 'Todo exists';
+  const addTodo = async (text: string) => {
+    if (text == '') return 'Todo is empty';
+    // if (todos.includes(value)) return 'Todo exists';
     // await delay(1000);
-    setTodos([...todos, value]);
-    console.log(value, todos); // todos not updated yet here
+    const todo = { date: Date.now(), text, done: false };
+    setTodos([...todos, todo]);
+    console.log(todo, todos); // todos not updated yet here
+  };
+
+  const delTodo = (index: number) => () => {
+    const newTodos = [...todos];
+    newTodos.splice(index, 1); // delete element at index
+    console.log(`delTodo(${index}):`, newTodos);
+    setTodos(newTodos);
+  };
+
+  // TODO make generic and pull out list component
+  const setTodo = (index: number) => (x: todo.t) => {
+    const newTodos = [...todos];
+    newTodos[index] = x;
+    setTodos(newTodos);
   };
 
   const [count, setCount] = useState(0);
@@ -29,13 +45,14 @@ export default function App() {
       <InputForm placeholder="new todo..." submit={addTodo} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { todos.length
-          ? todos.map(todo => <TodoItem todo={todo} key={todo} />)
+          ? todos.map((todo, index) => <TodoItem todo={todo} key={todo.date} remove={delTodo(index)} change={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
           : "No todos yet..."
         }
       </Box>
       <Stack color="gray.500" align="center">
         <Text>Usage: click an item to edit it.</Text>
         <Text>Page has been open for <code>{count}</code> seconds.</Text>
+        <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
       </Stack>
       <ThemeToggle />
     </div>
