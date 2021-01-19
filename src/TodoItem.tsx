@@ -1,6 +1,6 @@
-import { Box, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, Spacer, useEditableState } from '@chakra-ui/react';
+import { Box, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, Icon, IconButton, Spacer, useEditableState } from '@chakra-ui/react';
 import React from 'react';
-import { FaCheck, FaGripVertical, FaRegEdit, FaRegTrashAlt, FaTimes } from 'react-icons/fa';
+import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import type * as todo from './model/todo';
 
 function EditableControls() { // TODO pull out into lib
@@ -26,7 +26,8 @@ export default function TodoItem({ todo, del, set }: { todo: todo.t, del: () => 
   return (
     <Flex opacity={todo.done ? '40%' : '100%'} >
       {/* <IconButton aria-label="drag to reorder" icon={<FaGripVertical />} size="sm" variant="ghost" /> */}
-      <Checkbox mr={2} isChecked={todo.done} onChange={e => {todo.done = e.target.checked; set(todo);}} />
+      <Checkbox mr={2} isChecked={todo.done} onChange={e => {todo.done = e.target.checked; set(todo);}} colorScheme="green" />
+      {/* <IconButton onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} size="sm" variant="ghost" isRound={true} /> */}
       <Editable defaultValue={todo.text} submitOnBlur={false} w="300px"
         onSubmit={submit}>
         <Flex>
@@ -40,6 +41,11 @@ export default function TodoItem({ todo, del, set }: { todo: todo.t, del: () => 
       </Editable>
       <Spacer />
       <IconButton onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} size="sm" variant="ghost" />
+
+      <IconButton aria-label="duration" icon={<FaStopwatch />} size="sm" variant="ghost" />
+      <IconButton aria-label="duration" icon={<FaRegClock />} size="sm" variant="ghost" />
+      <IconButton aria-label="duration" icon={<FaPlay />} size="sm" variant="ghost" />
+      <IconButton aria-label="duration" icon={<FaStop />} size="sm" variant="ghost" />
     </Flex>
   )
 }

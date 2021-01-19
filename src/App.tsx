@@ -42,12 +42,14 @@ export default function () {
     return () => clearTimeout(timer);
   }, [count]);
 
+  const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
+
   return (
     <div className="App">
       <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
-        { todos.length
-          ? todos.map((todo, index) => !showDone && todo.done ? null : <TodoItem todo={todo} key={todo.date} del={delTodo(index)} set={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
+        { filteredTodos.length
+          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.date} del={delTodo(index)} set={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
           : "Nothing to show..."
         }
       </Box>
