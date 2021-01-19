@@ -48,7 +48,7 @@ export default function () {
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { todos.length
           ? todos.map((todo, index) => <TodoItem todo={todo} key={todo.date} del={delTodo(index)} set={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
-          : "No todos yet..."
+          : "Nothing to show..."
         }
       </Box>
       <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
