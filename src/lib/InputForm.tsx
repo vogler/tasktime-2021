@@ -10,7 +10,7 @@ export const useFocus = () => {
 	return [htmlElRef, setFocus] as const;
 }
 
-export default function ({ IconOrText = FaArrowRight, resetInput = true, debug = false, ...p }: {
+export default function InputForm({ IconOrText = FaArrowRight, resetInput = true, debug = false, ...p }: {
       submit?: (value: string) => Promise<void | string>,
       inputProps?: InputProps,
       IconOrText?: IconType | string, // needs to be uppercase, otherwise React assumes it's an HTML element

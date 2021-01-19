@@ -5,7 +5,7 @@ import { FaMoon, FaSun } from 'react-icons/fa';
 // When refreshing the page in dark mode, light mode flashes up first.
 // This did not help: https://chakra-ui.com/docs/features/color-mode#add-colormodescript
 
-export default function () {
+export default function ThemeToggle() {
   const { colorMode, toggleColorMode } = useColorMode();
   return (
     <IconButton
@@ -14,5 +14,5 @@ export default function () {
       onClick={toggleColorMode}
       variant="ghost"
     />
-  )
+  );
 }

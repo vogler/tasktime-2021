@@ -16,7 +16,7 @@ function EditableControls() { // TODO pull out into lib
 }
 
 
-export default function ({ todo, del, set }: { todo: todo.t, del: () => void, set: (x: todo.t) => void }) {
+export default function TodoItem({ todo, del, set }: { todo: todo.t, del: () => void, set: (x: todo.t) => void }) {
   const submit = (text: string) => {
     console.log(`submit: ${text}`);
     todo.text = text;
