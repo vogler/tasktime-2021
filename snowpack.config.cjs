@@ -10,7 +10,6 @@ module.exports = {
     '@snowpack/plugin-typescript',
   ],
   packageOptions: {
-    // source: 'remote',
-    external: ['snowpack', 'express'] // ignore these imports from server.ts since they are not needed by the client (and make install fail)
+    // source: 'remote', // npm deps from CDN instead of from node_modules
   }
 };
