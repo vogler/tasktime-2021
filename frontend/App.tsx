@@ -8,19 +8,15 @@ import type * as todo from '../model/todo';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));
-const useAsyncEffect = (eff: () => Promise<void> | Promise<() => void | undefined>, deps?: React.DependencyList | undefined) => useEffect(() => { (async () => await eff())() }, deps);
 
 export default function () {
   const [todos, setTodos] = useState<todo.t[]>([]);
   const [showDone, setShowDone] = useState(true);
 
-  // useEffect(() => { // can't use async here since it always returns a Promise
-  //   (async () => {
-  //     setTodos(await (await fetch('/todos')).json());
-  //   })();
-  // }, []);
-  useAsyncEffect(async () => {
-    setTodos(await (await fetch('/todos')).json());
+  useEffect(() => { // can't use async here since it always returns a Promise; could make a wrapper for the Promise<void> case, but not for the unmount-function case. could use https://github.com/rauldeheer/use-async-effect
+    (async () => {
+      setTodos(await (await fetch('/todos')).json());
+    })();
   }, []);
 
   const addTodo = async (text: string) => {
