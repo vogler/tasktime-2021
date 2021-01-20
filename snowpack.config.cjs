@@ -2,7 +2,8 @@
 module.exports = {
   mount: {
     public: {url: '/', static: true},
-    src: {url: '/dist'},
+    frontend: {url: '/dist'},
+    model: {url: '/dist'},
   },
   plugins: [
     '@snowpack/plugin-react-refresh',

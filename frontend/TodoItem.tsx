@@ -1,7 +1,7 @@
 import { Box, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, Icon, IconButton, Spacer, useEditableState } from '@chakra-ui/react';
 import React from 'react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
-import type * as todo from './model/todo';
+import type * as todo from '../model/todo';
 
 function EditableControls() { // TODO pull out into lib
   const p = useEditableState();

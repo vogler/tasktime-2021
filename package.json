@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "nodemon -x 'node --loader ts-node/esm' -w ./src/server.ts ./src/server.ts",
+    "start": "nodemon -x 'node --loader ts-node/esm' -w ./backend ./backend/index.ts",
     "frontend": "snowpack dev",
     "build": "snowpack build",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
