@@ -42,7 +42,15 @@ app.use(async (req: Request, res: Response, next: express.NextFunction) => {
     // console.log('snowpack.loadUrl:', req.url, '->', buildResult.originalFileLoc, `(${buildResult.contentType})`);
     if (buildResult.contentType)
       res.contentType(buildResult.contentType);
-    res.send(buildResult.contents);
+    let r = buildResult.contents;
+    // serve initial data so that client does not have to wait for fetch request to display data
+    if (req.url === '/dist/App.js') {
+      r = r.toString().replace(
+        'const initialTodos = [];',
+        `const initialTodos = ${JSON.stringify(todos)};`
+      );
+    }
+    res.send(r);
   } catch (err) {
     next(err);
   }

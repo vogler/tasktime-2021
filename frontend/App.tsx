@@ -9,10 +9,14 @@ import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));
 
+// initial data replaced by the server:
+const initialTodos: todo.t[] = [];
+
 export default function () {
-  const [todos, setTodos] = useState<todo.t[]>([]);
+  const [todos, setTodos] = useState(initialTodos);
   const [showDone, setShowDone] = useState(true);
 
+  // replacement by server is somehow not done on HMR, so we just keep this for now
   useEffect(() => { // can't use async here since it always returns a Promise; could make a wrapper for the Promise<void> case, but not for the unmount-function case. could use https://github.com/rauldeheer/use-async-effect
     (async () => {
       setTodos(await (await fetch('/todos')).json());
