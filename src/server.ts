@@ -1,11 +1,11 @@
 // const express = require("express");
-import express from 'express';
+import express, {Request, Response} from 'express';
 const app = express();
 const port = 8090;
 
 // define a route handler for the default home page
-app.get("/", (req: any, res: any) => {
-  res.send("Hello world!");
+app.get("/foo", (req: Request, res: Response) => {
+  res.send("Hello worlds!");
 });
 
 // start the Express server
@@ -20,7 +20,7 @@ const config = await loadConfiguration({}, ''); // loads snowpack.config.cjs (.c
 const server = await startServer({ config, lockfile: null });
 
 // snowpack: build each file on request and respond with its built contents
-app.use(async (req: any, res: any, next: any) => {
+app.use(async (req: Request, res: Response, next: express.NextFunction) => {
   try {
     const buildResult = await server.loadUrl(req.url);
     res.send(buildResult.contents);
