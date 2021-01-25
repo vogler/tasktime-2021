@@ -13,6 +13,8 @@ This is a test project building some todo/time-tracking app using:
 Tried Svelte and Firebase in an older iteration: https://github.com/vogler/track-time_svelte-firebase.
 By now Svelte seems to officially support TypeScript: https://svelte.dev/blog/svelte-and-typescript.
 
+Maybe check out [Next.js](https://nextjs.org/) for easier SSR; example: https://github.com/prisma/prisma-examples/tree/latest/typescript/rest-nextjs-api-routes
+
 ---
 
 > ✨ Bootstrapped with Create Snowpack App (CSA).
