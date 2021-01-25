@@ -3,6 +3,9 @@
     "start": "nodemon -x 'node --loader ts-node/esm' -w backend backend/server.ts",
     "frontend": "snowpack dev",
     "build": "snowpack build",
+    "db-codegen": "prisma generate",
+    "db-migrate": "prisma migrate dev --preview-feature",
+    "db-inspect": "prisma studio",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\""
   },
@@ -16,6 +19,8 @@
     "react-icons": "^4.1.0"
   },
   "devDependencies": {
+    "@prisma/cli": "^2.15.0",
+    "@prisma/client": "^2.15.0",
     "@snowpack/plugin-react-refresh": "^2.4.0",
     "@snowpack/plugin-typescript": "^1.2.1",
     "@types/express": "^4.17.11",
