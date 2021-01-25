@@ -8,9 +8,8 @@ const port = 8080;
 // app.use(express.static('frontend-static')); // snowpack modifes index.html for HMR
 
 // access sqlite database with prisma:
-// import { PrismaClient } from '@prisma/client'; // SyntaxError: Named export 'PrismaClient' not found. The requested module '@prisma/client' is a CommonJS module, which may not support all module.exports as named exports.
-// CommonJS modules can always be imported via the default export, for example...
-import prisma from '@prisma/client';
+// import { PrismaClient } from '@prisma/client'; // SyntaxError: Named export 'PrismaClient' not found. The requested module '@prisma/client' is a CommonJS module, which may not support all module.exports as named exports. See https://github.com/prisma/prisma/pull/4920
+import prisma from '@prisma/client'; // import default export instead of named exports
 const db = new prisma.PrismaClient();
 
 app.get("/posts", async (req: Request, res: Response) => {
@@ -56,6 +55,8 @@ app.use(async (req: Request, res: Response, next: express.NextFunction) => {
       res.contentType(buildResult.contentType);
     let r = buildResult.contents;
     // serve initial data so that client does not have to wait for fetch request to display data
+    // TODO SSR with ReactDOMServer.renderToString to also serve the HTML
+    // besides snowpack example, also see https://github.com/DavidWells/isomorphic-react-example
     if (req.url === '/dist/App.js') {
       r = r.toString().replace(
         'const initialTodos = [];',
