@@ -14,24 +14,28 @@ app.use(bodyParser.json());
 import prisma from '@prisma/client'; // import default export instead of named exports
 const db = new prisma.PrismaClient();
 
-app.get("/todo", async (req: Request, res: Response) => {
-  const todos = await db.todo.findMany();
-  res.json(todos);
-});
-
-app.post("/todo", async (req: Request, res: Response) => {
-  console.log(req.body);
-  res.json(await db.todo.create({ data: req.body }));
-});
-
-app.put("/todo", async (req: Request, res: Response) => {
-  res.json(await db.todo.update({
-    where: { id: parseInt(req.body.id) },
-    data: req.body }));
-});
-
-app.delete("/todo", async (req: Request, res: Response) => {
-  res.json(await db.todo.delete({ where: { id: parseInt(req.body.id) }}));
+app.use("/todo", async (req: Request, res: Response) => {
+  console.log(req.method, req.url, req.body);
+  const data = req.body;
+  const where = { id: parseInt(req.body.id) };
+  let op;
+  switch (req.method) {
+    case 'GET':
+      op = db.todo.findMany();
+      break;
+    case 'POST':
+      op = db.todo.create({ data });
+      break;
+    case 'PUT':
+      op = db.todo.update({ where, data });
+      break;
+    case 'DELETE':
+      op = db.todo.delete({ where });
+      break;
+    default:
+      throw Error(`Invalid method ${req.method}`);
+  }
+  res.json(await op);
 });
 
 // start the Express server
