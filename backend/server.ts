@@ -12,23 +12,8 @@ const port = 8080;
 import prisma from '@prisma/client'; // import default export instead of named exports
 const db = new prisma.PrismaClient();
 
-app.get("/posts", async (req: Request, res: Response) => {
-  const posts = await db.post.findMany();
-  res.json(posts);
-});
-
-const todos = [{
-  date: Date.now(),
-  text: 'Todo 1',
-  done: false
-},
-{
-  date: Date.now() + 42,
-  text: 'Todo 2',
-  done: true
-}];
-
-app.get("/todos", (req: Request, res: Response) => {
+app.get("/todos", async (req: Request, res: Response) => {
+  const todos = await db.todo.findMany();
   res.json(todos);
 });
 
@@ -60,7 +45,7 @@ app.use(async (req: Request, res: Response, next: express.NextFunction) => {
     if (req.url === '/dist/App.js') {
       r = r.toString().replace(
         'const initialTodos = [];',
-        `const initialTodos = ${JSON.stringify(todos)};`
+        `const initialTodos = ${JSON.stringify(await db.todo.findMany())};`
       );
     }
     res.send(r);
