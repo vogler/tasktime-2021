@@ -4,13 +4,13 @@ import './App.css';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
-import type * as todo from '../model/todo';
+import type { Todo } from '@prisma/client'; // import default export instead of named exports
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));
 
 // initial data replaced by the server:
-const initialTodos: todo.t[] = [];
+const initialTodos: Todo[] = [];
 
 export default function () {
   const [todos, setTodos] = useState(initialTodos);
@@ -27,7 +27,7 @@ export default function () {
     if (text == '') return 'Todo is empty';
     // if (todos.includes(value)) return 'Todo exists';
     // await delay(1000);
-    const todo = { date: Date.now(), text, done: false };
+    const todo = { id: Date.now(), createdAt: new Date(), updatedAt: new Date(), text, done: false };
     setTodos([...todos, todo]);
     console.log(todo, todos); // todos not updated yet here
   };
@@ -40,7 +40,7 @@ export default function () {
   };
 
   // TODO make generic and pull out list component
-  const setTodo = (index: number) => (x: todo.t) => {
+  const setTodo = (index: number) => (x: Todo) => {
     const newTodos = [...todos];
     newTodos[index] = x;
     setTodos(newTodos);
@@ -59,7 +59,7 @@ export default function () {
       <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
-          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.date} del={delTodo(index)} set={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
+          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
           : "Nothing to show..."
         }
       </Box>

@@ -1,7 +1,7 @@
 import { Box, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, Icon, IconButton, Spacer, useEditableState } from '@chakra-ui/react';
 import React from 'react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
-import type * as todo from '../model/todo';
+import type { Todo } from '@prisma/client'; // import default export instead of named exports
 
 function EditableControls() { // TODO pull out into lib
   const p = useEditableState();
@@ -16,7 +16,7 @@ function EditableControls() { // TODO pull out into lib
 }
 
 
-export default function TodoItem({ todo, del, set }: { todo: todo.t, del: () => void, set: (x: todo.t) => void }) {
+export default function TodoItem({ todo, del, set }: { todo: Todo, del: () => void, set: (x: Todo) => void }) {
   const submit = (text: string) => {
     console.log(`submit: ${text}`);
     todo.text = text;
