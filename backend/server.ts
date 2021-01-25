@@ -1,8 +1,10 @@
 import express, { Request, Response } from 'express';
+import bodyParser from 'body-parser';
+
 const app = express();
 const port = 8080;
 
-// app.use(bodyParser.json());
+app.use(bodyParser.json());
 // app.use(cookieParser());
 // app.use(compress());
 // app.use(express.static('frontend-static')); // snowpack modifes index.html for HMR
@@ -12,9 +14,24 @@ const port = 8080;
 import prisma from '@prisma/client'; // import default export instead of named exports
 const db = new prisma.PrismaClient();
 
-app.get("/todos", async (req: Request, res: Response) => {
+app.get("/todo", async (req: Request, res: Response) => {
   const todos = await db.todo.findMany();
   res.json(todos);
+});
+
+app.post("/todo", async (req: Request, res: Response) => {
+  console.log(req.body);
+  res.json(await db.todo.create({ data: req.body }));
+});
+
+app.put("/todo", async (req: Request, res: Response) => {
+  res.json(await db.todo.update({
+    where: { id: parseInt(req.body.id) },
+    data: req.body }));
+});
+
+app.delete("/todo", async (req: Request, res: Response) => {
+  res.json(await db.todo.delete({ where: { id: parseInt(req.body.id) }}));
 });
 
 // start the Express server
@@ -50,6 +67,7 @@ app.use(async (req: Request, res: Response, next: express.NextFunction) => {
     }
     res.send(r);
   } catch (err) {
+    console.error('loadUrl failed for', req.method, req.url);
     next(err);
   }
 });

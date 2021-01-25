@@ -8,6 +8,15 @@ import type { Todo } from '@prisma/client'; // import default export instead of 
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));
+const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 'todo') => // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
+  await (await (fetch(url, {
+    method,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(json),
+  }))).json();
 
 // initial data replaced by the server:
 const initialTodos: Todo[] = [];
@@ -19,7 +28,7 @@ export default function () {
   // replacement by server is somehow not done on HMR, so we just keep this for now
   useEffect(() => { // can't use async here since it always returns a Promise; could make a wrapper for the Promise<void> case, but not for the unmount-function case. could use https://github.com/rauldeheer/use-async-effect
     (async () => {
-      setTodos(await (await fetch('/todos')).json());
+      setTodos(await rest('GET'));
     })();
   }, []);
 
@@ -27,12 +36,13 @@ export default function () {
     if (text == '') return 'Todo is empty';
     // if (todos.includes(value)) return 'Todo exists';
     // await delay(1000);
-    const todo = { id: Date.now(), createdAt: new Date(), updatedAt: new Date(), text, done: false };
+    const todo = await rest('POST', { text });
     setTodos([...todos, todo]);
     console.log(todo, todos); // todos not updated yet here
   };
 
-  const delTodo = (index: number) => () => {
+  const delTodo = (index: number) => async () => {
+    await rest('DELETE', { id: todos[index].id });
     const newTodos = [...todos];
     newTodos.splice(index, 1); // delete element at index
     console.log(`delTodo(${index}):`, newTodos);
@@ -40,7 +50,8 @@ export default function () {
   };
 
   // TODO make generic and pull out list component
-  const setTodo = (index: number) => (x: Todo) => {
+  const setTodo = (index: number) => async (x: Todo) => {
+    await rest('PUT', x);
     const newTodos = [...todos];
     newTodos[index] = x;
     setTodos(newTodos);
