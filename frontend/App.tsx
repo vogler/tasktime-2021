@@ -4,7 +4,7 @@ import './App.css';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
-import type { Todo } from '@prisma/client'; // import default export instead of named exports
+import type { Todo, Prisma } from '@prisma/client'; // import default export instead of named exports
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 
 // const delay = (time: number) => new Promise(res => setTimeout(res, time));
@@ -18,6 +18,19 @@ const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 
     body: JSON.stringify(json),
   }))).json();
 
+namespace db { // could also just use rest() as defined above, but this is type-safe
+  export const findMany = (args => rest('GET', args)) as Prisma.TodoDelegate['findMany'];
+  const _create = (args => rest('POST', args)) as Prisma.TodoDelegate['create'];
+  const _update = (args => rest('PUT', args)) as Prisma.TodoDelegate['update'];
+  const _delete = (args => rest('DELETE', args)) as Prisma.TodoDelegate['delete'];
+  export const create = (data: Prisma.TodoCreateInput) => _create({ data }); // just for data, but more restrictive
+  export const update = (data: Prisma.TodoWhereUniqueInput) => _update({ data, where: { id: data.id } });
+  export const delete_ = (data: Prisma.TodoWhereUniqueInput) => _delete({ where: { id: data.id } });
+  // TODO make generic. Can't limit data to interface ..WhereUniqueInput w/o sth like ts-transformer-keys; delete fails if we pass more than id (deleteMany accepts ..WhereInput).
+  // export values for types: https://github.com/prisma/prisma/discussions/5291
+  // limit fields to exactly the given type: https://gitter.im/Microsoft/TypeScript?at=60107e5d32e01b4f71560129
+}
+
 // initial data replaced by the server:
 const initialTodos: Todo[] = [];
 
@@ -28,7 +41,7 @@ export default function () {
   // replacement by server is somehow not done on HMR, so we just keep this for now
   useEffect(() => { // can't use async here since it always returns a Promise; could make a wrapper for the Promise<void> case, but not for the unmount-function case. could use https://github.com/rauldeheer/use-async-effect
     (async () => {
-      setTodos(await rest('GET'));
+      setTodos(await db.findMany());
     })();
   }, []);
 
@@ -36,13 +49,13 @@ export default function () {
     if (text == '') return 'Todo is empty';
     // if (todos.includes(value)) return 'Todo exists';
     // await delay(1000);
-    const todo = await rest('POST', { text });
+    const todo = await db.create({ text });
     setTodos([...todos, todo]);
     console.log(todo, todos); // todos not updated yet here
   };
 
   const delTodo = (index: number) => async () => {
-    await rest('DELETE', { id: todos[index].id });
+    await db.delete_(todos[index]);
     const newTodos = [...todos];
     newTodos.splice(index, 1); // delete element at index
     console.log(`delTodo(${index}):`, newTodos);
@@ -51,7 +64,7 @@ export default function () {
 
   // TODO make generic and pull out list component
   const setTodo = (index: number) => async (x: Todo) => {
-    await rest('PUT', x);
+    await db.update(x);
     const newTodos = [...todos];
     newTodos[index] = x;
     setTodos(newTodos);

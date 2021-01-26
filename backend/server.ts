@@ -16,21 +16,20 @@ const db = new prisma.PrismaClient();
 
 app.use("/todo", async (req: Request, res: Response) => {
   console.log(req.method, req.url, req.body);
-  const data = req.body;
-  const where = { id: parseInt(req.body.id) };
+  const args = req.body;
   let op;
   switch (req.method) {
     case 'GET':
-      op = db.todo.findMany();
+      op = db.todo.findMany(args); // where, orderBy etc.
       break;
     case 'POST':
-      op = db.todo.create({ data });
+      op = db.todo.create(args);
       break;
     case 'PUT':
-      op = db.todo.update({ where, data });
+      op = db.todo.update(args);
       break;
     case 'DELETE':
-      op = db.todo.delete({ where });
+      op = db.todo.delete(args);
       break;
     default:
       throw Error(`Invalid method ${req.method}`);
