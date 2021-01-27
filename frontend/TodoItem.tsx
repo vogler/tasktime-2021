@@ -1,5 +1,5 @@
-import { Box, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, Icon, IconButton, Spacer, useEditableState } from '@chakra-ui/react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, Icon, IconButton, Spacer, Tag, TagLabel, TagLeftIcon, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import type { Todo } from '@prisma/client'; // import default export instead of named exports
 
@@ -22,6 +22,16 @@ export default function TodoItem({ todo, del, set }: { todo: Todo, del: () => vo
     todo.text = text;
     set(todo);
   };
+  const [running, setRunning] = useState(false);
+  const [hover, setHover] = useState(false);
+  const [time, setTime] = useState(0);
+  useEffect(() => { // count + 1 every second
+    const timer = setTimeout(() => { if (running) setTime(time + 1) }, 1000);
+    return () => clearTimeout(timer);
+  }, [time, running]);
+  const timer = () => {
+    setRunning(!running);
+  };
   // submitOnBlur true (default) will also submit on Esc and when clicking the cancel button
   return (
     <Flex opacity={todo.done ? '40%' : '100%'} >
@@ -42,10 +52,9 @@ export default function TodoItem({ todo, del, set }: { todo: Todo, del: () => vo
       <Spacer />
       <IconButton onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} size="sm" variant="ghost" />
 
-      <IconButton aria-label="duration" icon={<FaStopwatch />} size="sm" variant="ghost" />
-      <IconButton aria-label="duration" icon={<FaRegClock />} size="sm" variant="ghost" />
-      <IconButton aria-label="duration" icon={<FaPlay />} size="sm" variant="ghost" />
-      <IconButton aria-label="duration" icon={<FaStop />} size="sm" variant="ghost" />
+      {/* <IconButton aria-label="duration" icon={<FaStopwatch />} size="sm" variant="ghost" />
+      <Tag size="sm" variant="subtle" borderRadius="full">00:00</Tag> */}
+      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={16} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{time}</Button>
     </Flex>
   )
 }
