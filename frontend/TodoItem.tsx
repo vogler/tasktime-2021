@@ -7,13 +7,13 @@ import type { Todo } from '@prisma/client'; // import default export instead of 
 namespace duration {
   // duration as shortest string given units xs, leading zero only for tail
   let fmt = (t: number, xs: number[]) : string => {
-    const d = xs.pop(); // immutable alternative?
+    const [d,...ds] = xs;
     return d
-      ? (t >= d ? fmt(Math.floor(t/d), xs) + ':' + (t%d+'').padStart(2, '0') : t.toString())
+      ? (t >= d ? fmt(Math.floor(t/d), ds) + ':' + (t%d+'').padStart(2, '0') : t.toString())
       : t.toString();
   }
   // hh:mm:ss
-  export const format = (s: number) => fmt(s, [24,60,60]);
+  export const format = (s: number) => fmt(s, [60,60,24]);
 }
 
 function EditableControls() { // TODO pull out into lib
