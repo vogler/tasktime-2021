@@ -9,7 +9,7 @@ namespace duration {
   let fmt = (t: number, xs: number[]) : string => {
     const d = xs.pop(); // immutable alternative?
     return d
-      ? (t >= d ? fmt(Math.floor(t/d), xs) + ':' : '') + (t%d+'').padStart(2, '0')
+      ? (t >= d ? fmt(Math.floor(t/d), xs) + ':' + (t%d+'').padStart(2, '0') : t.toString())
       : t.toString();
   }
   // hh:mm:ss
