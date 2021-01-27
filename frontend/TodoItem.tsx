@@ -2,7 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, Icon, IconButton, Spacer, Tag, TagLabel, TagLeftIcon, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import type { Todo } from '@prisma/client'; // import default export instead of named exports
-import { formatDuration } from 'date-fns';
+// import { formatDuration } from 'date-fns'; // no nice way to customize
+
+namespace duration {
+  // duration as shortest string given units xs, leading zero only for tail
+  let fmt = (t: number, xs: number[]) : string => {
+    const d = xs.pop(); // immutable alternative?
+    return d
+      ? (t >= d ? fmt(Math.floor(t/d), xs) + ':' : '') + (t%d+'').padStart(2, '0')
+      : t.toString();
+  }
+  // hh:mm:ss
+  export const format = (s: number) => fmt(s, [24,60,60]);
+}
 
 function EditableControls() { // TODO pull out into lib
   const p = useEditableState();
@@ -55,7 +67,7 @@ export default function TodoItem({ todo, del, set }: { todo: Todo, del: () => vo
 
       {/* <IconButton aria-label="duration" icon={<FaStopwatch />} size="sm" variant="ghost" />
       <Tag size="sm" variant="subtle" borderRadius="full">00:00</Tag> */}
-      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={16} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{formatDuration({seconds: time})}</Button>
+      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={16} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}</Button>
     </Flex>
   )
 }
