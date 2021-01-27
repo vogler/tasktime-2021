@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, Icon, IconButton, Spacer, Tag, TagLabel, TagLeftIcon, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import type { Todo } from '@prisma/client'; // import default export instead of named exports
+import { formatDuration } from 'date-fns';
 
 function EditableControls() { // TODO pull out into lib
   const p = useEditableState();
@@ -54,7 +55,7 @@ export default function TodoItem({ todo, del, set }: { todo: Todo, del: () => vo
 
       {/* <IconButton aria-label="duration" icon={<FaStopwatch />} size="sm" variant="ghost" />
       <Tag size="sm" variant="subtle" borderRadius="full">00:00</Tag> */}
-      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={16} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{time}</Button>
+      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={16} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{formatDuration({seconds: time})}</Button>
     </Flex>
   )
 }
