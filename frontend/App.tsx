@@ -49,11 +49,11 @@ export default function () {
     setTodos(newTodos);
   };
 
-  const [count, setCount] = useState(0);
-  useEffect(() => { // count + 1 every second
-    const timer = setTimeout(() => setCount(count + 1), 1000);
+  const [time, setTime] = useState(0);
+  useEffect(() => {
+    const timer = setTimeout(() => setTime(time + 1), 1000); // + 1 every second
     return () => clearTimeout(timer);
-  }, [count]);
+  }, [time]);
 
   const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
 
@@ -62,14 +62,14 @@ export default function () {
       <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
-          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
+          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} global_time={time} />) // do not use index as key since it changes with the order of the list and on deletion
           : "Nothing to show..."
         }
       </Box>
       <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
       <Stack color="gray.500" align="center">
         <Text>Usage: click an item to edit it.</Text>
-        <Text>Page has been open for <code>{count}</code> seconds.</Text>
+        <Text>Page has been open for <code>{time}</code> seconds.</Text>
         <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
       </Stack>
       <ThemeToggle />

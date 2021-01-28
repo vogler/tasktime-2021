@@ -6,6 +6,7 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+// update @prisma/client on changes with npx prisma generate --watch
 
 model Todo {
   id        Int      @id @default(autoincrement())

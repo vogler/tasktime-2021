@@ -29,7 +29,7 @@ function EditableControls() { // TODO pull out into lib
 }
 
 
-export default function TodoItem({ todo, del, set }: { todo: Todo, del: () => void, set: (x: Todo) => void }) {
+export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, del: () => void, set: (x: Todo) => void, global_time: number }) {
   const submit = (text: string) => {
     console.log(`Editable.submit: ${text}`);
     todo.text = text;
@@ -38,10 +38,10 @@ export default function TodoItem({ todo, del, set }: { todo: Todo, del: () => vo
   const [running, setRunning] = useState(false);
   const [hover, setHover] = useState(false);
   const [time, setTime] = useState(0);
-  useEffect(() => { // count + 1 every second
-    const timer = setTimeout(() => { if (running) setTime(time + 1) }, 1000);
-    return () => clearTimeout(timer);
-  }, [time, running]);
+  useEffect(() => { // run every second if running
+    if (running) setTime(time + 1); // if is only needed to exclude the inital run
+    // console.log(`time: ${todo.text}`);
+  }, [running && global_time]); // only depend on global_time if running to avoid useless calls!
   const timer = () => {
     setRunning(!running);
   };
