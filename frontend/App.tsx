@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Stack, Text } from '@chakra-ui/react';
+import { Box, Button, Divider, HStack, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Stack, Text } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import './App.css';
 import InputForm from './lib/InputForm';
@@ -55,6 +55,8 @@ export default function () {
     return () => clearTimeout(timer);
   }, [time]);
 
+  const [saveInterval, setSaveInterval] = useState(5);
+
   const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
 
   return (
@@ -67,6 +69,18 @@ export default function () {
         }
       </Box>
       <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
+      <Divider my={3} />
+      <HStack>
+        <Text>Persist running timers every</Text>
+        <NumberInput size="sm" w={14} defaultValue={saveInterval} min={1} max={30} onChange={(_,i) => setSaveInterval(i)}>
+          <NumberInputField />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>
+        <Text>seconds.</Text>
+      </HStack>
       <Stack color="gray.500" align="center">
         <Text>Usage: click an item to edit it.</Text>
         <Text>Page has been open for <code>{time}</code> seconds.</Text>

@@ -45,14 +45,13 @@ export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, 
   const timer = () => {
     setRunning(!running);
   };
-  // submitOnBlur true (default) will also submit on Esc and when clicking the cancel button
+  // submitOnBlur true (default) will also submit on Esc (only with Surfingkeys enabled) and when clicking the cancel button, see https://github.com/chakra-ui/chakra-ui/issues/3198
   return (
     <Flex opacity={todo.done ? '40%' : '100%'} >
       {/* <IconButton aria-label="drag to reorder" icon={<FaGripVertical />} size="sm" variant="ghost" /> */}
       <Checkbox mr={2} isChecked={todo.done} onChange={e => {todo.done = e.target.checked; set(todo);}} colorScheme="green" />
       {/* <IconButton onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} size="sm" variant="ghost" isRound={true} /> */}
-      <Editable defaultValue={todo.text} submitOnBlur={false} w="300px"
-        onSubmit={submit}>
+      <Editable defaultValue={todo.text} submitOnBlur={false} w="300px" onSubmit={submit}>
         <Flex>
           <Box w="240px">
             <EditablePreview />
@@ -67,7 +66,7 @@ export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, 
 
       {/* <IconButton aria-label="duration" icon={<FaStopwatch />} size="sm" variant="ghost" />
       <Tag size="sm" variant="subtle" borderRadius="full">00:00</Tag> */}
-      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={16} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}</Button>
+      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={20} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}</Button>
     </Flex>
   )
 }
