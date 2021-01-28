@@ -1,5 +1,5 @@
 {
-  "include": ["backend", "frontend", "model", "types"],
+  "include": ["backend", "frontend", "types"],
   "compilerOptions": {
     "module": "esnext",
     "target": "esnext",
