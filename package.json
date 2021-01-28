@@ -10,6 +10,7 @@
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\""
   },
+  "prisma": {"schema": "backend/schema.prisma"},
   "dependencies": {
     "@chakra-ui/react": "^1.1.5",
     "@emotion/react": "^11.1.4",
