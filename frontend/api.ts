@@ -3,7 +3,7 @@ import type { Prisma } from '@prisma/client';
 const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 'todo') => // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
   await (await (fetch(url, {
     method,
-    headers: {
+    headers: { // compressed json is fine. no need for protobuf, BSON etc.
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },

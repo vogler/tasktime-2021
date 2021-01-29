@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, Icon, IconButton, Spacer, Tag, TagLabel, TagLeftIcon, useEditableState } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, Spacer, Tag, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
-import type { Todo } from '@prisma/client'; // import default export instead of named exports
+import type { Todo } from '@prisma/client';
 // import { formatDuration } from 'date-fns'; // no nice way to customize
 
 namespace duration {
@@ -37,14 +37,27 @@ export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, 
   };
   const [running, setRunning] = useState(false);
   const [hover, setHover] = useState(false);
-  const [time, setTime] = useState(0);
+  const [startTime, setStartTime] = useState(0); // timer might not be reliable?
+  const [time, setTime] = useState(todo.time);
   useEffect(() => { // run every second if running
     if (running) setTime(time + 1); // if is only needed to exclude the inital run
     // console.log(`time: ${todo.text}`);
   }, [running && global_time]); // only depend on global_time if running to avoid useless calls!
   const timer = () => {
+    if (!running) {
+      setStartTime(Date.now());
+    } else {
+      const diff = Math.round((Date.now() - startTime) / 1000);
+      console.log(`time: ${time - todo.time}, diff: ${diff}`);
+      const newTodo = {...todo}; // need to make a shallow copy of the item to mutate, otherwise we get a stale time TODO still does not equal diff
+      newTodo.time = todo.time + diff;
+      set(newTodo);
+    }
     setRunning(!running);
   };
+  useEffect(() => {
+    console.log('todo changed', todo);
+  }, [todo]);
   // submitOnBlur true (default) will also submit on Esc (only with Surfingkeys enabled) and when clicking the cancel button, see https://github.com/chakra-ui/chakra-ui/issues/3198
   return (
     <Flex opacity={todo.done ? '40%' : '100%'} >
