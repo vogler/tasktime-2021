@@ -62,7 +62,7 @@ app.use(async (req: Request, res: Response, next: express.NextFunction) => {
     // serve initial data so that client does not have to wait for fetch request to display data
     // TODO SSR with ReactDOMServer.renderToString to also serve the HTML
     // besides snowpack example, also see https://github.com/DavidWells/isomorphic-react-example
-    if (req.url === '/dist/App.js') {
+    if (req.url.startsWith('/dist/App.js')) {
       r = r.toString().replace(
         'const initialTodos = [];',
         `const initialTodos = ${JSON.stringify(await db.todo.findMany())};`

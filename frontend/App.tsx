@@ -17,12 +17,12 @@ export default function () {
   const [todos, setTodos] = useState(initialTodos);
   const [showDone, setShowDone] = useState(true);
 
-  // replacement by server is somehow not done on HMR, so we just keep this for now
-  useEffect(() => { // can't use async here since it always returns a Promise; could make a wrapper for the Promise<void> case, but not for the unmount-function case. could use https://github.com/rauldeheer/use-async-effect
-    (async () => {
-      setTodos(await db.findMany());
-    })();
-  }, []);
+  // no need for extra fetch anymore since server already sets initialTodos from db
+  // useEffect(() => { // can't use async here since it always returns a Promise; could make a wrapper for the Promise<void> case, but not for the unmount-function case. could use https://github.com/rauldeheer/use-async-effect
+  //   (async () => {
+  //     setTodos(await db.findMany());
+  //   })();
+  // }, []);
 
   const addTodo = async (text: string) => {
     if (text == '') return 'Todo is empty';
