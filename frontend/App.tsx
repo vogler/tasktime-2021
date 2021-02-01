@@ -44,7 +44,7 @@ export default function () {
 
   // TODO make generic and pull out list component
   const setTodo = (index: number) => async (x: Todo) => {
-    await db.update(x);
+    x = await db.update(x);
     const newTodos = [...todos];
     newTodos[index] = x;
     setTodos(newTodos);

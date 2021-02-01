@@ -16,7 +16,7 @@ export namespace db { // could also just use rest() as defined above, but this i
   const _update = (args => rest('PUT', args)) as Prisma.TodoDelegate['update'];
   const _delete = (args => rest('DELETE', args)) as Prisma.TodoDelegate['delete'];
   export const create = (data: Prisma.TodoCreateInput) => _create({ data }); // just for data, but more restrictive
-  export const update = (data: Prisma.TodoWhereUniqueInput) => _update({ data, where: { id: data.id } });
+  export const update = ({updatedAt, ...data}: Prisma.TodoWhereUniqueInput & Prisma.TodoUpdateInput) => _update({ data, where: { id: data.id } }); // remove updatedAt from object so that it is set by db!
   export const delete_ = (data: Prisma.TodoWhereUniqueInput) => _delete({ where: { id: data.id } });
   // TODO make generic. Can't limit data to interface ..WhereUniqueInput w/o sth like ts-transformer-keys; delete fails if we pass more than id (deleteMany accepts ..WhereInput).
   // export values for types: https://github.com/prisma/prisma/discussions/5291
