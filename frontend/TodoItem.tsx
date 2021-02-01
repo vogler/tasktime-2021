@@ -40,8 +40,10 @@ export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, 
   const [startTime, setStartTime] = useState(0); // timer might not be reliable?
   const [time, setTime] = useState(todo.time);
   useEffect(() => { // run every second if running
-    if (running) setTime(time + 1); // if is only needed to exclude the inital run
-    // console.log(`time: ${todo.text}`);
+    if (running && Date.now() - startTime >= 1000) { // might hit start at x.9s global_time -> wait at least 1s before first count
+      setTime(time + 1);
+    }
+    // console.log(`time: ${todo.text}`); // should only be output for running timers
   }, [running && global_time]); // only depend on global_time if running to avoid useless calls!
   const timer = () => {
     if (!running) {
@@ -49,9 +51,10 @@ export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, 
     } else {
       const diff = Math.round((Date.now() - startTime) / 1000);
       console.log(`time: ${time - todo.time}, diff: ${diff}`);
-      const newTodo = {...todo}; // need to make a shallow copy of the item to mutate, otherwise we get a stale time TODO still does not equal diff
-      newTodo.time = todo.time + diff;
+      const newTodo = {...todo}; // need to make a shallow copy of the item to mutate, otherwise it's not detected as updated
+      newTodo.time += diff;
       set(newTodo);
+      setTime(newTodo.time); // correct accumulated time (prob. too low since it counts every >1s) with precise time from diff
     }
     setRunning(!running);
   };
