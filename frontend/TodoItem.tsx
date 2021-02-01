@@ -37,11 +37,12 @@ export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, 
   };
   const [running, setRunning] = useState(false);
   const [hover, setHover] = useState(false);
-  const [startTime, setStartTime] = useState(0); // timer might not be reliable?
   const [time, setTime] = useState(todo.time);
+  const [startTime, setStartTime] = useState(0); // calc diff since timer is not reliable
   useEffect(() => { // run every second if running
     if (running && Date.now() - startTime >= 1000) { // might hit start at x.9s global_time -> wait at least 1s before first count
       setTime(time + 1);
+      // setTime(todo.time + Math.round((Date.now() - startTime) / 1000)); // do this to avoid drift due to delayed timer?
     }
     // console.log(`time: ${todo.text}`); // should only be output for running timers
   }, [running && global_time]); // only depend on global_time if running to avoid useless calls!
@@ -58,9 +59,7 @@ export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, 
     }
     setRunning(!running);
   };
-  useEffect(() => {
-    console.log('todo changed', todo);
-  }, [todo]);
+  // useEffect(() => { console.log('todo changed', todo); }, [todo]);
   // submitOnBlur true (default) will also submit on Esc (only with Surfingkeys enabled) and when clicking the cancel button, see https://github.com/chakra-ui/chakra-ui/issues/3198
   return (
     <Flex opacity={todo.done ? '40%' : '100%'} >
@@ -82,7 +81,7 @@ export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, 
 
       {/* <IconButton aria-label="duration" icon={<FaStopwatch />} size="sm" variant="ghost" />
       <Tag size="sm" variant="subtle" borderRadius="full">00:00</Tag> */}
-      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={20} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}</Button>
+      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={24} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}</Button>
     </Flex>
   )
 }
