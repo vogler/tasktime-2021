@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Divider, Stack, Text } from '@chakra-ui/react';
+import { Box, Button, Divider, HStack, Stack, Text } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 import './App.css';
 import InputForm from './lib/InputForm';
@@ -16,6 +16,7 @@ const initialTodos: Todo[] = [];
 export default function () {
   const [todos, setTodos] = useState(initialTodos);
   const [showDone, setShowDone] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
 
   // no need for extra fetch anymore since server already sets initialTodos from db
   // useEffect(() => { // can't use async here since it always returns a Promise; could make a wrapper for the Promise<void> case, but not for the unmount-function case. could use https://github.com/rauldeheer/use-async-effect
@@ -62,11 +63,14 @@ export default function () {
       <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
-          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} global_time={time} />) // do not use index as key since it changes with the order of the list and on deletion
+          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} global_time={time} showDetails={showDetails} />) // do not use index as key since it changes with the order of the list and on deletion
           : "Nothing to show..."
         }
       </Box>
-      <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
+      <HStack>
+        <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
+        <Button size="sm" leftIcon={showDetails ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDetails(!showDetails)}>{showDetails ? 'hide' : 'show'} details</Button>
+      </HStack>
       <Divider my={3} />
       <Stack color="gray.500" align="center">
         <Text>Usage: click an item to edit it.</Text>

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, Spacer, Tag, useEditableState } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Center, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import type { Todo } from '@prisma/client';
-// import { formatDuration } from 'date-fns'; // no nice way to customize
+import { formatDistance } from 'date-fns'; // no nice way to customize
 
 namespace duration {
   // duration as shortest string given units xs, leading zero only for tail
@@ -28,8 +28,16 @@ function EditableControls() { // TODO pull out into lib
   );
 }
 
+function DateDist(p: {date: Date, prefix?: string}) {
+  const date = new Date(p.date); // the value from the db is a date's toISOString(), not a real Date
+  const dist = formatDistance(date, new Date(), {includeSeconds: true, addSuffix: true});
+  const text = (p.prefix ?? '') + ' ' + dist;
+  return (<Tooltip hasArrow label={date.toLocaleString(navigator.language)}>
+    {text}
+  </Tooltip>);
+}
 
-export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, del: () => void, set: (x: Todo) => void, global_time: number }) {
+export default function TodoItem({ todo, del, set, global_time, showDetails }: { todo: Todo, del: () => void, set: (x: Todo) => void, global_time: number, showDetails: boolean }) {
   const submit = (text: string) => {
     console.log(`Editable.submit: ${text}`);
     todo.text = text;
@@ -75,6 +83,7 @@ export default function TodoItem({ todo, del, set, global_time }: { todo: Todo, 
           <Spacer />
           <EditableControls />
         </Flex>
+        { showDetails && <Box><DateDist prefix="created" date={todo.createdAt}/>, <DateDist prefix="updated" date={todo.updatedAt}/></Box> }
       </Editable>
       <Spacer />
       <IconButton onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} size="sm" variant="ghost" />
