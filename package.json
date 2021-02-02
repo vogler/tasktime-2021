@@ -13,6 +13,9 @@
   "prisma": {
     "schema": "backend/schema.prisma"
   },
+  "engines": {
+    "node": "15.x"
+  },
   "dependencies": {
     "@chakra-ui/react": "^1.1.5",
     "@emotion/react": "^11.1.4",
