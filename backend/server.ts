@@ -82,19 +82,9 @@ if (process.env.NODE_ENV != 'production') {
   const { readFileSync } = await import('fs');
   const appjs = readFileSync('./build/dist/App.js').toString();
 
-  app.use(async (req: Request, res: Response, next: express.NextFunction) => {
-    try {
-      console.log('loadUrl:', req.url);
-      if (req.url.startsWith('/dist/App.js')) {
-        res.contentType('application/javascript');
-        res.send(await fillTodos(appjs));
-      } else {
-        next();
-      }
-    } catch (err) {
-      console.error('fillTodos failed for', req.method, req.url);
-      next(err);
-    }
+  app.get('/dist/App.js', async (req: Request, res: Response) => {
+    res.contentType('application/javascript');
+    res.send(await fillTodos(appjs));
   });
   app.use(express.static('build'));
 }
