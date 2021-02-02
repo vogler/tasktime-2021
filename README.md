@@ -39,6 +39,7 @@ Use row-level security in PostgreSQL for authorization and https://jwt.io to aut
 - https://github.com/redwoodjs/redwood - only serverless, but need to manually setup a database server...
 - https://github.com/blitz-js/blitz - looks better, but just generates the boilerplate on the server instead of avoiding it
 - https://github.com/layrjs/layr - just MongoDB, too much boilerplate in models
+- https://www.prisma.io/docs/concepts/overview/prisma-in-your-stack/graphql - list of Prisma & GraphQL examples, all seem not DRY
 - https://github.com/graphile/postgraphile - runs a GraphQL server that watches a PostgreSQL database; schema not as code, no generated code, no autocomplete? migrations?
 - https://github.com/PostgREST/postgrest - REST API server from existing PostgreSQL database; haskell, no good [client-side lib](https://postgrest.org/en/v7.0.0/ecosystem.html#clientside-libraries) in Typescript, [postgrester](https://github.com/SocialGouv/postgrester) just uses SQL strings
 
