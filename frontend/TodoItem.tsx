@@ -49,7 +49,7 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
   const [startTime, setStartTime] = useState(0); // calc diff since timer is not reliable
   useEffect(() => { // run every second if running
     if (running && Date.now() - startTime >= 1000) { // might hit start at x.9s global_time -> wait at least 1s before first count
-      setTime(time + 1);
+      setTime(time => time + 1);
       // setTime(todo.time + Math.round((Date.now() - startTime) / 1000)); // do this to avoid drift due to delayed timer?
     }
     // console.log(`time: ${todo.text}`); // should only be output for running timers
