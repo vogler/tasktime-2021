@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Divider, HStack, Stack, Text } from '@chakra-ui/react';
-import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
+import { Box, Button, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text } from '@chakra-ui/react';
+import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import './App.css';
+import { useAsyncDepEffect } from './lib/util';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api';
 import type { Todo } from '@prisma/client';
-
-// const delay = (time: number) => new Promise(res => setTimeout(res, time));
+import { initialTodoOrderBy } from './defaults';
 
 // initial data replaced by the server:
 const initialTodos: Todo[] = [];
@@ -17,13 +17,15 @@ export default function () {
   const [todos, setTodos] = useState(initialTodos);
   const [showDone, setShowDone] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
+  const [orderBy, setOrderBy] = useState(initialTodoOrderBy); // this can sort by multiple fields, below we just sort by one
+  const orderField = () => Object.keys(orderBy)[0];
+  const orderOrder = () => Object.values(orderBy)[0];
 
   // no need for extra fetch anymore since server already sets initialTodos from db
-  // useEffect(() => { // can't use async here since it always returns a Promise; could make a wrapper for the Promise<void> case, but not for the unmount-function case. could use https://github.com/rauldeheer/use-async-effect
-  //   (async () => {
-  //     setTodos(await db.findMany({include: {times: true}}));
-  //   })();
-  // }, []);
+  useAsyncDepEffect(async () => {
+    console.log(orderBy);
+    setTodos(await db.findMany({include: {times: true}, orderBy}));
+  }, [orderBy]); // TODO sort locally?
 
   const addTodo = async (text: string) => {
     if (text == '') return 'Todo is empty';
@@ -70,6 +72,23 @@ export default function () {
       <HStack>
         <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
         <Button size="sm" leftIcon={showDetails ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDetails(!showDetails)}>{showDetails ? 'hide' : 'show'} details</Button>
+        <Menu closeOnSelect={false} closeOnBlur={true}>
+          <MenuButton as={Button} size="sm" leftIcon={orderOrder() == 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />}>
+            order by
+          </MenuButton>
+          <MenuList minWidth="200px">
+            <MenuOptionGroup defaultValue={orderField()} title="Field" type="radio" onChange={s => setOrderBy({[s.toString()]: orderOrder()})}>
+              <MenuItemOption value="createdAt">createdAt</MenuItemOption>
+              <MenuItemOption value="updatedAt">updatedAt</MenuItemOption>
+              <MenuItemOption value="text">text</MenuItemOption>
+            </MenuOptionGroup>
+            <MenuDivider />
+            <MenuOptionGroup defaultValue={orderOrder()} title="Order" type="radio" onChange={s => setOrderBy({[orderField()]: s})}>
+              <MenuItemOption value="asc">Ascending</MenuItemOption>
+              <MenuItemOption value="desc">Descending</MenuItemOption>
+            </MenuOptionGroup>
+          </MenuList>
+        </Menu>
       </HStack>
       <Divider my={3} />
       <Stack color="gray.500" align="center">
