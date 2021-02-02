@@ -41,6 +41,8 @@ app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
 });
 
+import { initialTodoOrderBy } from '../frontend/defaults'; // TODO put in shared folder?
+
 // replaces empty initialTodos in js with data from the db
 // this way the client does not have to issue a second request and wait to display data
 // TODO SSR with ReactDOMServer.renderToString to also serve the HTML
@@ -48,7 +50,7 @@ app.listen(port, () => {
 const fillTodos = async (js: string) =>
   js.replace(
     'const initialTodos = [];',
-    `const initialTodos = ${JSON.stringify(await db.todo.findMany({include: {times: true}}))};`
+    `const initialTodos = ${JSON.stringify(await db.todo.findMany({include: {times: true}, orderBy: initialTodoOrderBy}))};`
   );
 
 // snowpack build on demand, HMR and SSR:
