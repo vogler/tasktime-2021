@@ -1,5 +1,7 @@
 # track-time_snowpack-react-chakra-prisma
 
+Demo: https://vogler-track-time.herokuapp.com
+
 This is a test project building some todo/time-tracking app using:
 
 - [Snowpack](https://www.snowpack.dev/) as a fast build tool (instead of webpack, Parcel)
@@ -14,18 +16,31 @@ This is a test project building some todo/time-tracking app using:
 Tried Svelte and Firebase in an older iteration: https://github.com/vogler/track-time_svelte-firebase.
 By now Svelte seems to officially support TypeScript: https://svelte.dev/blog/svelte-and-typescript.
 
+## Setup
+Run `npm install`.
+If you want to use sqlite instead of PostgreSQL, edit `backend/schema.prisma`.
+
+- setup DB: `brew install postgresql && brew services start postgresql && createdb track-time`
+- set `DATABASE_URL`, e.g. create `.env` file with `DATABASE_URL = 'postgresql://user@localhost:5432/track-time'`
+- setup tables: `npm run db-push`
+
+Use `npm run` to start the server with reload on changes and HMR via snowpack.
+For production see heroku.com example in `Procfile`.
+
 ## Notes
 ### SSR
 Maybe check out [Next.js](https://nextjs.org/) for easier SSR; example: https://github.com/prisma/prisma-examples/tree/latest/typescript/rest-nextjs-api-routes
 
 ### DRY: server+client API from schema
 Seems strange that there is no framework/library that only requires the database schema and automatically provides an API on the server for it.
-Also, no one seems to care about duplication. GraphQL just introduces more boilerplate for little benefit compared to just calling database functions on the client (can also select subset of fields to save data; authentication can be a middleware on the server, just need some access annotations for the schema).
+Also, no one seems to care about duplication. GraphQL just introduces more boilerplate for little benefit compared to just calling database functions on the client (can also select subset of fields to save data; authentication/authorization can be a middleware on the server, just need some access annotations for the schema).
+Use row-level security in PostgreSQL for authorization and https://jwt.io to authenticate API requests as in [PostgREST's auth](https://postgrest.org/en/v7.0.0/auth.html)?
 
 - https://github.com/redwoodjs/redwood - only serverless, but need to manually setup a database server...
 - https://github.com/blitz-js/blitz - looks better, but just generates the boilerplate on the server instead of avoiding it
 - https://github.com/layrjs/layr - just MongoDB, too much boilerplate in models
-- https://github.com/graphile/postgraphile - runs a GraphQL server that watches a PostgresSQL database; schema not as code, no generated code, no autocomplete? migrations?
+- https://github.com/graphile/postgraphile - runs a GraphQL server that watches a PostgreSQL database; schema not as code, no generated code, no autocomplete? migrations?
+- https://github.com/PostgREST/postgrest - REST API server from existing PostgreSQL database; haskell, no good [client-side lib](https://postgrest.org/en/v7.0.0/ecosystem.html#clientside-libraries) in Typescript, [postgrester](https://github.com/SocialGouv/postgrester) just uses SQL strings
 
 ### Typescript
 FP in Typescript:
