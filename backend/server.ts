@@ -75,5 +75,6 @@ if (process.env.NODE_ENV != 'production') {
     }
   });
 } else {
-  app.use(express.static('frontend-static')); // snowpack modifes index.html for HMR
+  // above snowpack serves frontend-static/ + dist/ and modifies index.html for HMR
+  app.use(express.static('build')); // `npm run build` to create
 }
