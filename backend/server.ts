@@ -41,11 +41,20 @@ app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
 });
 
+// replaces empty initialTodos in js with data from the db
+// this way the client does not have to issue a second request and wait to display data
+// TODO SSR with ReactDOMServer.renderToString to also serve the HTML
+// besides snowpack example, also see https://github.com/DavidWells/isomorphic-react-example
+const fillTodos = async (js: string) =>
+  js.replace(
+    'const initialTodos = [];',
+    `const initialTodos = ${JSON.stringify(await db.todo.findMany({include: {times: true}}))};`
+  );
 
-// snowpack build on demand and SSR:
+// snowpack build on demand, HMR and SSR:
 // https://www.snowpack.dev/guides/server-side-render#option-2%3A-on-demand-serving-(middleware)
-import { startServer, loadConfiguration } from 'snowpack';
 if (process.env.NODE_ENV != 'production') {
+  const { startServer, loadConfiguration } = await import('snowpack');
   // TODO remove open: 'none' once we can set port to open: https://github.com/snowpackjs/snowpack/discussions/2415
   const overrides = { devOptions: { port: 8081, hmrPort: 8082, open: 'none' } }; // Can browse :8080 since it will fallback on :8081 to bundle resources that are not covered by the routes above. If we do not set hmrPort, HMR will not work on :8080 since it would try to talk to that port.
   const config = await loadConfiguration(overrides, ''); // loads snowpack.config.cjs (.cjs instead of .js needed because it's internally loaded with require instead of import)
@@ -59,14 +68,8 @@ if (process.env.NODE_ENV != 'production') {
       if (buildResult.contentType)
         res.contentType(buildResult.contentType);
       let r = buildResult.contents;
-      // serve initial data so that client does not have to wait for fetch request to display data
-      // TODO SSR with ReactDOMServer.renderToString to also serve the HTML
-      // besides snowpack example, also see https://github.com/DavidWells/isomorphic-react-example
       if (req.url.startsWith('/dist/App.js')) {
-        r = r.toString().replace(
-          'const initialTodos = [];',
-          `const initialTodos = ${JSON.stringify(await db.todo.findMany({include: {times: true}}))};`
-        );
+        r = await fillTodos(r.toString());
       }
       res.send(r);
     } catch (err) {
@@ -74,7 +77,24 @@ if (process.env.NODE_ENV != 'production') {
       next(err);
     }
   });
-} else {
-  // above snowpack serves frontend-static/ + dist/ and modifies index.html for HMR
-  app.use(express.static('build')); // `npm run build` to create
+} else { // above snowpack serves frontend-static/ and dist/ on demand and modifies index.html for HMR
+  // in production we first do `npm run build` which puts both in build/
+  const { readFileSync } = await import('fs');
+  const appjs = readFileSync('./build/dist/App.js').toString();
+
+  app.use(async (req: Request, res: Response, next: express.NextFunction) => {
+    try {
+      console.log('loadUrl:', req.url);
+      if (req.url.startsWith('/dist/App.js')) {
+        res.contentType('application/javascript');
+        res.send(await fillTodos(appjs));
+      } else {
+        next();
+      }
+    } catch (err) {
+      console.error('fillTodos failed for', req.method, req.url);
+      next(err);
+    }
+  });
+  app.use(express.static('build'));
 }
