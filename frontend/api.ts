@@ -11,10 +11,11 @@ const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 
   }))).json();
 
 export namespace db { // could also just use rest() as defined above, but this is type-safe
-  export const findMany = (args => rest('GET', args)) as Prisma.TodoDelegate['findMany'];
-  const _create = (args => rest('POST', args)) as Prisma.TodoDelegate['create'];
-  const _update = (args => rest('PUT', args)) as Prisma.TodoDelegate['update'];
-  const _delete = (args => rest('DELETE', args)) as Prisma.TodoDelegate['delete'];
+  type TodoOps = Prisma.TodoDelegate<true>; // true = rejectOnNotFound?
+  export const findMany = (args => rest('GET', args)) as TodoOps['findMany'];
+  const _create = (args => rest('POST', args)) as TodoOps['create'];
+  const _update = (args => rest('PUT', args)) as TodoOps['update'];
+  const _delete = (args => rest('DELETE', args)) as TodoOps['delete'];
   export const create = (data: Prisma.TodoCreateInput) => _create({ data }); // just for data, but more restrictive
   export const update = ({updatedAt, ...data}: Prisma.TodoWhereUniqueInput & Prisma.TodoUpdateInput) => _update({ data, where: { id: data.id } }); // remove updatedAt from object so that it is set by db!
   export const delete_ = (data: Prisma.TodoWhereUniqueInput) => _delete({ where: { id: data.id } });
