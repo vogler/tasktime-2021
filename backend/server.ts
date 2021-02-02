@@ -7,7 +7,6 @@ const port = process.env.PORT || 8080;
 app.use(bodyParser.json());
 // app.use(cookieParser());
 // app.use(compress());
-// app.use(express.static('frontend-static')); // snowpack modifes index.html for HMR
 
 // access sqlite database with prisma:
 // import { PrismaClient } from '@prisma/client'; // SyntaxError: Named export 'PrismaClient' not found. The requested module '@prisma/client' is a CommonJS module, which may not support all module.exports as named exports. See https://github.com/prisma/prisma/pull/4920
@@ -75,4 +74,6 @@ if (process.env.NODE_ENV != 'production') {
       next(err);
     }
   });
+} else {
+  app.use(express.static('frontend-static')); // snowpack modifes index.html for HMR
 }
