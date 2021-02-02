@@ -15,4 +15,13 @@ model Todo {
   text      String
   done      Boolean  @default(false)
   time      Int      @default(0)
+  times     Time[]
+}
+
+model Time {
+  todoId Int
+  todo   Todo     @relation(fields: [todoId], references: [id])
+  start  DateTime
+  end    DateTime
+  @@id([todoId, start])
 }

@@ -21,7 +21,7 @@ export default function () {
   // no need for extra fetch anymore since server already sets initialTodos from db
   // useEffect(() => { // can't use async here since it always returns a Promise; could make a wrapper for the Promise<void> case, but not for the unmount-function case. could use https://github.com/rauldeheer/use-async-effect
   //   (async () => {
-  //     setTodos(await db.findMany());
+  //     setTodos(await db.findMany({include: {times: true}}));
   //   })();
   // }, []);
 

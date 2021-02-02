@@ -65,7 +65,7 @@ app.use(async (req: Request, res: Response, next: express.NextFunction) => {
     if (req.url.startsWith('/dist/App.js')) {
       r = r.toString().replace(
         'const initialTodos = [];',
-        `const initialTodos = ${JSON.stringify(await db.todo.findMany())};`
+        `const initialTodos = ${JSON.stringify(await db.todo.findMany({include: {times: true}}))};`
       );
     }
     res.send(r);
