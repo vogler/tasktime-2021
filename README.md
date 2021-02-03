@@ -46,7 +46,8 @@ Use row-level security in PostgreSQL for authorization and https://jwt.io to aut
 Based on the generated code from Prisma, we define a generic server endpoint `/db/:model/:action` and a generic `db` object on the client that has Prisma's types but just relays the call to the server.
 
 ### Typescript
-FP in Typescript:
+FP/types/meta:
+- https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes-func.html
 - https://github.com/gcanti/fp-ts
 - https://github.com/gcanti/io-ts useful for Prisma abstraction? prob. would have to be used in the generated code.
 - https://github.com/pfgray/ts-adt
