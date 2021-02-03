@@ -1,4 +1,5 @@
-import type { Prisma, PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client'; // types for casting
+import prisma from '@prisma/client'; // values like Prisma.ModelName via default import since CJS does not support named import
 
 // json REST api
 const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 'todo') => // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
@@ -30,8 +31,7 @@ export namespace db { // _deprecated
 
 // Generically lift the calls over the network.
 type model = Lowercase<keyof typeof Prisma.ModelName>;
-// const models: model[] = Object.keys(Prisma.ModelName).map(s => s.toLowerCase() as model);
-const models = ['todo', 'time'] as const;
+const models: model[] = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerCase() as model);
 const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 'findFirst', 'updateMany', 'upsert', 'deleteMany', 'aggregate', 'count'] as const; // these are the actions defined on each model. TODO get from prisma? PrismaAction is just a type.
 
 // dbm('foo') is dbc.foo but over the network
@@ -47,5 +47,6 @@ export const db_ = {
   'todo': dbm('todo'),
   'time': dbm('time'),
 }
-db_.todo.findMany();
+
+db_.todo.findMany().then(console.log);
 // db.time.create({})
