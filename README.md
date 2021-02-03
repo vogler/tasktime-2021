@@ -50,6 +50,7 @@ FP in Typescript:
 - https://github.com/pfgray/ts-adt
 - https://github.com/kimamula/ts-transformer-keys via https://github.com/cevek/ttypescript for runtime type information
 - https://github.com/sindresorhus/type-fest
+- https://github.com/piotrwitek/utility-types
 
 ---
 
