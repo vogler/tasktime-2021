@@ -23,3 +23,19 @@ export namespace db { // could also just use rest() as defined above, but this i
   // export values for types: https://github.com/prisma/prisma/discussions/5291
   // limit fields to exactly the given type: https://gitter.im/Microsoft/TypeScript?at=60107e5d32e01b4f71560129
 }
+
+export namespace db_ { // try to make it more generic
+  const model = 'todo';
+  type Actions = Prisma.TodoDelegate<true>; // true = rejectOnNotFound?
+  type Action = Exclude<Prisma.PrismaAction, 'createMany' | 'executeRaw' | 'queryRaw'>; // why are these not in Actions?
+  const lift = <A extends Action> (action: A) => ((args: {}) => rest('POST', args, `db/${model}/${action}`)) as Actions[A];
+  // concrete
+  export const findMany = lift('findMany');
+  export const create = lift('create');
+  export const update = lift('update');
+  export const delete_ = lift('delete');
+
+  // abstract
+  const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 'findFirst', 'updateMany', 'upsert', 'deleteMany', 'aggregate', 'count'] as const;
+  export const o = Object.fromEntries(actions.map(s => [s, lift(s)])) as { [K in Action]: Actions[K] };
+}
