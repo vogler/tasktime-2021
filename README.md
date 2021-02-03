@@ -10,7 +10,7 @@ This is a test project building some todo/time-tracking app using:
   - [react-icons](https://react-icons.github.io/react-icons)
   - maybe try [Formik](https://formik.org/) for forms
 - [Prisma](https://www.prisma.io/) as ORM (instead of [TypeORM](https://github.com/typeorm/typeorm) which I had some issues [[1](https://github.com/typeorm/typeorm/issues/3238)] [[2](https://github.com/typeorm/typeorm/issues/4122)] with in https://github.com/vogler/syncmine)
-  - sqlite as database
+  - PostgreSQL (or sqlite etc.) as database
   - would be nice to have values for the generated types to define custom functions: https://github.com/prisma/prisma/discussions/5291
 
 Tried Svelte and Firebase in an older iteration: https://github.com/vogler/track-time_svelte-firebase.
@@ -42,6 +42,8 @@ Use row-level security in PostgreSQL for authorization and https://jwt.io to aut
 - https://www.prisma.io/docs/concepts/overview/prisma-in-your-stack/graphql - list of Prisma & GraphQL examples, all seem not DRY
 - https://github.com/graphile/postgraphile - runs a GraphQL server that watches a PostgreSQL database; schema not as code, no generated code, no autocomplete? migrations?
 - https://github.com/PostgREST/postgrest - REST API server from existing PostgreSQL database; haskell, no good [client-side lib](https://postgrest.org/en/v7.0.0/ecosystem.html#clientside-libraries) in Typescript, [postgrester](https://github.com/SocialGouv/postgrester) just uses SQL strings
+
+Based on the generated code from Prisma, we define a generic server endpoint `/db/:model/:action` and a generic `db` object on the client that has Prisma's types but just relays the call to the server.
 
 ### Typescript
 FP in Typescript:

@@ -1,5 +1,6 @@
-import type { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
+// json REST api
 const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 'todo') => // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
   await (await (fetch(url, {
     method,
@@ -10,7 +11,10 @@ const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 
     body: JSON.stringify(json),
   }))).json();
 
-export namespace db { // could also just use rest() as defined above, but this is type-safe
+// We could just use rest() as defined above, but we want to have the actions with types from Prisma for type-safety and autocomplete!
+
+// old customized concrete db functions on REST endpoint
+export namespace db { // _deprecated
   type TodoOps = Prisma.TodoDelegate<true>; // true = rejectOnNotFound?
   export const findMany = (args => rest('GET', args)) as TodoOps['findMany'];
   const _create = (args => rest('POST', args)) as TodoOps['create'];
@@ -24,18 +28,25 @@ export namespace db { // could also just use rest() as defined above, but this i
   // limit fields to exactly the given type: https://gitter.im/Microsoft/TypeScript?at=60107e5d32e01b4f71560129
 }
 
-export namespace db_ { // try to make it more generic
-  const model = 'todo';
-  type Actions = Prisma.TodoDelegate<true>; // true = rejectOnNotFound?
+// Generically lift the calls over the network.
+const dbc = new PrismaClient();
+type model = Lowercase<keyof typeof Prisma.ModelName>;
+// const models: model[] = Object.keys(Prisma.ModelName).map(s => s.toLowerCase() as model);
+const models = ['todo', 'time'] as const;
+const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 'findFirst', 'updateMany', 'upsert', 'deleteMany', 'aggregate', 'count'] as const; // these are the actions defined on each model. TODO get from prisma? PrismaAction is just a type.
+
+// dbm('foo') is dbc.foo but over the network
+const dbm = <M extends model> (model: M) => {
+  type Actions = typeof dbc[M];
   type Action = Exclude<Prisma.PrismaAction, 'createMany' | 'executeRaw' | 'queryRaw'>; // why are these not in Actions?
   const lift = <A extends Action> (action: A) => ((args: {}) => rest('POST', args, `db/${model}/${action}`)) as Actions[A];
-  // concrete
-  export const findMany = lift('findMany');
-  export const create = lift('create');
-  export const update = lift('update');
-  export const delete_ = lift('delete');
+  // const findMany = lift('findMany');
+  return Object.fromEntries(actions.map(s => [s, lift(s)])) as { [K in Action]: Actions[K] };
+};
 
-  // abstract
-  const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 'findFirst', 'updateMany', 'upsert', 'deleteMany', 'aggregate', 'count'] as const;
-  export const o = Object.fromEntries(actions.map(s => [s, lift(s)])) as { [K in Action]: Actions[K] };
+export const db_ = {
+  'todo': dbm('todo'),
+  'time': dbm('time'),
 }
+db_.todo.findMany();
+// db.time.create({})
