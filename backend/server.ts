@@ -38,23 +38,24 @@ app.use("/todo", async (req: Request, res: Response) => {
 
 // const match = <T> (cases: {[k: string]: T}, pattern: string) => cases[pattern];
 const fail = (m: string) => { throw new Error(m) };
-const match_ = <A extends readonly unknown[], K extends A[number]> (a: A, k: K | string): K =>
+// custom version (nicer error & cast) of: assert(a.includes(k as typeof a[number]));
+const assertIncludes_ = <A extends readonly unknown[], K extends A[number]> (a: A, k: K | string): K =>
   a.includes(k) ? k as K : fail(`Invalid parameter: ${k} is not in [${a.join(', ')}]!`);
 // the following also complains about k not in a at compile-time, from https://gitter.im/Microsoft/TypeScript?at=6019d7a09fa6765ef8f3f1da
-function match<A extends readonly unknown[], K extends A[number]>(a: A, k: K): K;
-function match<A extends readonly string[], K extends string>(a: A, k: string extends K ? K : never): A[number];
-function match(a: readonly string[], k: string): string {
+function assertIncludes<A extends readonly unknown[], K extends A[number]>(a: A, k: K): K;
+function assertIncludes<A extends readonly string[], K extends string>(a: A, k: string extends K ? K : never): A[number];
+function assertIncludes(a: readonly string[], k: string): string {
   return a.includes(k) ? k : fail(`Invalid parameter: ${k} is not in [${a.join(', ')}]!`);
 }
 
 type model = Lowercase<keyof typeof prisma.Prisma.ModelName>;
 const models: model[] = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerCase() as model);
 
-app.post("/db/:model/:action", async (req: Request, res: Response) => {
+app.get("/db/:model/:action", async (req: Request, res: Response) => {
   console.log(req.method, req.url, req.params, req.body);
   try {
-    const model = match(models, req.params.model);
-    const action = match(['findMany', 'create', 'update', 'delete'] as const, req.params.action); // see PrismaAction, but no value for the type
+    const model = assertIncludes(models, req.params.model);
+    const action = assertIncludes(['findMany', 'create', 'update', 'delete'] as const, req.params.action); // see PrismaAction, but no value for the type
     // @ts-ignore
     const r = await db[model][action](req.body);
     res.json(r);
