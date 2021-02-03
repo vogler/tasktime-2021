@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 
 // json REST api
 const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 'todo') => // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
@@ -29,7 +29,6 @@ export namespace db { // _deprecated
 }
 
 // Generically lift the calls over the network.
-const dbc = new PrismaClient();
 type model = Lowercase<keyof typeof Prisma.ModelName>;
 // const models: model[] = Object.keys(Prisma.ModelName).map(s => s.toLowerCase() as model);
 const models = ['todo', 'time'] as const;
@@ -37,7 +36,7 @@ const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 'findFi
 
 // dbm('foo') is dbc.foo but over the network
 const dbm = <M extends model> (model: M) => {
-  type Actions = typeof dbc[M];
+  type Actions = PrismaClient[M];
   type Action = Exclude<Prisma.PrismaAction, 'createMany' | 'executeRaw' | 'queryRaw'>; // why are these not in Actions?
   const lift = <A extends Action> (action: A) => ((args: {}) => rest('POST', args, `db/${model}/${action}`)) as Actions[A];
   // const findMany = lift('findMany');
