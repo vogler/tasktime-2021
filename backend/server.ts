@@ -51,7 +51,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 type model = Lowercase<keyof typeof prisma.Prisma.ModelName>;
 const models: model[] = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerCase() as model);
 
-app.get("/db/:model/:action", async (req: Request, res: Response) => {
+app.post("/db/:model/:action", async (req: Request, res: Response) => {
   console.log(req.method, req.url, req.params, req.body);
   try {
     const model = assertIncludes(models, req.params.model);
