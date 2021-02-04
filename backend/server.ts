@@ -8,11 +8,12 @@ app.use(bodyParser.json());
 // app.use(cookieParser());
 // app.use(compress());
 
-// access sqlite database with prisma:
+// access database with prisma:
 // import { PrismaClient } from '@prisma/client'; // SyntaxError: Named export 'PrismaClient' not found. The requested module '@prisma/client' is a CommonJS module, which may not support all module.exports as named exports. See https://github.com/prisma/prisma/pull/4920
 import prisma from '@prisma/client'; // import default export instead of named exports
 const db = new prisma.PrismaClient();
 
+// deprecated manual REST API -> too much boilerplate -> expose db below
 app.use("/todo", async (req: Request, res: Response) => {
   console.log(req.method, req.url, req.body);
   const args = req.body;
@@ -51,6 +52,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 type model = Lowercase<keyof typeof prisma.Prisma.ModelName>;
 const models: model[] = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerCase() as model);
 
+// serves db.model.action(req.body)
 app.post("/db/:model/:action", async (req: Request, res: Response) => {
   console.log(req.method, req.url, req.params, req.body);
   try {
