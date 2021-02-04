@@ -24,20 +24,20 @@ export default function () {
   // no need for extra fetch anymore since server already sets initialTodos from db
   useAsyncDepEffect(async () => {
     console.log(orderBy);
-    setTodos(await db.findMany({include: {times: true}, orderBy}));
+    setTodos(await db.todo.findMany({include: {times: true}, orderBy}));
   }, [orderBy]); // TODO sort locally?
 
   const addTodo = async (text: string) => {
     if (text == '') return 'Todo is empty';
     // if (todos.includes(value)) return 'Todo exists';
     // await delay(1000);
-    const todo = await db.create({ text });
+    const todo = await db.todo.create({data: {text}});
     setTodos([...todos, todo]);
     console.log(todo, todos); // todos not updated yet here
   };
 
   const delTodo = (index: number) => async () => {
-    await db.delete_(todos[index]);
+    await db.todo.delete({where: {id: todos[index].id}});
     const newTodos = [...todos];
     newTodos.splice(index, 1); // delete element at index
     console.log(`delTodo(${index}):`, newTodos);
@@ -45,10 +45,10 @@ export default function () {
   };
 
   // TODO make generic and pull out list component
-  const setTodo = (index: number) => async (x: Todo) => {
-    x = await db.update(x);
+  const setTodo = (index: number) => async ({updatedAt, ...data}: Todo) => { // omit updatedAt so that it's updated by the db
+    const newTodo = await db.todo.update({data, where: {id: data.id}});
     const newTodos = [...todos];
-    newTodos[index] = x;
+    newTodos[index] = newTodo;
     setTodos(newTodos);
   };
 

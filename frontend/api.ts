@@ -15,7 +15,7 @@ const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 
 // We could just use rest() as defined above, but we want to have the actions with types from Prisma for type-safety and autocomplete!
 
 // old customized concrete db functions on REST endpoint
-export namespace db { // _deprecated
+export namespace db_deprecated {
   type TodoOps = Prisma.TodoDelegate<true>; // true = rejectOnNotFound?
   export const findMany = (args => rest('GET', args)) as TodoOps['findMany'];
   const _create = (args => rest('POST', args)) as TodoOps['create'];
@@ -32,21 +32,14 @@ export namespace db { // _deprecated
 // Generically lift the calls over the network.
 type model = Lowercase<keyof typeof Prisma.ModelName>;
 const models: model[] = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerCase() as model);
+type action = Exclude<Prisma.PrismaAction, 'createMany' | 'executeRaw' | 'queryRaw'>; // why are these not defined on PrismaClient[model]?
 const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 'findFirst', 'updateMany', 'upsert', 'deleteMany', 'aggregate', 'count'] as const; // these are the actions defined on each model. TODO get from prisma? PrismaAction is just a type.
+type dbm<M extends model> = Pick<PrismaClient[M], action>;
 
-// dbm('foo') is dbc.foo but over the network
-const dbm = <M extends model> (model: M) => {
-  type Actions = PrismaClient[M];
-  type Action = Exclude<Prisma.PrismaAction, 'createMany' | 'executeRaw' | 'queryRaw'>; // why are these not in Actions?
-  const lift = <A extends Action> (action: A) => ((args: {}) => rest('POST', args, `db/${model}/${action}`)) as Actions[A];
-  // const findMany = lift('findMany');
-  return Object.fromEntries(actions.map(s => [s, lift(s)])) as { [K in Action]: Actions[K] };
+// dbm('model').action runs db.model.action on the server
+const dbm = <M extends model> (model: M) : dbm<M> => {
+  const lift = <A extends action> (action: A) => ((args: {}) => rest('POST', args, `db/${model}/${action}`)) as PrismaClient[M][A];
+  return Object.fromEntries(actions.map(s => [s, lift(s)]));
 };
-
-export const db_ = {
-  'todo': dbm('todo'),
-  'time': dbm('time'),
-}
-
-db_.todo.findMany().then(console.log);
-// db.time.create({})
+export const db = Object.fromEntries(models.map(s => [s, dbm(s)])) as { [M in model]: dbm<M> };
+// db.todo.findMany().then(console.log);
