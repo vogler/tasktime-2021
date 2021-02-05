@@ -31,7 +31,7 @@ export namespace db_deprecated {
 
 // Generically lift the calls over the network.
 type model = Lowercase<keyof typeof Prisma.ModelName>;
-const models: model[] = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerCase() as model);
+const models = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerCase() as model);
 type action = Exclude<Prisma.PrismaAction, 'createMany' | 'executeRaw' | 'queryRaw'>; // why are these not defined on PrismaClient[model]?
 const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 'findFirst', 'updateMany', 'upsert', 'deleteMany', 'aggregate', 'count'] as const; // these are the actions defined on each model. TODO get from prisma? PrismaAction is just a type.
 type dbm<M extends model> = Pick<PrismaClient[M], action>;
