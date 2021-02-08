@@ -5,6 +5,8 @@ import App from './App';
 
 window.React = React; // so that we do not need to import React in every .tsx just to be able to use JSX
 
+// const theme = extendTheme({components: {Button: {defaultProps:{ size: "sm" }}}}); // use in ChakraProvider
+
 ReactDOM.render(
   <React.StrictMode>
     <ChakraProvider>

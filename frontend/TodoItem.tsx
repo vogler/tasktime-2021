@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, ButtonGroup, Center, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Center, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import type { Todo } from '@prisma/client';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
@@ -16,6 +16,12 @@ namespace duration { // formatDuration from date-fns has no way to customize uni
   export const format = (s: number) => fmt(s, [60,60,24]);
 }
 
+// IconButton2 with defaults size="sm" variant="ghost"
+function IconButton2(props: IconButtonProps) {
+  const {size = "sm", variant = "ghost", ...rest} = props;
+  return (<IconButton size={size} variant={variant} {...rest}></IconButton>);
+}
+
 function EditableControls() { // TODO pull out into lib
   const p = useEditableState();
   return p.isEditing ? (
@@ -24,11 +30,12 @@ function EditableControls() { // TODO pull out into lib
       {/* <IconButton onClick={p.onCancel} aria-label="cancel" icon={<FaTimes />} /> */}
     </ButtonGroup>
   ) : (
-    // <IconButton onClick={p.onEdit} aria-label="edit" icon={<FaRegEdit />} size="sm" variant="ghost" />
+    // <IconButton2 onClick={p.onEdit} aria-label="edit" icon={<FaRegEdit />} />
     <></>
   );
 }
 
+// e.g. "prefix 5 days ago" with precise datetime as tooltop on hover
 function DateDist(p: {date: Date, prefix?: string}) {
   const date = new Date(p.date); // the value from the db is a date's toISOString(), not a real Date
   const dist = formatDistance(date, new Date(), {includeSeconds: true, addSuffix: true});
@@ -72,9 +79,9 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
   // submitOnBlur true (default) will also submit on Esc (only with Surfingkeys enabled) and when clicking the cancel button, see https://github.com/chakra-ui/chakra-ui/issues/3198
   return (
     <Flex opacity={todo.done ? '40%' : '100%'} >
-      {/* <IconButton aria-label="drag to reorder" icon={<FaGripVertical />} size="sm" variant="ghost" /> */}
+      {/* <IconButton2 aria-label="drag to reorder" icon={<FaGripVertical />} /> */}
       <Checkbox mr={2} isChecked={todo.done} onChange={e => {todo.done = e.target.checked; set(todo);}} colorScheme="green" />
-      {/* <IconButton onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} size="sm" variant="ghost" isRound={true} /> */}
+      {/* <IconButton2 onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} isRound={true} /> */}
       <Editable defaultValue={todo.text} submitOnBlur={true} w="300px" onSubmit={submit} onCancel={e => console.log('Editable.cancel:', e)}>
         <Flex>
           <Box w="260px">
@@ -87,10 +94,10 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
         { showDetails && <Box><DateDist prefix="created" date={todo.createdAt}/>, <DateDist prefix="updated" date={todo.updatedAt}/></Box> }
       </Editable>
       <Spacer />
-      {/* <IconButton onClick={e => console.log(e)} aria-label="edit" icon={<FaRegEdit />} size="sm" variant="ghost" /> */}
-      <IconButton onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} size="sm" variant="ghost" />
+      {/* <IconButton2 onClick={e => console.log(e)} aria-label="edit" icon={<FaRegEdit />} /> */}
+      <IconButton2 onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} />
 
-      {/* <IconButton aria-label="duration" icon={<FaStopwatch />} size="sm" variant="ghost" />
+      {/* <IconButton2 aria-label="duration" icon={<FaStopwatch />} />
       <Tag size="sm" variant="subtle" borderRadius="full">00:00</Tag> */}
       <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={24} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}</Button>
     </Flex>
