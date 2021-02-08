@@ -21,10 +21,11 @@ function EditableControls() { // TODO pull out into lib
   return p.isEditing ? (
     <ButtonGroup size="sm" isAttached variant="outline">
       <IconButton onClick={p.onSubmit} aria-label="submit" icon={<FaCheck />} />
-      <IconButton onClick={p.onCancel} aria-label="cancel" icon={<FaTimes />} />
+      {/* <IconButton onClick={p.onCancel} aria-label="cancel" icon={<FaTimes />} /> */}
     </ButtonGroup>
   ) : (
-    <IconButton onClick={p.onEdit} aria-label="edit" icon={<FaRegEdit />} size="sm" variant="ghost" />
+    // <IconButton onClick={p.onEdit} aria-label="edit" icon={<FaRegEdit />} size="sm" variant="ghost" />
+    <></>
   );
 }
 
@@ -74,9 +75,9 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
       {/* <IconButton aria-label="drag to reorder" icon={<FaGripVertical />} size="sm" variant="ghost" /> */}
       <Checkbox mr={2} isChecked={todo.done} onChange={e => {todo.done = e.target.checked; set(todo);}} colorScheme="green" />
       {/* <IconButton onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} size="sm" variant="ghost" isRound={true} /> */}
-      <Editable defaultValue={todo.text} submitOnBlur={false} w="300px" onSubmit={submit}>
+      <Editable defaultValue={todo.text} submitOnBlur={true} w="300px" onSubmit={submit} onCancel={e => console.log('Editable.cancel:', e)}>
         <Flex>
-          <Box w="240px">
+          <Box w="260px">
             <EditablePreview />
             <EditableInput />
           </Box>
@@ -86,6 +87,7 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
         { showDetails && <Box><DateDist prefix="created" date={todo.createdAt}/>, <DateDist prefix="updated" date={todo.updatedAt}/></Box> }
       </Editable>
       <Spacer />
+      {/* <IconButton onClick={e => console.log(e)} aria-label="edit" icon={<FaRegEdit />} size="sm" variant="ghost" /> */}
       <IconButton onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} size="sm" variant="ghost" />
 
       {/* <IconButton aria-label="duration" icon={<FaStopwatch />} size="sm" variant="ghost" />

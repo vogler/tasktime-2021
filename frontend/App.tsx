@@ -92,7 +92,7 @@ export default function () {
       </HStack>
       <Divider my={3} />
       <Stack color="gray.500" align="center">
-        <Text>Usage: click an item to edit it.</Text>
+        <Text>Usage: click an item to edit it (escape to cancel, enter/blur to save).</Text>
         <Text>Page has been open for <code>{time}</code> seconds.</Text>
         <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
       </Stack>
