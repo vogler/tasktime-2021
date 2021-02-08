@@ -47,8 +47,8 @@ function DateDist(p: {date: Date, prefix?: string}) {
 
 export default function TodoItem({ todo, del, set, global_time, showDetails }: { todo: Todo, del: () => void, set: (x: Todo) => void, global_time: number, showDetails: boolean }) {
   const submit = (text: string) => {
-    console.log(`Editable.submit: ${text}`);
     if (text == todo.text) return;
+    console.log(`Editable.submit: ${text}`);
     set({...todo, text});
   };
   const toggle = (done: boolean) => set({...todo, done});
@@ -84,15 +84,17 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
       <Checkbox mr={2} isChecked={todo.done} onChange={e => toggle(e.target.checked)} colorScheme="green" />
       {/* <IconButton2 onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} isRound={true} /> */}
       <Editable defaultValue={todo.text} submitOnBlur={true} w="300px" onSubmit={submit} onCancel={e => console.log('Editable.cancel:', e)}>
-        <Flex>
-          <Box w="260px">
-            <EditablePreview />
-            <EditableInput />
-          </Box>
-          <Spacer />
-          <EditableControls />
-        </Flex>
-        { showDetails && <Box><DateDist prefix="created" date={todo.createdAt}/>, <DateDist prefix="updated" date={todo.updatedAt}/></Box> }
+        {(p) => (<>
+          <Flex>
+            <Box w="260px" onClick={p.onEdit}>
+              <EditablePreview />
+              <EditableInput />
+            </Box>
+            <Spacer />
+            <EditableControls />
+          </Flex>
+          { showDetails && <Box><DateDist prefix="created" date={todo.createdAt}/>, <DateDist prefix="updated" date={todo.updatedAt}/></Box> }
+        </>)}
       </Editable>
       <Spacer />
       {/* <IconButton2 onClick={e => console.log(e)} aria-label="edit" icon={<FaRegEdit />} /> */}
