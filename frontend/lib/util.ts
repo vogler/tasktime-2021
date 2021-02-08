@@ -14,4 +14,6 @@ export const equals = <T>(a: T, b: T): boolean => {
   }
   return false;
 }
+
+// flat object diff, deep: https://github.com/mattphillips/deep-object-diff
 export const diff = <T extends {}>(a: T, b: T) => Object.fromEntries(Object.entries(b).filter(([k,v],i) => !equals(v, a[k as keyof T])));
