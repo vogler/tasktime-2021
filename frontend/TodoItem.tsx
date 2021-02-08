@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, ButtonGroup, Center, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import type { Todo } from '@prisma/client';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
@@ -49,9 +49,9 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
   const submit = (text: string) => {
     console.log(`Editable.submit: ${text}`);
     if (text == todo.text) return;
-    todo.text = text;
-    set(todo);
+    set({...todo, text});
   };
+  const toggle = (done: boolean) => set({...todo, done});
   const [running, setRunning] = useState(false);
   const [hover, setHover] = useState(false);
   const [time, setTime] = useState(todo.time);
@@ -81,7 +81,7 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
   return (
     <Flex opacity={todo.done ? '40%' : '100%'} >
       {/* <IconButton2 aria-label="drag to reorder" icon={<FaGripVertical />} /> */}
-      <Checkbox mr={2} isChecked={todo.done} onChange={e => {todo.done = e.target.checked; set(todo);}} colorScheme="green" />
+      <Checkbox mr={2} isChecked={todo.done} onChange={e => toggle(e.target.checked)} colorScheme="green" />
       {/* <IconButton2 onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} isRound={true} /> */}
       <Editable defaultValue={todo.text} submitOnBlur={true} w="300px" onSubmit={submit} onCancel={e => console.log('Editable.cancel:', e)}>
         <Flex>

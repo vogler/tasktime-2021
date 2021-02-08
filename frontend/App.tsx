@@ -3,6 +3,7 @@ import { Box, Button, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOp
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import './App.css';
 import { useAsyncDepEffect } from './lib/react';
+import { diff, equals } from './lib/util';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
@@ -45,7 +46,10 @@ export default function () {
   };
 
   // TODO make generic and pull out list component
-  const setTodo = (index: number) => async ({id, createdAt, updatedAt, ...data}: Todo) => { // omit updatedAt so that it's updated by the db
+  const setTodo = (index: number) => async ({id, updatedAt, ...todo}: Todo) => { // omit updatedAt so that it's updated by the db
+    const data = diff(todos[index], todo);
+    console.log('diff:', data);
+    if (equals(data, {})) return;
     const newTodo = await db.todo.update({data, where: {id}});
     const newTodos = [...todos];
     newTodos[index] = newTodo;
