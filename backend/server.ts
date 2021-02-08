@@ -54,7 +54,7 @@ const models: model[] = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerC
 
 // serves db.model.action(req.body)
 app.post("/db/:model/:action", async (req: Request, res: Response) => {
-  console.log(req.method, req.url, req.params, req.body);
+  console.log(req.url, req.body);
   try {
     const model = assertIncludes(models, req.params.model);
     const action = assertIncludes(['findMany', 'create', 'update', 'delete'] as const, req.params.action); // see PrismaAction, but no value for the type
