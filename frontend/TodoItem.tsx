@@ -48,6 +48,7 @@ function DateDist(p: {date: Date, prefix?: string}) {
 export default function TodoItem({ todo, del, set, global_time, showDetails }: { todo: Todo, del: () => void, set: (x: Todo) => void, global_time: number, showDetails: boolean }) {
   const submit = (text: string) => {
     console.log(`Editable.submit: ${text}`);
+    if (text == todo.text) return;
     todo.text = text;
     set(todo);
   };

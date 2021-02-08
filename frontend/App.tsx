@@ -45,8 +45,8 @@ export default function () {
   };
 
   // TODO make generic and pull out list component
-  const setTodo = (index: number) => async ({updatedAt, ...data}: Todo) => { // omit updatedAt so that it's updated by the db
-    const newTodo = await db.todo.update({data, where: {id: data.id}});
+  const setTodo = (index: number) => async ({id, createdAt, updatedAt, ...data}: Todo) => { // omit updatedAt so that it's updated by the db
+    const newTodo = await db.todo.update({data, where: {id}});
     const newTodos = [...todos];
     newTodos[index] = newTodo;
     setTodos(newTodos);
