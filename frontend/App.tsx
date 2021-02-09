@@ -8,7 +8,7 @@ import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api';
-import type { Todo } from '@prisma/client';
+import { Todo, include } from '../shared/db';
 import { initialTodoOrderBy } from '../shared/db';
 
 // initial data replaced by the server:
@@ -25,14 +25,14 @@ export default function () {
   // no need for extra fetch anymore since server already sets initialTodos from db
   useAsyncDepEffect(async () => {
     console.log(orderBy);
-    setTodos(await db.todo.findMany({include: {times: true}, orderBy}));
+    setTodos(await db.todo.findMany({include, orderBy}));
   }, [orderBy]); // TODO sort locally?
 
   const addTodo = async (text: string) => {
     if (text == '') return 'Todo is empty';
     // if (todos.includes(value)) return 'Todo exists';
     // await delay(1000);
-    const todo = await db.todo.create({data: {text}});
+    const todo = await db.todo.create({data: {text}, include});
     setTodos([...todos, todo]);
     console.log(todo, todos); // todos not updated yet here
   };
@@ -50,7 +50,7 @@ export default function () {
     const data = diff(todos[index], todo);
     console.log('diff:', data);
     if (equals(data, {})) return;
-    const newTodo = await db.todo.update({data, where: {id}});
+    const newTodo = await db.todo.update({data, where: {id}, include});
     const newTodos = [...todos];
     newTodos[index] = newTodo;
     setTodos(newTodos);

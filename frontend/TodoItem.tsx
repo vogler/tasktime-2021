@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
-import type { Todo } from '@prisma/client';
+import type { Todo } from '../shared/db';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
 
 namespace duration { // formatDuration from date-fns has no way to customize units, default e.g. 7 days 5 hours 9 minutes 30 seconds
