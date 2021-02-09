@@ -1,15 +1,16 @@
 import type { Prisma, PrismaClient } from '@prisma/client'; // types for casting
 import prisma from '@prisma/client'; // values like Prisma.ModelName via default import since CJS does not support named import
 
-// json REST api
-const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 'todo') => // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
+// json REST API
+type method = 'GET' | 'POST' | 'PUT' | 'DELETE';
+const rest = async (method: method, url: string, json?: {}) => // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
   await (await (fetch(url, {
     method,
     headers: { // compressed json is fine. no need for protobuf, BSON etc.
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(json),
+    body: JSON.stringify(json), // not allowed for GET
   }))).json();
 
 // We could just use rest() as defined above, but we want to have the actions with types from Prisma for type-safety and autocomplete!
@@ -17,10 +18,11 @@ const rest = async (method: 'GET' | 'POST' | 'PUT' | 'DELETE', json?: {}, url = 
 // old customized concrete db functions on REST endpoint
 export namespace db_deprecated {
   type TodoOps = Prisma.TodoDelegate<true>; // true = rejectOnNotFound?
-  export const findMany = (args => rest('GET', args)) as TodoOps['findMany'];
-  const _create = (args => rest('POST', args)) as TodoOps['create'];
-  const _update = (args => rest('PUT', args)) as TodoOps['update'];
-  const _delete = (args => rest('DELETE', args)) as TodoOps['delete'];
+  const req = (method: method) => (args: {}) => rest(method, 'todo', args);
+  export const findMany = req('GET') as TodoOps['findMany'];
+  const _create = req('POST') as TodoOps['create'];
+  const _update = req('PUT') as TodoOps['update'];
+  const _delete = req('DELETE') as TodoOps['delete'];
   export const create = (data: Prisma.TodoCreateInput) => _create({ data }); // just for data, but more restrictive
   export const update = ({updatedAt, ...data}: Prisma.TodoWhereUniqueInput & Prisma.TodoUpdateInput) => _update({ data, where: { id: data.id } }); // remove updatedAt from object so that it is set by db!
   export const delete_ = (data: Prisma.TodoWhereUniqueInput) => _delete({ where: { id: data.id } });
@@ -38,7 +40,7 @@ type dbm<M extends model> = Pick<PrismaClient[M], action>;
 
 // dbm('model').action runs db.model.action on the server
 const dbm = <M extends model> (model: M) : dbm<M> => {
-  const lift = <A extends action> (action: A) => ((args: {}) => rest('POST', args, `db/${model}/${action}`)) as PrismaClient[M][A];
+  const lift = <A extends action> (action: A) => ((args: {}) => rest('POST', `db/${model}/${action}`, args)) as PrismaClient[M][A];
   return Object.fromEntries(actions.map(s => [s, lift(s)]));
 };
 export const db = Object.fromEntries(models.map(s => [s, dbm(s)])) as { [M in model]: dbm<M> };
