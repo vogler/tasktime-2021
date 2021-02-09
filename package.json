@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "nodemon -x 'node --loader ts-node/esm --es-module-specifier-resolution=node' -w backend backend/server.ts",
+    "start": "nodemon -x 'node --loader ts-node/esm --es-module-specifier-resolution=node' -w backend -w shared backend/server.ts",
     "frontend": "snowpack dev",
     "build": "snowpack build",
     "db-codegen": "prisma generate",

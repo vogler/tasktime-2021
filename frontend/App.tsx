@@ -9,7 +9,7 @@ import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api';
 import type { Todo } from '@prisma/client';
-import { initialTodoOrderBy } from './defaults';
+import { initialTodoOrderBy } from '../shared/db';
 
 // initial data replaced by the server:
 const initialTodos: Todo[] = [];

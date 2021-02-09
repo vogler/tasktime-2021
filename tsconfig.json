@@ -1,5 +1,5 @@
 {
-  "include": ["backend", "frontend", "types"],
+  "include": ["backend", "frontend", "shared", "types"],
   "compilerOptions": {
     "module": "esnext",
     "target": "esnext",

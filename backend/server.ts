@@ -71,7 +71,7 @@ app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
 });
 
-import { initialTodoOrderBy } from '../frontend/defaults'; // TODO put in shared folder?
+import { initialTodoOrderBy } from '../shared/db';
 
 // replaces empty initialTodos in js with data from the db
 // this way the client does not have to issue a second request and wait to display data
