@@ -9,7 +9,7 @@ import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
-import { Todo, include, initialTodoOrderBy } from '../shared/db';
+import { Todo, include, initialTodoOrderBy, TimeData } from '../shared/db';
 
 // initial data replaced by the server:
 const initialTodos: Todo[] = [];
@@ -67,10 +67,11 @@ export default function () {
   };
 
   // TODO make generic and pull out list component
-  const setTodo = (index: number) => async ({id, updatedAt, ...todo}: Todo) => { // omit updatedAt so that it's updated by the db
+  const setTodo = (index: number) => async ({id, updatedAt, ...todo}: Todo, times?: TimeData) => { // omit updatedAt so that it's updated by the db
     const data = diff(todos[index], todo);
     console.log('diff:', data);
-    if (equals(data, {})) return;
+    if (equals(data, {}) && !times) return;
+    data.times = times;
     const newTodo = await db.todo.update({data, where: {id}, include});
     const newTodos = [...todos];
     newTodos[index] = newTodo;

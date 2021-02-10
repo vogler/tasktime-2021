@@ -4,7 +4,7 @@ import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePr
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
 import { rgtime } from './App';
-import type { Todo } from '../shared/db';
+import type { Todo, TimeData } from '../shared/db';
 
 namespace duration { // formatDuration from date-fns has no way to customize units, default e.g. 7 days 5 hours 9 minutes 30 seconds
   // duration as shortest string given units xs, leading zero only for tail
@@ -47,7 +47,9 @@ function DateDist(p: {date: Date, prefix?: string}) {
   </Tooltip>);
 }
 
-function Timer({ todo, set }: { todo: Todo, set: (x: Todo) => void }) {
+type set = (todo: Todo, times?: TimeData) => void;
+
+function Timer({ todo, set }: { todo: Todo, set: set }) {
   const [running, setRunning] = useState(false);
   const gtime = useRecoilValue(rgtime(running)); // 0 if not running to avoid re-renders
   const [hover, setHover] = useState(false);
@@ -63,12 +65,13 @@ function Timer({ todo, set }: { todo: Todo, set: (x: Todo) => void }) {
   const timer = () => {
     if (!running) {
       setStartTime(Date.now());
+      set(todo, { create: { } });
     } else {
       const diff = Math.round((Date.now() - startTime) / 1000);
       console.log(`time: ${time - todo.time}, diff: ${diff}`);
       const newTodo = {...todo}; // need to make a shallow copy of the item to mutate, otherwise it's not detected as updated
       newTodo.time += diff;
-      set(newTodo);
+      set(newTodo, { updateMany: { data: { end: new Date() }, where: { end: null } } });
       setTime(newTodo.time); // correct accumulated time (prob. too low since it counts every >1s) with precise time from diff
     }
     setRunning(!running);
@@ -83,7 +86,7 @@ function Timer({ todo, set }: { todo: Todo, set: (x: Todo) => void }) {
   );
 }
 
-export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, del: () => void, set: (x: Todo) => void, showDetails: boolean }) {
+export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, del: () => void, set: set, showDetails: boolean }) {
   const toggle = (done: boolean) => set({...todo, done});
   const submit = (text: string) => {
     if (text == todo.text) return;

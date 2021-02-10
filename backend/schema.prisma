@@ -12,6 +12,7 @@ generator client {
   provider = "prisma-client-js"
 }
 // update @prisma/client on changes with npx prisma generate --watch
+// also need to restart server / rebuild after
 
 model Todo {
   id        Int      @id @default(autoincrement())
@@ -25,8 +26,8 @@ model Todo {
 
 model Time {
   todoId Int
-  todo   Todo     @relation(fields: [todoId], references: [id])
-  start  DateTime
-  end    DateTime
+  todo   Todo      @relation(fields: [todoId], references: [id])
+  start  DateTime  @default(now())
+  end    DateTime?
   @@id([todoId, start])
 }
