@@ -71,7 +71,7 @@ function Timer({ todo, set }: { todo: Todo, set: set }) {
       console.log(`time: ${time - todo.time}, diff: ${diff}`);
       const newTodo = {...todo}; // need to make a shallow copy of the item to mutate, otherwise it's not detected as updated
       newTodo.time += diff;
-      set(newTodo, { updateMany: { data: { end: new Date() }, where: { end: null } } }); // TODO is there a symbol for now() on the server? local end time might be not in sync with server start time...
+      set(newTodo, { updateMany: { data: { end: new Date() }, where: { end: null } } }); // TODO is there a symbol for now() on the server? local end time might be not in sync with server start time... https://github.com/prisma/prisma/discussions/5582
       setTime(newTodo.time); // correct accumulated time (prob. too low since it counts every >1s) with precise time from diff
     }
     setRunning(!running);
