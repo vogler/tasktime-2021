@@ -3,15 +3,19 @@ import prisma from '@prisma/client'; // values like Prisma.ModelName via default
 
 // json REST API
 type method = 'GET' | 'POST' | 'PUT' | 'DELETE';
-const rest = async (method: method, url: string, json?: {}) => // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
-  await (await (fetch(url, {
+const rest = async (method: method, url: string, json?: {}) => { // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
+  const res = await (fetch(url, {
     method,
     headers: { // compressed json is fine. no need for protobuf, BSON etc.
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(json), // not allowed for GET
-  }))).json();
+  }));
+  const rjson = await res.json();
+  if (res.status != 200) throw rjson.error || rjson;
+  return rjson;
+};
 
 // We could just use rest() as defined above, but we want to have the actions with types from Prisma for type-safety and autocomplete!
 
