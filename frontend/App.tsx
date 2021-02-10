@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { atom, useRecoilState } from 'recoil';
+import { atom, selectorFamily, useRecoilState } from 'recoil';
 import { Box, Button, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import './App.css';
@@ -14,10 +14,16 @@ import { Todo, include, initialTodoOrderBy } from '../shared/db';
 // initial data replaced by the server:
 const initialTodos: Todo[] = [];
 
-// global shared clock for running timers
-export const gtime = atom({
-  key: 'time',
+// global time since load
+const gtime = atom({
+  key: 'gtime',
   default: 0,
+});
+// shared global time for running timers. just using gtime would lead to re-render even if local timer is not running.
+export const rgtime = selectorFamily({
+  key: 'rgtime',
+  get: (running: boolean) => ({get}) =>
+     running ? get(gtime) : 0
 });
 
 function Timer() { // put in its own componenent, otherwise the whole app rerenders every second

@@ -3,7 +3,7 @@ import { useRecoilValue } from 'recoil';
 import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
-import { gtime } from './App';
+import { rgtime } from './App';
 import type { Todo } from '../shared/db';
 
 namespace duration { // formatDuration from date-fns has no way to customize units, default e.g. 7 days 5 hours 9 minutes 30 seconds
@@ -48,8 +48,8 @@ function DateDist(p: {date: Date, prefix?: string}) {
 }
 
 function Timer({ todo, set }: { todo: Todo, set: (x: Todo) => void }) {
-  const global_time = useRecoilValue(gtime);
   const [running, setRunning] = useState(false);
+  const gtime = useRecoilValue(rgtime(running)); // 0 if not running to avoid re-renders
   const [hover, setHover] = useState(false);
   const [time, setTime] = useState(todo.time);
   const [startTime, setStartTime] = useState(0); // calc diff since timer is not reliable
@@ -59,7 +59,7 @@ function Timer({ todo, set }: { todo: Todo, set: (x: Todo) => void }) {
       // setTime(todo.time + Math.round((Date.now() - startTime) / 1000)); // do this to avoid drift due to delayed timer?
     }
     // console.log(`time: ${todo.text}`); // should only be output for running timers
-  }, [running && global_time]); // only depend on global_time if running to avoid useless calls!
+  }, [gtime]); // gtime will only update if running to avoid useless calls!
   const timer = () => {
     if (!running) {
       setStartTime(Date.now());
