@@ -60,7 +60,10 @@ export default function () {
 
   const delTodo = (index: number) => async () => {
     const todo = todos[index];
-    const count = await db.time.count({where: {todoId: todo.id}}); // TODO confirm if count
+    const count = await db.time.count({where: {todoId: todo.id}});
+    if (count && confirm(`There are ${count} times recorded for this item. Delete all?`)) {
+      await db.time.deleteMany({where: {todoId: todo.id}});
+    }
     await db.todo.delete({where: {id: todo.id}});
     const newTodos = [...todos];
     newTodos.splice(index, 1); // delete element at index
