@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 
 // access database with prisma:
 // import { PrismaClient } from '@prisma/client'; // SyntaxError: Named export 'PrismaClient' not found. The requested module '@prisma/client' is a CommonJS module, which may not support all module.exports as named exports. See https://github.com/prisma/prisma/pull/4920
-import prisma from '@prisma/client'; // import default export instead of named exports
+import prisma from '@prisma/client'; // default import since CJS does not support named import
 const db = new prisma.PrismaClient();
 
 // deprecated manual REST API -> too much boilerplate -> expose db below
@@ -49,15 +49,14 @@ function assertIncludes(a: readonly string[], k: string): string {
   return a.includes(k) ? k : fail(`Invalid parameter: ${k} is not in [${a.join(', ')}]!`);
 }
 
-type model = Lowercase<keyof typeof prisma.Prisma.ModelName>;
-const models: model[] = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerCase() as model);
+import { actions, models, initialTodoOrderBy } from '../shared/db';
 
 // serves db.model.action(req.body)
 app.post("/db/:model/:action", async (req: Request, res: Response) => {
   console.log(req.url, req.body);
   try {
     const model = assertIncludes(models, req.params.model);
-    const action = assertIncludes(['findMany', 'create', 'update', 'delete'] as const, req.params.action); // see PrismaAction, but no value for the type
+    const action = assertIncludes(actions, req.params.action); // see PrismaAction, but no value for the type
     // @ts-ignore
     const r = await db[model][action](req.body);
     res.json(r);
@@ -71,7 +70,6 @@ app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
 });
 
-import { initialTodoOrderBy } from '../shared/db';
 
 // replaces empty initialTodos in js with data from the db
 // this way the client does not have to issue a second request and wait to display data

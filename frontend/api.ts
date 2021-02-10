@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from '@prisma/client'; // types for casting
-import prisma from '@prisma/client'; // values like Prisma.ModelName via default import since CJS does not support named import
+import { action, actions, model, models } from '../shared/db';
 
 // json REST API
 type method = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -36,10 +36,6 @@ export namespace db_deprecated {
 }
 
 // Generically lift the calls over the network.
-type model = Lowercase<keyof typeof Prisma.ModelName>;
-const models = Object.keys(prisma.Prisma.ModelName).map(s => s.toLowerCase() as model);
-type action = Exclude<Prisma.PrismaAction, 'createMany' | 'executeRaw' | 'queryRaw'>; // why are these not defined on PrismaClient[model]?
-const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 'findFirst', 'updateMany', 'upsert', 'deleteMany', 'aggregate', 'count'] as const; // these are the actions defined on each model. TODO get from prisma? PrismaAction is just a type.
 type dbm<M extends model> = Pick<PrismaClient[M], action>;
 
 // dbm('model').action runs db.model.action on the server
