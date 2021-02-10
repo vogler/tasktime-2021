@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { ChakraProvider } from "@chakra-ui/react"
+import { RecoilRoot } from 'recoil';
 import App from './App';
 
 window.React = React; // so that we do not need to import React in every .tsx just to be able to use JSX
@@ -10,7 +11,9 @@ window.React = React; // so that we do not need to import React in every .tsx ju
 ReactDOM.render(
   <React.StrictMode>
     <ChakraProvider>
-      <App />
+      <RecoilRoot>
+        <App />
+      </RecoilRoot>
     </ChakraProvider>
   </React.StrictMode>,
   document.getElementById('root'),

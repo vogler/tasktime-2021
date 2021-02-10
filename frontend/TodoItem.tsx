@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useRecoilValue } from 'recoil';
 import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
-import type { Todo } from '../shared/db';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
+import { gtime } from './App';
+import type { Todo } from '../shared/db';
 
 namespace duration { // formatDuration from date-fns has no way to customize units, default e.g. 7 days 5 hours 9 minutes 30 seconds
   // duration as shortest string given units xs, leading zero only for tail
@@ -45,13 +47,8 @@ function DateDist(p: {date: Date, prefix?: string}) {
   </Tooltip>);
 }
 
-export default function TodoItem({ todo, del, set, global_time, showDetails }: { todo: Todo, del: () => void, set: (x: Todo) => void, global_time: number, showDetails: boolean }) {
-  const submit = (text: string) => {
-    if (text == todo.text) return;
-    console.log(`Editable.submit: ${text}`);
-    set({...todo, text});
-  };
-  const toggle = (done: boolean) => set({...todo, done});
+function Timer({ todo, set }: { todo: Todo, set: (x: Todo) => void }) {
+  const global_time = useRecoilValue(gtime);
   const [running, setRunning] = useState(false);
   const [hover, setHover] = useState(false);
   const [time, setTime] = useState(todo.time);
@@ -76,6 +73,23 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
     }
     setRunning(!running);
   };
+
+  return (
+    <Button aria-label={running ? 'stop time' : 'start time'}
+      leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />}
+      size="sm" variant="ghost" w={24} justifyContent="left"
+      onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}
+    </Button>
+  );
+}
+
+export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, del: () => void, set: (x: Todo) => void, showDetails: boolean }) {
+  const toggle = (done: boolean) => set({...todo, done});
+  const submit = (text: string) => {
+    if (text == todo.text) return;
+    console.log(`Editable.submit: ${text}`);
+    set({...todo, text});
+  };
   // useEffect(() => { console.log('todo changed', todo); }, [todo]);
   // submitOnBlur true (default) will also submit on Esc (only with Surfingkeys enabled) and when clicking the cancel button, see https://github.com/chakra-ui/chakra-ui/issues/3198
   return (
@@ -99,10 +113,7 @@ export default function TodoItem({ todo, del, set, global_time, showDetails }: {
       <Spacer />
       {/* <IconButton2 onClick={e => console.log(e)} aria-label="edit" icon={<FaRegEdit />} /> */}
       <IconButton2 onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} />
-
-      {/* <IconButton2 aria-label="duration" icon={<FaStopwatch />} />
-      <Tag size="sm" variant="subtle" borderRadius="full">00:00</Tag> */}
-      <Button aria-label={running ? 'stop time' : 'start time'} leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />} size="sm" variant="ghost" w={24} justifyContent="left" onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}</Button>
+      <Timer todo={todo} set={set} />
     </Flex>
   )
 }

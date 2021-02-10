@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { atom, useRecoilState } from 'recoil';
 import { Box, Button, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import './App.css';
@@ -7,13 +8,27 @@ import { diff, equals } from './lib/util';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
-import { db } from './api';
-import { Todo, include } from '../shared/db';
-import { initialTodoOrderBy } from '../shared/db';
+import { db } from './api'; // api to db on server
+import { Todo, include, initialTodoOrderBy } from '../shared/db';
 
 // initial data replaced by the server:
 const initialTodos: Todo[] = [];
 
+// global shared clock for running timers
+export const gtime = atom({
+  key: 'time',
+  default: 0,
+});
+
+function Timer() { // put in its own componenent, otherwise the whole app rerenders every second
+  const [time, setTime] = useRecoilState(gtime);
+  useEffect(() => {
+    const timer = setTimeout(() => setTime(time + 1), 1000); // + 1 every second
+    return () => clearTimeout(timer);
+  }, [time]);
+
+  return (<>{time}</>);
+}
 export default function () {
   const [todos, setTodos] = useState(initialTodos);
   const [showDone, setShowDone] = useState(true);
@@ -56,12 +71,6 @@ export default function () {
     setTodos(newTodos);
   };
 
-  const [time, setTime] = useState(0);
-  useEffect(() => {
-    const timer = setTimeout(() => setTime(time + 1), 1000); // + 1 every second
-    return () => clearTimeout(timer);
-  }, [time]);
-
   const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
 
   return (
@@ -69,7 +78,7 @@ export default function () {
       <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
-          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} global_time={time} showDetails={showDetails} />) // do not use index as key since it changes with the order of the list and on deletion
+          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} showDetails={showDetails} />) // do not use index as key since it changes with the order of the list and on deletion
           : "Nothing to show..."
         }
       </Box>
@@ -97,7 +106,7 @@ export default function () {
       <Divider my={3} />
       <Stack color="gray.500" align="center">
         <Text>Usage: click an item to edit it (escape to cancel, enter/blur to save).</Text>
-        <Text>Page has been open for <code>{time}</code> seconds.</Text>
+        <Text>Page has been open for <code><Timer /></code> seconds.</Text>
         <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
       </Stack>
       <ThemeToggle />
