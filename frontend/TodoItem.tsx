@@ -68,7 +68,7 @@ function Timer({ todo, set }: { todo: Todo, set: set }) {
       set(todo, { create: { } });
     } else {
       const diff = Math.round((Date.now() - startTime) / 1000);
-      console.log(`time: ${time - todo.time}, diff: ${diff}`);
+      console.log(`timer stop: time: ${time - todo.time}, diff: ${diff}`);
       const newTodo = {...todo}; // need to make a shallow copy of the item to mutate, otherwise it's not detected as updated
       newTodo.time += diff;
       set(newTodo, { updateMany: { data: { end: new Date() }, where: { end: null } } }); // TODO is there a symbol for now() on the server? local end time might be not in sync with server start time... https://github.com/prisma/prisma/discussions/5582

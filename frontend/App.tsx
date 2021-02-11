@@ -55,7 +55,7 @@ export default function () {
     // await delay(1000);
     const todo = await db.todo.create({data: {text}, include});
     setTodos([...todos, todo]);
-    console.log(todo, todos); // todos not updated yet here
+    console.log('addTodo', todo, todos); // todos not updated yet here
   };
 
   const delTodo = (index: number) => async () => {
@@ -67,17 +67,18 @@ export default function () {
     await db.todo.delete({where: {id: todo.id}});
     const newTodos = [...todos];
     newTodos.splice(index, 1); // delete element at index
-    console.log(`delTodo(${index}):`, newTodos);
     setTodos(newTodos);
+    console.log('delTodo', todo);
   };
 
   // TODO make generic and pull out list component
   const setTodo = (index: number) => async ({id, updatedAt, ...todo}: Todo, times?: TimeData) => { // omit updatedAt so that it's updated by the db
     const data = diff(todos[index], todo);
-    console.log('diff:', data);
+    console.log('setTodo: diff:', data, 'times:', times);
     if (equals(data, {}) && !times) return;
     data.times = times;
     const newTodo = await db.todo.update({data, where: {id}, include});
+    console.log('setTodo', newTodo);
     const newTodos = [...todos];
     newTodos[index] = newTodo;
     setTodos(newTodos);
