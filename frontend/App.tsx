@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { atom, selectorFamily, useRecoilState } from 'recoil';
 import { Box, Button, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
-import './App.css';
 import { useAsyncDepEffect } from './lib/react';
 import { diff, equals } from './lib/util';
 import InputForm from './lib/InputForm';
@@ -90,7 +89,7 @@ export default function () {
   const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
 
   return (
-    <div className="App">
+    <Stack align="center" mt={2}>
       <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
@@ -126,6 +125,6 @@ export default function () {
         <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
       </Stack>
       <ThemeToggle />
-    </div>
+    </Stack>
   );
 }
