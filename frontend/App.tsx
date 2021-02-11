@@ -11,6 +11,9 @@ import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
 import { Todo, include, initialTodoOrderBy, TimeData } from '../shared/db';
 
+// @ts-ignore
+globalThis.db = db; // for direct db access in Chrome console, TODO remove
+
 // initial data replaced by the server:
 const initialTodos: Todo[] = [];
 

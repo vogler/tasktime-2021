@@ -9,7 +9,7 @@ export const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 
 
 
 // specific to Todo/Time
-export const include = {times: true};
+export const include = {times: true}; // {times: {orderBy: {start: 'asc'}}}
 export type TodoFlat = Todo;
 type TodoFull = Prisma.TodoGetPayload<{include: typeof include}>;
 export {TodoFull as Todo};

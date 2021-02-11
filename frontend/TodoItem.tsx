@@ -50,11 +50,12 @@ function DateDist(p: {date: Date, prefix?: string}) {
 type set = (todo: Todo, times?: TimeData) => void;
 
 function Timer({ todo, set }: { todo: Todo, set: set }) {
-  const [running, setRunning] = useState(false);
+  const lastTime = todo.times[todo.times.length - 1];
+  const [running, setRunning] = useState(lastTime?.end === null); // relies on times being sorted!
   const gtime = useRecoilValue(rgtime(running)); // 0 if not running to avoid re-renders
-  const [hover, setHover] = useState(false);
-  const [time, setTime] = useState(todo.time);
-  const [startTime, setStartTime] = useState(0); // calc diff since timer is not reliable
+  const [startTime, setStartTime] = useState(lastTime ? Date.parse(lastTime.start.toString()) : 0); // calc diff since timer is not reliable
+  const interval = Math.round((Date.now() - startTime) / 1000); // time the current interval has been running
+  const [time, setTime] = useState(todo.time + (running ? interval : 0)); // total time
   useEffect(() => { // run every second if running
     if (running && Date.now() - startTime >= 1000) { // might hit start at x.9s global_time -> wait at least 1s before first count
       setTime(time => time + 1);
@@ -67,15 +68,15 @@ function Timer({ todo, set }: { todo: Todo, set: set }) {
       setStartTime(Date.now());
       set(todo, { create: { } });
     } else {
-      const diff = Math.round((Date.now() - startTime) / 1000);
-      console.log(`timer stop: time: ${time - todo.time}, diff: ${diff}`);
+      console.log(`timer stop: interval from counter: ${time - todo.time}, interval from startTime: ${interval}`);
       const newTodo = {...todo}; // need to make a shallow copy of the item to mutate, otherwise it's not detected as updated
-      newTodo.time += diff;
+      newTodo.time += interval;
       set(newTodo, { updateMany: { data: { end: new Date() }, where: { end: null } } }); // TODO is there a symbol for now() on the server? local end time might be not in sync with server start time... https://github.com/prisma/prisma/discussions/5582
       setTime(newTodo.time); // correct accumulated time (prob. too low since it counts every >1s) with precise time from diff
     }
     setRunning(!running);
   };
+  const [hover, setHover] = useState(false);
 
   return (
     <Button aria-label={running ? 'stop time' : 'start time'}

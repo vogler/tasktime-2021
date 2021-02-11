@@ -50,7 +50,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 }
 
 import { inspect } from 'util';
-import { actions, models, initialTodoOrderBy } from '../shared/db';
+import { actions, models, include, initialTodoOrderBy } from '../shared/db';
 
 // serves db.model.action(req.body)
 app.post("/db/:model/:action", async (req: Request, res: Response) => {
@@ -79,7 +79,7 @@ app.listen(port, () => {
 const fillTodos = async (js: string) =>
   js.replace(
     'const initialTodos = [];',
-    `const initialTodos = ${JSON.stringify(await db.todo.findMany({include: {times: true}, orderBy: initialTodoOrderBy}))};`
+    `const initialTodos = ${JSON.stringify(await db.todo.findMany({include, orderBy: initialTodoOrderBy}))};`
   );
 
 // snowpack build on demand, HMR and SSR:
