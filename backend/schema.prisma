@@ -4,8 +4,8 @@ datasource db {
 
   // replace, set variable or create .env file which is read automatically
   url      = env("DATABASE_URL")
- // "file:./sqlite.db"
  // "postgresql://voglerr@localhost:5432/track-time"
+ // "file:./sqlite.db"
 }
 
 generator client {

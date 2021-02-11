@@ -49,11 +49,12 @@ function assertIncludes(a: readonly string[], k: string): string {
   return a.includes(k) ? k : fail(`Invalid parameter: ${k} is not in [${a.join(', ')}]!`);
 }
 
+import { inspect } from 'util';
 import { actions, models, initialTodoOrderBy } from '../shared/db';
 
 // serves db.model.action(req.body)
 app.post("/db/:model/:action", async (req: Request, res: Response) => {
-  console.log(req.url, req.body);
+  console.log(req.url, inspect(req.body, { depth: null, colors: true }));
   try {
     const model = assertIncludes(models, req.params.model);
     const action = assertIncludes(actions, req.params.action); // see PrismaAction, but no value for the type
