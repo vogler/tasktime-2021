@@ -53,7 +53,7 @@ export default function () {
   }, [orderBy]); // TODO sort locally?
 
   const addTodo = async (text: string) => {
-    if (text == '') return 'Todo is empty';
+    if (text == '') return 'Task is empty';
     // if (todos.includes(value)) return 'Todo exists';
     // await delay(1000);
     const todo = await db.todo.create({data: {text}, include});
@@ -91,7 +91,7 @@ export default function () {
 
   const Collect = () => (
     <>
-      <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
+      <InputForm submit={addTodo} inputProps={{placeholder: 'new task...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
           ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} showDetails={showDetails} />) // do not use index as key since it changes with the order of the list and on deletion
@@ -134,9 +134,9 @@ export default function () {
   return (
     <Router>
       <VStack>
-        <ButtonGroup isAttached variant="outline">
-          <Button as={Link} to="/">Collect</Button>
-          <Button as={Link} to="/history">History</Button>
+        <ButtonGroup isAttached variant="outline" >
+          <Button as={Link} to="/" isActive borderTopRadius="0">Tasks</Button>
+          <Button as={Link} to="/history" borderTopRadius="0">History</Button>
         </ButtonGroup>
         <Switch>
           <Route exact path="/">
