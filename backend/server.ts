@@ -14,7 +14,7 @@ import prisma from '@prisma/client'; // default import since CJS does not suppor
 const db = new prisma.PrismaClient();
 
 // deprecated manual REST API -> too much boilerplate -> expose db below
-app.use("/todo", async (req: Request, res: Response) => {
+app.use('/todo', async (req: Request, res: Response) => {
   console.log(req.method, req.url, req.body);
   const args = req.body;
   let op;
@@ -53,7 +53,7 @@ import { inspect } from 'util';
 import { actions, models, include, initialTodoOrderBy } from '../shared/db';
 
 // serves db.model.action(req.body)
-app.post("/db/:model/:action", async (req: Request, res: Response) => {
+app.post('/db/:model/:action', async (req: Request, res: Response) => {
   console.log(req.url, inspect(req.body, { depth: null, colors: true }));
   try {
     const model = assertIncludes(models, req.params.model);
