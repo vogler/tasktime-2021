@@ -9,6 +9,7 @@ import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
 import { Todo, include, initialTodoOrderBy, TimeData } from '../shared/db';
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
 // @ts-ignore
 globalThis.db = db; // for direct db access in Chrome console, TODO remove
@@ -88,7 +89,7 @@ export default function () {
 
   const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
 
-  return (
+  const Collect = () => (
     <Stack align="center" mt={2}>
       <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
@@ -126,5 +127,24 @@ export default function () {
       </Stack>
       <ThemeToggle />
     </Stack>
+  );
+
+  const History = () => <h1>History</h1>;
+
+  return (
+    <Router>
+      <nav>
+        <Link to="/">Collect</Link>
+        <Link to="/history">History</Link>
+      </nav>
+      <Switch>
+        <Route exact path="/">
+          <Collect />
+        </Route>
+        <Route path="/history">
+          <History />
+        </Route>
+      </Switch>
+    </Router>
   );
 }
