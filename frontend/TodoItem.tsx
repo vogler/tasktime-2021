@@ -50,8 +50,8 @@ function DateDist(p: {date: Date, prefix?: string}) {
 type set = (todo: Todo, times?: TimeData) => void;
 
 function Timer({ todo, set }: { todo: Todo, set: set }) {
-  const lastTime = todo.times[todo.times.length - 1];
-  const [running, setRunning] = useState(lastTime?.end === null); // relies on times being sorted!
+  const lastTime = todo.times[0]; // relies on times being orderBy: {start: 'desc'}
+  const [running, setRunning] = useState(lastTime?.end === null);
   const gtime = useRecoilValue(rgtime(running)); // 0 if not running to avoid re-renders
   const [startTime, setStartTime] = useState(lastTime ? Date.parse(lastTime.start.toString()) : 0); // calc diff since timer is not reliable
   const interval = Math.round((Date.now() - startTime) / 1000); // time the current interval has been running
