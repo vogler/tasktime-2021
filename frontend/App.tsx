@@ -9,7 +9,7 @@ import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
 import { Todo, include, initialTodoOrderBy, TimeData } from '../shared/db';
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Link, NavLink, useRouteMatch, useLocation } from "react-router-dom";
 
 // @ts-ignore
 globalThis.db = db; // for direct db access in Chrome console, TODO remove
@@ -131,13 +131,22 @@ export default function () {
 
   const History = () => <h1>History</h1>;
 
+  const Nav = () => {
+    const location = useLocation();
+    console.log('location', location);
+    const NavButton = ({ text, to = '/'+text.toLowerCase() } : { text: string, to?: string }) =>
+      <Button as={Link} to={to} isActive={location.pathname == to} borderTopRadius="0">{text}</Button>;
+    return (
+      <ButtonGroup isAttached variant="outline" >
+        <NavButton text="Tasks" to="/" />
+        <NavButton text="History" />
+      </ButtonGroup>);
+  }
+
   return (
     <Router>
       <VStack>
-        <ButtonGroup isAttached variant="outline" >
-          <Button as={Link} to="/" isActive borderTopRadius="0">Tasks</Button>
-          <Button as={Link} to="/history" borderTopRadius="0">History</Button>
-        </ButtonGroup>
+        <Nav />
         <Switch>
           <Route exact path="/">
             <Collect />
