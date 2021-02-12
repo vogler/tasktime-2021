@@ -66,6 +66,14 @@ app.post('/db/:model/:action', async (req: Request, res: Response) => {
   }
 });
 
+const react_routes = ['/history']; // URL is rewritten by react-router (not to /#history), so on refresh the server would not find /history
+app.get(react_routes, async (req: Request, res: Response, next: express.NextFunction) => {
+  console.log('reroute', req.url, 'to /');
+  // res.sendFile('/index.html'); // no such file (since static handled by snowpack), also we want snowpack to patch the file for HMR
+  req.url = '/'; // can't write req.path
+  next();
+});
+
 // start the Express server
 app.listen(port, () => {
   console.log(`server started at http://localhost:${port}`);
@@ -105,6 +113,7 @@ if (process.env.NODE_ENV != 'production') {
       res.send(r);
     } catch (err) {
       console.error('loadUrl failed for', req.method, req.url);
+      res.sendStatus(404);
       next(err);
     }
   });
