@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { atom, selectorFamily, useRecoilState } from 'recoil';
-import { Box, Button, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text, VStack } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { useAsyncDepEffect } from './lib/react';
 import { diff, equals } from './lib/util';
@@ -90,7 +90,7 @@ export default function () {
   const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
 
   const Collect = () => (
-    <Stack align="center" mt={2}>
+    <>
       <InputForm submit={addTodo} inputProps={{placeholder: 'new todo...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
@@ -98,7 +98,7 @@ export default function () {
           : "Nothing to show..."
         }
       </Box>
-      <HStack>
+      <HStack mb={2}>
         <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
         <Button size="sm" leftIcon={showDetails ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDetails(!showDetails)}>{showDetails ? 'hide' : 'show'} details</Button>
         <Menu closeOnSelect={false} closeOnBlur={true}>
@@ -119,32 +119,34 @@ export default function () {
           </MenuList>
         </Menu>
       </HStack>
-      <Divider my={3} />
-      <Stack color="gray.500" align="center">
+      <Divider />
+      <VStack color="gray.500">
         <Text>Usage: click an item to edit it (escape to cancel, enter/blur to save).</Text>
         <Text>Page has been open for <code><Timer /></code> seconds.</Text>
         <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
-      </Stack>
+      </VStack>
       <ThemeToggle />
-    </Stack>
+    </>
   );
 
   const History = () => <h1>History</h1>;
 
   return (
     <Router>
-      <nav>
-        <Link to="/">Collect</Link>
-        <Link to="/history">History</Link>
-      </nav>
-      <Switch>
-        <Route exact path="/">
-          <Collect />
-        </Route>
-        <Route path="/history">
-          <History />
-        </Route>
-      </Switch>
+      <VStack>
+        <ButtonGroup isAttached variant="outline">
+          <Button as={Link} to="/">Collect</Button>
+          <Button as={Link} to="/history">History</Button>
+        </ButtonGroup>
+        <Switch>
+          <Route exact path="/">
+            <Collect />
+          </Route>
+          <Route path="/history">
+            <History />
+          </Route>
+        </Switch>
+      </VStack>
     </Router>
   );
 }
