@@ -3,20 +3,9 @@ import { useRecoilValue } from 'recoil';
 import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
+import { duration } from './lib/util';
 import { rgtime } from './App';
 import type { Todo, TimeMutation } from '../shared/db';
-
-namespace duration { // formatDuration from date-fns has no way to customize units, default e.g. 7 days 5 hours 9 minutes 30 seconds
-  // duration as shortest string given units xs, leading zero only for tail
-  let fmt = (t: number, xs: number[]) : string => {
-    const [d,...ds] = xs;
-    return d
-      ? (t >= d ? fmt(Math.floor(t/d), ds) + ':' + (t%d+'').padStart(2, '0') : t.toString())
-      : t.toString();
-  }
-  // up to d:hh:mm:ss, head unit w/o leading zero
-  export const format = (s: number) => fmt(s, [60,60,24]);
-}
 
 // IconButton2 with defaults size="sm" variant="ghost"
 function IconButton2(props: IconButtonProps) {

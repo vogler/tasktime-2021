@@ -1,7 +1,16 @@
-import { keyframes } from "@emotion/react";
-import { useEffect, useRef } from "react";
-
 export const delay = (time: number) => new Promise(res => setTimeout(res, time));
+
+export namespace duration { // formatDuration from date-fns has no way to customize units, default e.g. 7 days 5 hours 9 minutes 30 seconds
+  // duration as shortest string given units xs, leading zero only for tail
+  let fmt = (t: number, xs: number[]) : string => {
+    const [d,...ds] = xs;
+    return d
+      ? (t >= d ? fmt(Math.floor(t/d), ds) + ':' + (t%d+'').padStart(2, '0') : t.toString())
+      : t.toString();
+  }
+  // up to d:hh:mm:ss, head unit w/o leading zero
+  export const format = (s: number) => fmt(s, [60,60,24]);
+}
 
 export const equals = <T>(a: T, b: T): boolean => {
   // console.log('equals', a === b, a, b, typeof a, typeof b);
