@@ -42,6 +42,7 @@ Use row-level security in PostgreSQL for authorization and https://jwt.io to aut
 - https://github.com/layrjs/layr - just MongoDB, too much boilerplate in models
 - https://www.prisma.io/docs/concepts/overview/prisma-in-your-stack/graphql - list of Prisma & GraphQL examples, all seem not DRY
 - https://github.com/graphile/postgraphile - runs a GraphQL server that watches a PostgreSQL database; schema not as code, no generated code, no autocomplete? migrations?
+- https://github.com/hasura/graphql-engine - GraphQL from PostgreSQL, realtime queries, too much boilerplate; haskell
 - https://github.com/PostgREST/postgrest - REST API server from existing PostgreSQL database; haskell, no good [client-side lib](https://postgrest.org/en/v7.0.0/ecosystem.html#clientside-libraries) in Typescript, [postgrester](https://github.com/SocialGouv/postgrester) just uses SQL strings
 
 Based on the generated code from Prisma, we define a generic server endpoint `/db/:model/:action` and a generic `db` object on the client that has Prisma's types but just relays the call to the server.
