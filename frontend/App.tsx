@@ -131,9 +131,13 @@ export default function () {
 
   const History = () => <h1>History</h1>;
 
+  const base_title = document.title;
   const Nav = () => {
     const location = useLocation();
     console.log('location', location);
+    useEffect(() => {
+      document.title = base_title + ' - ' + (location.pathname == '/' ? 'tasks' : location.pathname.replace(/^\//, ''));
+    }, [location]);
     const NavButton = ({ text, to = '/'+text.toLowerCase() } : { text: string, to?: string }) =>
       <Button as={Link} to={to} isActive={location.pathname == to} borderTopRadius="0">{text}</Button>;
     return (
