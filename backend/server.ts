@@ -50,7 +50,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 }
 
 import { inspect } from 'util';
-import { actions, models, include, dbTodoOrderBy } from '../shared/db';
+import { actions, models, include, dbTodoOrderBy, timeInclude } from '../shared/db';
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req: Request, res: Response) => {
@@ -80,14 +80,17 @@ app.listen(port, () => {
 });
 
 
-// replaces empty dbTodos in js with data from the db
+// replaces empty list in App.js with rows from the db
 // this way the client does not have to issue a second request and wait to display data
 // TODO SSR with ReactDOMServer.renderToString to also serve the HTML
 // besides snowpack example, also see https://github.com/DavidWells/isomorphic-react-example
-const fillTodos = async (js: string) =>
+const fillData = async (js: string) =>
   js.replace(
     'const dbTodos = [];',
     `const dbTodos = ${JSON.stringify(await db.todo.findMany({include, orderBy: dbTodoOrderBy}))};`
+  ).replace(
+    'const dbTimes = [];',
+    `const dbTimes = ${JSON.stringify(await db.time.findMany({include: timeInclude, orderBy: {end: 'desc'}}))};`
   );
 
 // snowpack build on demand, HMR and SSR:
@@ -108,7 +111,7 @@ if (process.env.NODE_ENV != 'production') {
         res.contentType(buildResult.contentType);
       let r = buildResult.contents;
       if (req.url.startsWith('/dist/App.js')) {
-        r = await fillTodos(r.toString());
+        r = await fillData(r.toString());
       }
       res.send(r);
     } catch (err) {
@@ -124,7 +127,7 @@ if (process.env.NODE_ENV != 'production') {
 
   app.get('/dist/App.js', async (req: Request, res: Response) => {
     res.contentType('application/javascript');
-    res.send(await fillTodos(appjs));
+    res.send(await fillData(appjs));
   });
   app.use(express.static('build'));
 }

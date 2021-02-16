@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { atom, selectorFamily, useRecoilState } from 'recoil';
-import { Box, Button, ButtonGroup, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Divider, Heading, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text, VStack } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { useAsyncDepEffect } from './lib/react';
 import { diff, equals } from './lib/util';
@@ -8,7 +8,7 @@ import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
-import { Todo, include, dbTodoOrderBy, TimeMutation } from '../shared/db';
+import { Todo, Time, include, dbTodoOrderBy, TimeMutation } from '../shared/db';
 import { BrowserRouter as Router, Switch, Route, Link, NavLink, useRouteMatch, useLocation } from "react-router-dom";
 
 // @ts-ignore
@@ -16,6 +16,7 @@ globalThis.db = db; // for direct db access in Chrome console, TODO remove
 
 // initial data from db replaced by the server:
 const dbTodos: Todo[] = [];
+const dbTimes: Time[] = [];
 
 // global time since load
 const gtime = atom({
@@ -129,7 +130,21 @@ export default function () {
     </>
   );
 
-  const History = () => <h1>History</h1>;
+  const History = () => {
+    const [times, setTimes] = useState(dbTimes);
+    let curDate: string;
+    return (<Box>
+      {times.map((time, index) => {
+          if (!time.end) return;
+          const date = new Date(time.end).toLocaleDateString(navigator.language);
+          return <Box key={time.todoId + ' ' + time.start.toString()}>
+            {curDate != date && (curDate = date) && <Heading>{date}</Heading>}
+            <p>{JSON.stringify(time)}</p>
+          </Box>;
+        }
+      )}
+    </Box>);
+  };
 
   const Navigation = () => {
     const location = useLocation();
