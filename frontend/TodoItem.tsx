@@ -4,7 +4,7 @@ import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePr
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
 import { rgtime } from './App';
-import type { Todo, TimeData } from '../shared/db';
+import type { Todo, TimeMutation } from '../shared/db';
 
 namespace duration { // formatDuration from date-fns has no way to customize units, default e.g. 7 days 5 hours 9 minutes 30 seconds
   // duration as shortest string given units xs, leading zero only for tail
@@ -47,7 +47,7 @@ function DateDist(p: {date: Date, prefix?: string}) {
   </Tooltip>);
 }
 
-type set = (todo: Todo, times?: TimeData) => void;
+type set = (todo: Todo, times?: TimeMutation) => void;
 
 function Timer({ todo, set }: { todo: Todo, set: set }) {
   const lastTime = todo.times[0]; // relies on times being orderBy: {start: 'desc'}

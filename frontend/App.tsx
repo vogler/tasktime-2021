@@ -8,7 +8,7 @@ import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
-import { Todo, include, initialTodoOrderBy, TimeData } from '../shared/db';
+import { Todo, include, initialTodoOrderBy, TimeMutation } from '../shared/db';
 import { BrowserRouter as Router, Switch, Route, Link, NavLink, useRouteMatch, useLocation } from "react-router-dom";
 
 // @ts-ignore
@@ -75,7 +75,7 @@ export default function () {
   };
 
   // TODO make generic and pull out list component
-  const setTodo = (index: number) => async ({id, updatedAt, ...todo}: Todo, times?: TimeData) => { // omit updatedAt so that it's updated by the db
+  const setTodo = (index: number) => async ({id, updatedAt, ...todo}: Todo, times?: TimeMutation) => { // omit updatedAt so that it's updated by the db
     const data = diff(todos[index], todo);
     console.log('setTodo: diff:', data, 'times:', times);
     if (equals(data, {}) && !times) return;
