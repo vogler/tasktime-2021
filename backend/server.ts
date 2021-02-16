@@ -91,7 +91,7 @@ const fillData = async (js: string) =>
   ).replace(
     'const dbTimes = [];',
     `const dbTimes = ${JSON.stringify(await db.time.findMany({include: timeInclude, orderBy: {end: 'desc'}}))};`
-  );
+  ); // get times from todos on client instead? would need to merge and sort on client.
 
 // snowpack build on demand, HMR and SSR:
 // https://www.snowpack.dev/guides/server-side-render#option-2%3A-on-demand-serving-(middleware)

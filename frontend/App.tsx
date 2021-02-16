@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { atom, selectorFamily, useRecoilState } from 'recoil';
-import { Box, Button, ButtonGroup, Divider, Heading, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Divider, Heading, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text, Tooltip, VStack } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { useAsyncDepEffect } from './lib/react';
-import { diff, equals } from './lib/util';
+import { diff, equals, duration } from './lib/util';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
@@ -136,10 +136,16 @@ export default function () {
     return (<Box>
       {times.map((time, index) => {
           if (!time.end) return;
-          const date = new Date(time.end).toLocaleDateString(navigator.language);
-          return <Box key={time.todoId + ' ' + time.start.toString()}>
-            {curDate != date && (curDate = date) && <Heading>{date}</Heading>}
-            <p>{JSON.stringify(time)}</p>
+          const startDate = new Date(time.start);
+          const endDate = new Date(time.end);
+          const date = endDate.toLocaleDateString(navigator.language);
+          const toTime = (d: Date) => d.toLocaleTimeString(navigator.language);
+          const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
+          const key = time.todoId + ' ' + time.start.toString();
+          return <Box key={key}>
+            {curDate != date && (curDate = date) && <Heading size="lg">{date}</Heading>}
+            {/* <p>{JSON.stringify(time)}</p> */}
+            <p><Tooltip hasArrow label={toTime(endDate)}>{toTime(startDate)}</Tooltip> for {duration.format(seconds)} - {time.todo.text}</p>
           </Box>;
         }
       )}
@@ -158,7 +164,8 @@ export default function () {
       <ButtonGroup isAttached variant="outline" >
         <NavButton text="Tasks" to="/" />
         <NavButton text="History" />
-      </ButtonGroup>);
+      </ButtonGroup>
+    );
   }
 
   return (
