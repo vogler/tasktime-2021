@@ -89,7 +89,7 @@ export default function () {
 
   const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
 
-  const Collect = () => (
+  const Tasks = () => ( // Collect
     <>
       <InputForm submit={addTodo} inputProps={{placeholder: 'new task...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
@@ -132,7 +132,7 @@ export default function () {
   const History = () => <h1>History</h1>;
 
   const base_title = document.title;
-  const Nav = () => {
+  const Navigation = () => {
     const location = useLocation();
     console.log('location', location);
     useEffect(() => {
@@ -150,10 +150,10 @@ export default function () {
   return (
     <Router>
       <VStack>
-        <Nav />
+        <Navigation />
         <Switch>
           <Route exact path="/">
-            <Collect />
+            <Tasks />
           </Route>
           <Route path="/history">
             <History />
