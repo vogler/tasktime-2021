@@ -50,7 +50,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 }
 
 import { inspect } from 'util';
-import { actions, models, include, initialTodoOrderBy } from '../shared/db';
+import { actions, models, include, dbTodoOrderBy } from '../shared/db';
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req: Request, res: Response) => {
@@ -80,14 +80,14 @@ app.listen(port, () => {
 });
 
 
-// replaces empty initialTodos in js with data from the db
+// replaces empty dbTodos in js with data from the db
 // this way the client does not have to issue a second request and wait to display data
 // TODO SSR with ReactDOMServer.renderToString to also serve the HTML
 // besides snowpack example, also see https://github.com/DavidWells/isomorphic-react-example
 const fillTodos = async (js: string) =>
   js.replace(
-    'const initialTodos = [];',
-    `const initialTodos = ${JSON.stringify(await db.todo.findMany({include, orderBy: initialTodoOrderBy}))};`
+    'const dbTodos = [];',
+    `const dbTodos = ${JSON.stringify(await db.todo.findMany({include, orderBy: dbTodoOrderBy}))};`
   );
 
 // snowpack build on demand, HMR and SSR:

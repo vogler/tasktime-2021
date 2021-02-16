@@ -8,14 +8,14 @@ import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
-import { Todo, include, initialTodoOrderBy, TimeMutation } from '../shared/db';
+import { Todo, include, dbTodoOrderBy, TimeMutation } from '../shared/db';
 import { BrowserRouter as Router, Switch, Route, Link, NavLink, useRouteMatch, useLocation } from "react-router-dom";
 
 // @ts-ignore
 globalThis.db = db; // for direct db access in Chrome console, TODO remove
 
-// initial data replaced by the server:
-const initialTodos: Todo[] = [];
+// initial data from db replaced by the server:
+const dbTodos: Todo[] = [];
 
 // global time since load
 const gtime = atom({
@@ -39,10 +39,10 @@ function Timer() { // put in its own componenent, otherwise the whole app rerend
   return (<>{time}</>);
 }
 export default function () {
-  const [todos, setTodos] = useState(initialTodos);
+  const [todos, setTodos] = useState(dbTodos);
   const [showDone, setShowDone] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
-  const [orderBy, setOrderBy] = useState(initialTodoOrderBy); // this can sort by multiple fields, below we just sort by one
+  const [orderBy, setOrderBy] = useState(dbTodoOrderBy); // this can sort by multiple fields, below we just sort by one
   const orderField = () => Object.keys(orderBy)[0];
   const orderOrder = () => Object.values(orderBy)[0];
 

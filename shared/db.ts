@@ -16,4 +16,4 @@ export {TodoFull as Todo};
 
 export type TimeMutation = Prisma.TimeUpdateManyWithoutTodoInput;
 
-export const initialTodoOrderBy: Prisma.TodoOrderByInput = { createdAt: 'asc' };
+export const dbTodoOrderBy: Prisma.TodoOrderByInput = { createdAt: 'asc' };
