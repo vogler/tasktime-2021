@@ -26,3 +26,9 @@ export const equals = <T>(a: T, b: T): boolean => {
 
 // flat object diff, deep: https://github.com/mattphillips/deep-object-diff
 export const diff = <T extends {}>(a: T, b: T) => Object.fromEntries(Object.entries(b).filter(([k,v],i) => !equals(v, a[k as keyof T])));
+
+export const cmpBy = <X,Y>(f: (_:X) => Y, order: 'asc' | 'desc' = 'asc') => (a: X, b: X) => {
+  const c = f(a); const d = f(b);
+  const r = c < d ? -1 : c > d ? 1 : 0;
+  return order == 'asc' ? r : r*-1;
+};

@@ -88,10 +88,13 @@ const fillData = async (js: string) =>
   js.replace(
     'const dbTodos = [];',
     `const dbTodos = ${JSON.stringify(await db.todo.findMany({include, orderBy: dbTodoOrderBy}))};`
-  ).replace(
+  ).replace( // include all in todos and extract/merge/sort on client instead?
     'const dbTimes = [];',
-    `const dbTimes = ${JSON.stringify(await db.time.findMany({include: timeInclude, orderBy: {end: 'desc'}}))};`
-  ); // get times from todos on client instead? would need to merge and sort on client.
+    `const dbTimes = ${JSON.stringify(await db.time.findMany({include: timeInclude, orderBy: {start: 'desc'}}))};`
+  ).replace(
+    'const dbTodoMutations = [];',
+    `const dbTodoMutations = ${JSON.stringify(await db.todoMutation.findMany({include: timeInclude, orderBy: {at: 'desc'}}))};`
+  );
 
 // snowpack build on demand, HMR and SSR:
 // https://www.snowpack.dev/guides/server-side-render#option-2%3A-on-demand-serving-(middleware)

@@ -17,6 +17,8 @@ export {TodoFull as Todo};
 export const timeInclude = {todo: {select: {text: true, time: true, done: true}}};
 type TimeFull = Prisma.TimeGetPayload<{include: typeof timeInclude}>
 export {TimeFull as Time};
+type TodoMutationFull = Prisma.TodoMutationGetPayload<{include: typeof timeInclude}>
+export {TodoMutationFull as TodoMutation};
 
 export type TimeMutation = Prisma.TimeUpdateManyWithoutTodoInput;
 

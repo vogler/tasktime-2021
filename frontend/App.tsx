@@ -3,12 +3,12 @@ import { atom, selectorFamily, useRecoilState } from 'recoil';
 import { Box, Button, ButtonGroup, Divider, Heading, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text, Tooltip, VStack } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { useAsyncDepEffect } from './lib/react';
-import { diff, equals, duration } from './lib/util';
+import { diff, equals, duration, cmpBy } from './lib/util';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
-import { Todo, Time, include, dbTodoOrderBy, TimeMutation } from '../shared/db';
+import { Todo, Time, include, dbTodoOrderBy, TimeMutation, TodoMutation } from '../shared/db';
 import { BrowserRouter as Router, Switch, Route, Link, NavLink, useRouteMatch, useLocation } from "react-router-dom";
 
 // @ts-ignore
@@ -17,6 +17,7 @@ globalThis.db = db; // for direct db access in Chrome console, TODO remove
 // initial data from db replaced by the server:
 const dbTodos: Todo[] = [];
 const dbTimes: Time[] = [];
+const dbTodoMutations: TodoMutation[] = [];
 
 // global time since load
 const gtime = atom({
@@ -145,20 +146,31 @@ function Tasks() { // Collect
 
 function History() {
   const [times, setTimes] = useState(dbTimes);
+  const [todoMutations, setTodoMutations] = useState(dbTodoMutations);
+  // merge times and todoMutations; TODO: efficient merge sort since both are already sorted
+  const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
+  const history = [...times, ...todoMutations].sort(cmpBy(date, 'desc'));
   let curDate: string;
   return (<Box>
-    {times.map((time, index) => {
-        if (!time.end) return;
-        const startDate = new Date(time.start);
-        const endDate = new Date(time.end);
-        const date = endDate.toLocaleDateString(navigator.language);
+    {history.map((timu, index) => {
+        const toDate = (d: Date) => d.toLocaleDateString(navigator.language);
         const toTime = (d: Date) => d.toLocaleTimeString(navigator.language);
-        const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
-        const key = time.todoId + ' ' + time.start.toString();
+        const at = date(timu);
+        const atDate = toDate(new Date(at));
+        if ('start' in timu) { // Time
+          const time = timu;
+          if (!time.end) return;
+          const startDate = new Date(time.start);
+          const endDate = new Date(time.end);
+          const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
+        } else { // TodoMutation
+          const mutation = timu;
+        }
+        const key = timu.todoId + ' ' + at;
         return <Box key={key}>
-          {curDate != date && (curDate = date) && <Heading size="lg">{date}</Heading>}
-          {/* <p>{JSON.stringify(time)}</p> */}
-          <p><Tooltip hasArrow label={toTime(endDate)}>{toTime(startDate)}</Tooltip> for {duration.format(seconds)} - {time.todo.text}</p>
+          {curDate != atDate && (curDate = atDate) && <Heading size="lg">{atDate}</Heading>}
+          <p>{JSON.stringify(timu)}</p>
+          {/* <p><Tooltip hasArrow label={toTime(endDate)}>{toTime(at)}</Tooltip> for {duration.format(seconds)} - {timu.todo.text}</p> */}
         </Box>;
       }
     )}
