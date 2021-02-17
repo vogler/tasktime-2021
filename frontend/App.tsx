@@ -68,6 +68,7 @@ export default function () {
     if (count && confirm(`There are ${count} times recorded for this item. Delete all?`)) {
       await db.time.deleteMany({where: {todoId: todo.id}});
     }
+    await db.todoMutation.deleteMany({where: {todoId: todo.id}});
     await db.todo.delete({where: {id: todo.id}});
     const newTodos = [...todos];
     newTodos.splice(index, 1); // delete element at index
