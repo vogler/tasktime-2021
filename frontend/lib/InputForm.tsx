@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage, InputProps } from '@chakra-ui/react';
 // import { css, jsx } from '@emotion/react'
 import type { IconType } from 'react-icons';
 import { FaArrowRight } from 'react-icons/fa';
 
-export default function InputForm({ IconOrText = FaArrowRight, resetInput = true, debug = false, ...p }: {
+export default function InputForm({ IconOrText = FaArrowRight, resetInput = false, debug = false, ...p }: {
       submit?: (value: string) => Promise<void | string>,
       inputProps?: InputProps,
       IconOrText?: IconType | string, // needs to be uppercase, otherwise React assumes it's an HTML element
@@ -32,6 +32,11 @@ export default function InputForm({ IconOrText = FaArrowRight, resetInput = true
       }
     }
   };
+
+  useEffect(() => { // TODO remove once it does not rerender anymore
+    console.log('mount/render InputForm');
+    return () => console.log('unmount InputForm');
+  }, []);
 
   return (
     <form onSubmit={handleSubmit}>

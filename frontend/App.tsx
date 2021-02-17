@@ -29,8 +29,7 @@ export const rgtime = selectorFamily({
   get: (running: boolean) => ({get}) =>
      running ? get(gtime) : 0
 });
-
-function Timer() { // put in its own componenent, otherwise the whole app rerenders every second
+function Timer() { // this is its own componenent, otherwise the whole app rerenders every second
   const [time, setTime] = useRecoilState(gtime);
   useEffect(() => {
     const timer = setTimeout(() => setTime(time + 1), 1000); // + 1 every second
@@ -39,8 +38,11 @@ function Timer() { // put in its own componenent, otherwise the whole app rerend
 
   return (<>{time}</>);
 }
+
+const atodos = atom({ key: 'todos', default: dbTodos });
+
 export default function () {
-  const [todos, setTodos] = useState(dbTodos);
+  const [todos, setTodos] = useRecoilState(atodos); // with useState, got error in InputForm: 'Can't perform a React state update on an unmounted component' -> got unmounted by setTodos in addTodo. TODO: move out InputForm so that it does not rerender on setTodos.
   const [showDone, setShowDone] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
   const [orderBy, setOrderBy] = useState(dbTodoOrderBy); // this can sort by multiple fields, below we just sort by one
