@@ -39,10 +39,25 @@ function Timer() { // this is its own componenent, otherwise the whole app reren
   return (<>{time}</>);
 }
 
-const atodos = atom({ key: 'todos', default: dbTodos });
+const atodos = atom({ key: 'todos', default: dbTodos }); // recoil atom instead of useState since AddTodo should not rerender after addTodo and therefore must not be in/under some component that has the todos via useState
 
-export default function () {
-  const [todos, setTodos] = useRecoilState(atodos); // with useState, got error in InputForm: 'Can't perform a React state update on an unmounted component' -> got unmounted by setTodos in addTodo. TODO: move out InputForm so that it does not rerender on setTodos.
+function AddTodo() {
+  const [todos, setTodos] = useRecoilState(atodos);
+
+  const addTodo = async (text: string) => {
+    if (text == '') return 'Task is empty';
+    // if (todos.includes(value)) return 'Todo exists';
+    // await delay(1000);
+    const todo = await db.todo.create({data: {text, mutations: {create: {text}}}, include});
+    setTodos([...todos, todo]);
+    console.log('addTodo', todo, todos); // todos not updated yet here
+  };
+
+  return <InputForm submit={addTodo} inputProps={{placeholder: 'new task...', autoComplete: 'off', autoFocus: true /* does nothing */}} />;
+}
+
+function Tasks() { // Collect
+  const [todos, setTodos] = useRecoilState(atodos);
   const [showDone, setShowDone] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
   const [orderBy, setOrderBy] = useState(dbTodoOrderBy); // this can sort by multiple fields, below we just sort by one
@@ -54,15 +69,6 @@ export default function () {
     console.log(orderBy);
     setTodos(await db.todo.findMany({include, orderBy}));
   }, [orderBy]); // TODO sort locally?
-
-  const addTodo = async (text: string) => {
-    if (text == '') return 'Task is empty';
-    // if (todos.includes(value)) return 'Todo exists';
-    // await delay(1000);
-    const todo = await db.todo.create({data: {text, mutations: {create: {text}}}, include});
-    setTodos([...todos, todo]);
-    console.log('addTodo', todo, todos); // todos not updated yet here
-  };
 
   const delTodo = (index: number) => async () => {
     const todo = todos[index];
@@ -95,9 +101,9 @@ export default function () {
 
   const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
 
-  const Tasks = () => ( // Collect
+  return (
     <>
-      <InputForm submit={addTodo} inputProps={{placeholder: 'new task...', autoComplete: 'off', autoFocus: true}} />
+      <AddTodo />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
           ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} showDetails={showDetails} />) // do not use index as key since it changes with the order of the list and on deletion
@@ -134,45 +140,47 @@ export default function () {
       <ThemeToggle />
     </>
   );
+}
 
-  const History = () => {
-    const [times, setTimes] = useState(dbTimes);
-    let curDate: string;
-    return (<Box>
-      {times.map((time, index) => {
-          if (!time.end) return;
-          const startDate = new Date(time.start);
-          const endDate = new Date(time.end);
-          const date = endDate.toLocaleDateString(navigator.language);
-          const toTime = (d: Date) => d.toLocaleTimeString(navigator.language);
-          const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
-          const key = time.todoId + ' ' + time.start.toString();
-          return <Box key={key}>
-            {curDate != date && (curDate = date) && <Heading size="lg">{date}</Heading>}
-            {/* <p>{JSON.stringify(time)}</p> */}
-            <p><Tooltip hasArrow label={toTime(endDate)}>{toTime(startDate)}</Tooltip> for {duration.format(seconds)} - {time.todo.text}</p>
-          </Box>;
-        }
-      )}
-    </Box>);
-  };
+function History() {
+  const [times, setTimes] = useState(dbTimes);
+  let curDate: string;
+  return (<Box>
+    {times.map((time, index) => {
+        if (!time.end) return;
+        const startDate = new Date(time.start);
+        const endDate = new Date(time.end);
+        const date = endDate.toLocaleDateString(navigator.language);
+        const toTime = (d: Date) => d.toLocaleTimeString(navigator.language);
+        const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
+        const key = time.todoId + ' ' + time.start.toString();
+        return <Box key={key}>
+          {curDate != date && (curDate = date) && <Heading size="lg">{date}</Heading>}
+          {/* <p>{JSON.stringify(time)}</p> */}
+          <p><Tooltip hasArrow label={toTime(endDate)}>{toTime(startDate)}</Tooltip> for {duration.format(seconds)} - {time.todo.text}</p>
+        </Box>;
+      }
+    )}
+  </Box>);
+}
 
-  const Navigation = () => {
-    const location = useLocation();
-    // console.log('location', location); // re-executes on e.g. setTodo (also if component definition is moved out)
-    useEffect(() => {
-      document.title = 'track-time' + ' - ' + (location.pathname == '/' ? 'tasks' : location.pathname.replace(/^\//, ''));
-    }, [location]);
-    const NavButton = ({ text, to = '/'+text.toLowerCase() } : { text: string, to?: string }) =>
-      <Button as={Link} to={to} isActive={location.pathname == to} borderTopRadius="0">{text}</Button>;
-    return (
-      <ButtonGroup isAttached variant="outline" >
-        <NavButton text="Tasks" to="/" />
-        <NavButton text="History" />
-      </ButtonGroup>
-    );
-  }
+function Navigation() {
+  const location = useLocation();
+  // console.log('location', location); // re-executes on e.g. setTodo (also if component definition is moved out)
+  useEffect(() => {
+    document.title = 'track-time' + ' - ' + (location.pathname == '/' ? 'tasks' : location.pathname.replace(/^\//, ''));
+  }, [location]);
+  const NavButton = ({ text, to = '/'+text.toLowerCase() } : { text: string, to?: string }) =>
+    <Button as={Link} to={to} isActive={location.pathname == to} borderTopRadius="0">{text}</Button>;
+  return (
+    <ButtonGroup isAttached variant="outline" >
+      <NavButton text="Tasks" to="/" />
+      <NavButton text="History" />
+    </ButtonGroup>
+  );
+}
 
+export default function () {
   return (
     <Router>
       <VStack>
