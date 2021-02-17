@@ -57,7 +57,7 @@ export default function () {
     if (text == '') return 'Task is empty';
     // if (todos.includes(value)) return 'Todo exists';
     // await delay(1000);
-    const todo = await db.todo.create({data: {text}, include});
+    const todo = await db.todo.create({data: {text, mutations: {create: {text}}}, include});
     setTodos([...todos, todo]);
     console.log('addTodo', todo, todos); // todos not updated yet here
   };
@@ -79,7 +79,9 @@ export default function () {
   const setTodo = (index: number) => async ({id, updatedAt, ...todo}: Todo, times?: TimeMutation) => { // omit updatedAt so that it's updated by the db
     const data = diff(todos[index], todo);
     console.log('setTodo: diff:', data, 'times:', times);
-    if (equals(data, {}) && !times) return;
+    if (equals(data, {}) && !times) return; // no changes
+    const {time, ...mutableData} = data; // need to filter out memoized fields. TODO generic pick of fields in TodoMutation?
+    if (!equals(mutableData, {})) data.mutations = {create: {...mutableData}};
     data.times = times;
     const newTodo = await db.todo.update({data, where: {id}, include});
     console.log('setTodo: db:', newTodo);
@@ -92,7 +94,7 @@ export default function () {
 
   const Tasks = () => ( // Collect
     <>
-      <InputForm submit={addTodo} inputProps={{placeholder: 'new task...', autoComplete: 'off', autoFocus: true /* does nothing*/}} />
+      <InputForm submit={addTodo} inputProps={{placeholder: 'new task...', autoComplete: 'off', autoFocus: true}} />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
           ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} showDetails={showDetails} />) // do not use index as key since it changes with the order of the list and on deletion

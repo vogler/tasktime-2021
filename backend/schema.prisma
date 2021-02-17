@@ -18,9 +18,10 @@ model Todo {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  text      String
-  done      Boolean  @default(false)
-  time      Int      @default(0)
+  text      String   // mutable
+  done      Boolean  @default(false) // mutable
+  mutations TodoMutation[]
+  time      Int      @default(0) // memo: select sum("end"-"start") from "Time" where "todoId"="id"
   times     Time[]
 }
 
@@ -30,4 +31,26 @@ model Time {
   start  DateTime  @default(now())
   end    DateTime?
   @@id([todoId, start])
+}
+
+model TodoMutation {
+  // tracking previous/parent/predecessor mutation would allow branching:
+  // id     Int @id @default(autoincrement())
+  // prevId Int?
+  // prev   TodoMutation? @relation(fields: [prevId], references: [id])
+  todoId Int
+  todo   Todo @relation(fields: [todoId], references: [id])
+  at     DateTime @default(now())
+  // option 1: save the old value on mutation while Todo has the new value.
+  //   Pro: only need to create row on update of Todo, saves one row of duplication
+  //   Con: complicated to generate complete history, e.g. create + 2 changes of text:
+  //     [Todo.createdAt, TodoMutation[0].text; TodoMutation[0].at, TodoMutation[1].text; Todo.updatedAt, Todo.text]
+  // option 2: save the new value on mutation
+  //   Pro: complete history w/o data from Todo:
+  //     [[0].at, [0].text; [1].at, [1].text; [2].at, [2].text]
+  //   Con: need to create first row on create of Todo, rest on update
+  // -> use option 2
+  text   String?
+  done   Boolean?
+  @@id([todoId, at])
 }
