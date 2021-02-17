@@ -134,6 +134,7 @@ function Tasks() { // Collect
       <Divider />
       <VStack color="gray.500">
         <Text>Usage: click an item to edit it (escape to cancel, enter/blur to save).</Text>
+        <Text>Marking as completed stops the timer; starting a completed task marks it as uncompleted.</Text>
         <Text>Page has been open for <code><Timer /></code> seconds.</Text>
         <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
       </VStack>

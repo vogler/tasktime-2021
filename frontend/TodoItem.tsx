@@ -4,6 +4,7 @@ import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePr
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
 import { duration } from './lib/util';
+import { useDepEffect } from './lib/react';
 import { rgtime } from './App';
 import type { Todo, TimeMutation } from '../shared/db';
 
@@ -38,7 +39,7 @@ function DateDist(p: {date: Date, prefix?: string}) {
 
 type set = (todo: Todo, times?: TimeMutation) => void;
 
-function Timer({ todo, set }: { todo: Todo, set: set }) {
+function Timer({ todo, set, done }: { todo: Todo, set: set, done: boolean }) {
   const lastTime = todo.times[0]; // relies on times being orderBy: {start: 'desc'}
   const [running, setRunning] = useState(lastTime?.end === null);
   const gtime = useRecoilValue(rgtime(running)); // 0 if not running to avoid re-renders
@@ -52,32 +53,48 @@ function Timer({ todo, set }: { todo: Todo, set: set }) {
     }
     // console.log(`time: ${todo.text}`); // should only be output for running timers
   }, [gtime]); // gtime will only update if running to avoid useless calls!
-  const timer = () => {
-    if (!running) {
+  useDepEffect(() => {
+    if (done && running) {
+      console.log('Timer: stop on done!');
+      setRunning(false);
+    } else {
+      set({...todo, done}); // just update done
+    }
+  }, [done]);
+  useDepEffect(() => {
+    let newTodo = {...todo, done}; // need to make a shallow copy of the item to mutate, otherwise it's not detected as updated
+    if (running) {
+      if (done) {
+        console.log('Timer: mark undone on start!');
+        newTodo.done = false;
+      }
       setStartTime(Date.now());
-      set(todo, { create: { } });
+      set(newTodo, { create: { } });
     } else {
       console.log(`timer stop: interval from counter: ${time - todo.time}, interval from startTime: ${interval}`);
-      const newTodo = {...todo}; // need to make a shallow copy of the item to mutate, otherwise it's not detected as updated
       newTodo.time += interval;
       set(newTodo, { updateMany: { data: { end: new Date() }, where: { end: null } } }); // TODO is there a symbol for now() on the server? local end time might be not in sync with server start time... https://github.com/prisma/prisma/discussions/5582
       setTime(newTodo.time); // correct accumulated time (prob. too low since it counts every >1s) with precise time from diff
     }
-    setRunning(!running);
-  };
+  }, [running]);
   const [hover, setHover] = useState(false);
 
   return (
     <Button aria-label={running ? 'stop time' : 'start time'}
       leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />}
       size="sm" variant="ghost" w={24} justifyContent="left"
-      onClick={timer} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}
+      onClick={() => setRunning(!running)} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}
     </Button>
   );
 }
 
 export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, del: () => void, set: set, showDetails: boolean }) {
-  const toggle = (done: boolean) => set({...todo, done});
+  const [done, setDone] = useState(todo.done); // to keep (done => !running && running => !done) we need to let Timer know about done
+  useDepEffect(() => setDone(todo.done), [todo]); // when Timer sets !done on running, the change comes through todo, but the above useState alone does not update
+  const toggle = (done: boolean) => {
+    setDone(done);
+    // set({...todo, done}); // this was enough to just update done; now Timer handles updates to keep running/done in sync
+  }
   const submit = (text: string) => {
     if (text == todo.text) return;
     console.log(`Editable.submit: ${text}`);
@@ -106,7 +123,7 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
       <Spacer />
       {/* <IconButton2 onClick={e => console.log(e)} aria-label="edit" icon={<FaRegEdit />} /> */}
       <IconButton2 onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} />
-      <Timer todo={todo} set={set} />
+      <Timer todo={todo} set={set} done={done} />
     </Flex>
   )
 }
