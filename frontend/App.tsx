@@ -148,7 +148,7 @@ function Tasks() { // Collect
 
 const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
 let i = 0;
-const mergeSort = (times: Time[], mutations: TodoMutation[]) => {
+const mergeSort = (times: Time[], mutations: TodoMutation[]) => { // O(n*log(n))?
   // TODO: more efficient merge sort since both are already sorted, see https://wsvincent.com/javascript-merge-two-sorted-arrays/
   console.time(`concat+sort ${i}`);
   const r = [...times, ...mutations].sort(cmpBy(date, 'desc'));
@@ -157,11 +157,9 @@ const mergeSort = (times: Time[], mutations: TodoMutation[]) => {
   return r;
 };
 const toDate = (x: Time | TodoMutation) => toDateLS(new Date(date(x))); // new not composable?
-console.log(groupBy(toDate, mergeSort(dbTimes, dbTodoMutations)))
+const dbHistory = groupBy(toDate, mergeSort(dbTimes, dbTodoMutations)); // If we do this in History, it is executed 4 times instead of once. However, here it is always executed, not just when History is mounted.
 
-const dbHistory = mergeSort(dbTimes, dbTodoMutations); // If we do this in History, it is executed 4 times instead of once. However, here it is always executed, not just when History is mounted.
-
-const calcPreMu = (mutations: TodoMutation[]) => {
+const calcPreMu = (mutations: TodoMutation[]) => { // O(n)
   // hashtable to lookup the previous mutation's text to show diff
   let preMu: { [todoId: number]: {at: string; text: string}[] } = {};
   // fill lookup hashtable preMu
@@ -175,6 +173,50 @@ const calcPreMu = (mutations: TodoMutation[]) => {
 }
 const dbPreMu = calcPreMu(dbTodoMutations);
 
+const TimeDetail = ({time}: {time: Time}) => {
+  const startDate = new Date(time.start);
+  const endDate = new Date(time.end ?? Date.now());
+  const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
+  const running = !time.end ? '(running)' : '';
+  return <>
+    <Tag variant="outline">
+      <TagLeftIcon as={FaRegClock} />
+      <TagLabel>
+        <Tooltip hasArrow label={`until ${toTimeLS(endDate)}`}>{`${duration.format(seconds)}`}</Tooltip>
+      </TagLabel>
+    </Tag>
+    <Text>{running}</Text>
+  </>;
+};
+function HistoryEntry({timu, preMu}: {timu: Time | TodoMutation, preMu: typeof dbPreMu}) {
+  const MutationDetail = ({mutation, text = false}: {mutation: TodoMutation, text?: boolean}) => { // could pull out, but would need to add timu, preMu
+    if (text) {
+      const index = preMu[mutation.todoId]?.findIndex(({at,..._}) => at == mutation.at.toString());
+      const oldText = preMu[mutation.todoId][index+1]?.text ?? '';
+      const now = mutation.text != timu.todo.text ? `(now ${timu.todo.text})` : '';
+      return <>{`${oldText} -> ${mutation.text} ${now}`}</>;
+    }
+    return (<>
+      {mutation.done !== null && <Icon as={mutation.done ? FaRegCheckCircle : FaRegCircle} />}
+      {mutation.text !== null && <Icon as={FaRegEdit} />}
+    </>);
+  };
+  const time = toTimeLS(new Date(date(timu)));
+  return <Flex>
+    <Box w={82} fontFamily="'Courier New', monospace">{time}</Box>
+    <Box w={95} textAlign="center">
+      {'start' in timu
+        ? <TimeDetail time={timu} />
+        : <MutationDetail mutation={timu} />
+      }
+    </Box>
+    {'text' in timu && timu.text !== null
+      ? <MutationDetail mutation={timu} text={true} />
+      : timu.todo.text
+    }
+  </Flex>;
+}
+
 function History() {
   // const [times, setTimes] = useState(dbTimes);
   // const [todoMutations, setTodoMutations] = useState(dbTodoMutations);
@@ -184,62 +226,19 @@ function History() {
     const times = await db.time.findMany({include: timeInclude, orderBy: {start: 'desc'}});
     const mutations = await db.todoMutation.findMany({include: timeInclude, orderBy: {at: 'desc'}});
     setPreMu(calcPreMu(mutations));
-    setHistory(mergeSort(times, mutations));
-    console.log(preMu);
+    setHistory(groupBy(toDate, mergeSort(times, mutations)));
     console.log('History reloaded');
   }, []);
-  let curDate: string;
   return (<Box>
-    {history.map((timu, index) => {
-        // if ('end' in timu && !timu.end) return;
-        const at = date(timu);
-        const atDate = toDateLS(new Date(at));
-        const atTime = toTimeLS(new Date(at));
-        const TimeDetail = ({time}: {time: Time}) => {
-          const startDate = new Date(time.start);
-          const endDate = new Date(time.end ?? Date.now());
-          const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
-          const running = !time.end ? '(running)' : '';
-          return <>
-            <Tag variant="outline">
-              <TagLeftIcon as={FaRegClock} />
-              <TagLabel>
-                <Tooltip hasArrow label={`until ${toTimeLS(endDate)}`}>{`${duration.format(seconds)}`}</Tooltip>
-              </TagLabel>
-            </Tag>
-            <Text>{running}</Text>
-          </>;
-        };
-        const MutationDetail = ({mutation, text = false}: {mutation: TodoMutation, text?: boolean}) => {
-          if (text) {
-            const index = preMu[mutation.todoId]?.findIndex(({at,..._}) => at == mutation.at.toString());
-            const oldText = preMu[mutation.todoId][index+1]?.text ?? '';
-            const now = mutation.text != timu.todo.text ? `(now ${timu.todo.text})` : '';
-            return <>{`${oldText} -> ${mutation.text} ${now}`}</>;
-          }
-          return (<>
-            {mutation.done !== null && <Icon as={mutation.done ? FaRegCheckCircle : FaRegCircle} />}
-            {mutation.text !== null && <Icon as={FaRegEdit} />}
-          </>);
-        };
-        const key = timu.todoId + ' ' + at;
-        return <React.Fragment key={key}>
-          {curDate != atDate && (curDate = atDate) && <Heading size="lg">{atDate}</Heading>}
-          {<Flex>
-            <Box w={82} fontFamily="'Courier New', monospace">{atTime}</Box>
-            <Box w={95} textAlign="center">
-              {'start' in timu
-                ? <TimeDetail time={timu} />
-                : <MutationDetail mutation={timu} />
-              }
-            </Box>
-            {'text' in timu && timu.text !== null
-              ? <MutationDetail mutation={timu} text={true} />
-              : timu.todo.text
-            }
-          </Flex>}
-        </React.Fragment>;
-      }
+    {history.map((group, _) =>
+      <React.Fragment key={group.group}>
+        <Heading size="lg" mt={3}>{group.group}</Heading>
+        <Box shadow="md" borderWidth="1px">
+          {group.entries.map(timu =>
+            <HistoryEntry timu={timu} preMu={preMu} key={timu.todoId+date(timu)} />
+          )}
+        </Box>
+      </React.Fragment>
     )}
   </Box>);
 }
