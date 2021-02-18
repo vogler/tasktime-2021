@@ -34,13 +34,16 @@ model Time {
 }
 
 model TodoMutation {
-  // tracking previous/parent/predecessor mutation would allow branching:
-  // id     Int @id @default(autoincrement())
-  // prevId Int?
-  // prev   TodoMutation? @relation(fields: [prevId], references: [id])
+  // tracking previous/parent/predecessor mutation makes it easier to generate diff and allows for branching:
+  id     Int @id @default(autoincrement())
+  prevId Int?
+  prev   TodoMutation? @relation(fields: [prevId], references: [id])
+  // not so useful for e.g. getting the old text since there might be other mutations inbetween and prisma only includes one
   todoId Int
   todo   Todo @relation(fields: [todoId], references: [id])
   at     DateTime @default(now())
+  // @@id([todoId, at]) // used before adding id, prev
+
   // option 1: save the old value on mutation while Todo has the new value.
   //   Pro: only need to create row on update of Todo, saves one row of duplication
   //   Con: complicated to generate complete history, e.g. create + 2 changes of text:
@@ -52,5 +55,4 @@ model TodoMutation {
   // -> use option 2
   text   String?
   done   Boolean?
-  @@id([todoId, at])
 }

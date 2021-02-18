@@ -91,7 +91,10 @@ function Tasks() { // Collect
     console.log('setTodo: diff:', data, 'times:', times);
     if (equals(data, {}) && !times) return; // no changes
     const {time, ...mutableData} = data; // need to filter out memoized fields. TODO generic pick of fields in TodoMutation?
-    if (!equals(mutableData, {})) data.mutations = {create: {...mutableData}};
+    if (!equals(mutableData, {})) {
+      const prev = await db.todoMutation.findFirst({select: {id: true}, where: {todoId: 59}, orderBy: {at: 'desc'}});
+      data.mutations = {create: {prevId: prev?.id, ...mutableData}};
+    }
     data.times = times;
     const newTodo = await db.todo.update({data, where: {id}, include});
     console.log('setTodo: db:', newTodo);
