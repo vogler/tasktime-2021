@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { atom, selectorFamily, useRecoilState } from 'recoil';
-import { Box, Button, ButtonGroup, Divider, Heading, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text, Tooltip, VStack } from '@chakra-ui/react';
-import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
+import { Box, Button, ButtonGroup, Divider, Flex, Heading, HStack, Icon, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Tag, TagLabel, TagLeftIcon, Text, Tooltip, VStack } from '@chakra-ui/react';
+import { FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { useAsyncDepEffect, useAsyncEffect } from './lib/react';
 import { diff, equals, duration, cmpBy } from './lib/util';
 import InputForm from './lib/InputForm';
@@ -181,19 +181,32 @@ function History() {
           const endDate = new Date(time.end ?? Date.now());
           const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
           const running = !time.end ? '(running)' : '';
-          return <Tooltip hasArrow label={`until ${toTime(endDate)}`}>{`for ${duration.format(seconds)} ${running}`}</Tooltip>;
+          return <>
+            <Tag variant="outline">
+              <TagLeftIcon as={FaRegClock} />
+              <TagLabel>
+                <Tooltip hasArrow label={`until ${toTime(endDate)}`}>{`${duration.format(seconds)}`}</Tooltip>
+              </TagLabel>
+            </Tag>
+            <Text>{running}</Text>
+          </>;
         };
         const MutationDetail = ({mutation}: {mutation: TodoMutation}) => {
           // const pick = (field: string) => mutation[field];
-          return (<>{mutation.done !== null && `done: ${mutation.done.toString()}`}</>);
+          return (<>
+            {mutation.done !== null && <Icon as={mutation.done ? FaRegCheckCircle : FaRegCircle} />}
+            {mutation.text !== null && <Icon as={FaRegEdit} />}
+          </>);
         };
         const key = timu.todoId + ' ' + at;
-        return <Box key={key}>
+        return <React.Fragment key={key}>
           {curDate != atDate && (curDate = atDate) && <Heading size="lg">{atDate}</Heading>}
-          {/* <p>{JSON.stringify(timu)}</p> */}
-          {<p>{atTime} {'start' in timu ? <TimeDetail time={timu} /> : <MutationDetail mutation={timu} />} - <Tooltip hasArrow label={JSON.stringify(timu)}>{timu.todo.text}</Tooltip></p>}
-          {/* <p><Tooltip hasArrow label={toTime(endDate)}>{toTime(at)}</Tooltip> for {duration.format(seconds)} - {timu.todo.text}</p> */}
-        </Box>;
+          {<Flex>
+            <Box w={84} fontFamily="'Courier New', monospace">{atTime}</Box>
+            <Box w={95} textAlign="center">{'start' in timu ? <TimeDetail time={timu} /> : <MutationDetail mutation={timu} />}</Box>
+            <Tooltip hasArrow label={JSON.stringify(timu)}>{timu.todo.text}</Tooltip>
+          </Flex>}
+        </React.Fragment>;
       }
     )}
   </Box>);
