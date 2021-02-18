@@ -148,7 +148,7 @@ function Tasks() { // Collect
 const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
 let i = 0;
 const mergeSort = (times: Time[], mutations: TodoMutation[]) => {
-  // TODO: more efficient merge sort since both are already sorted
+  // TODO: more efficient merge sort since both are already sorted, see https://wsvincent.com/javascript-merge-two-sorted-arrays/
   console.time(`concat+sort ${i}`);
   const r = [...times, ...mutations].sort(cmpBy(date, 'desc'));
   console.timeEnd(`concat+sort ${i}`);
