@@ -9,7 +9,7 @@ import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
 import { Todo, Time, include, dbTodoOrderBy, TimeMutation, TodoMutation, timeInclude } from '../shared/db';
-import { BrowserRouter as Router, Switch, Route, Link, NavLink, useRouteMatch, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Link, useLocation } from "react-router-dom";
 
 // @ts-ignore
 globalThis.db = db; // for direct db access in Chrome console, TODO remove
