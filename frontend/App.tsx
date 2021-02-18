@@ -145,19 +145,25 @@ function Tasks() { // Collect
 }
 
 function History() {
-  const [times, setTimes] = useState(dbTimes);
-  const [todoMutations, setTodoMutations] = useState(dbTodoMutations);
+  // const [times, setTimes] = useState(dbTimes);
+  // const [todoMutations, setTodoMutations] = useState(dbTodoMutations);
+  const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
+  let i = 0;
+  const mergeSort = (times: Time[], mutations: TodoMutation[]) => {
+    // TODO: more efficient merge sort since both are already sorted
+    console.time(`concat+sort ${i}`);
+    const r = [...times, ...mutations].sort(cmpBy(date, 'desc'));
+    console.timeEnd(`concat+sort ${i}`);
+    i++;
+    return r;
+  };
+  const [history, setHistory] = useState(mergeSort(dbTimes, dbTodoMutations));
   useAsyncEffect(async () => {
-    setTimes(await db.time.findMany({include: timeInclude, orderBy: {start: 'desc'}}));
-    setTodoMutations(await db.todoMutation.findMany({include: timeInclude, orderBy: {at: 'desc'}}));
+    const times = await db.time.findMany({include: timeInclude, orderBy: {start: 'desc'}});
+    const mutations = await db.todoMutation.findMany({include: timeInclude, orderBy: {at: 'desc'}});
+    setHistory(mergeSort(times, mutations));
     console.log('History reloaded');
   }, []);
-  // merge times and todoMutations; TODO: efficient merge sort since both are already sorted
-  const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
-  // console.time('concat+sort');
-  const history = [...times, ...todoMutations].sort(cmpBy(date, 'desc'));
-  // console.timeEnd('concat+sort');
-  // console.log('concat+sort');
   let curDate: string;
   return (<Box>
     {history.map((timu, index) => {
