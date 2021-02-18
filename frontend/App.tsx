@@ -144,20 +144,23 @@ function Tasks() { // Collect
   );
 }
 
+
+const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
+let i = 0;
+const mergeSort = (times: Time[], mutations: TodoMutation[]) => {
+  // TODO: more efficient merge sort since both are already sorted
+  console.time(`concat+sort ${i}`);
+  const r = [...times, ...mutations].sort(cmpBy(date, 'desc'));
+  console.timeEnd(`concat+sort ${i}`);
+  i++;
+  return r;
+};
+const dbHistory = mergeSort(dbTimes, dbTodoMutations); // If we do this in History, it is executed 4 times instead of once. However, here it is always executed, not just when History is mounted.
+
 function History() {
   // const [times, setTimes] = useState(dbTimes);
   // const [todoMutations, setTodoMutations] = useState(dbTodoMutations);
-  const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
-  let i = 0;
-  const mergeSort = (times: Time[], mutations: TodoMutation[]) => {
-    // TODO: more efficient merge sort since both are already sorted
-    console.time(`concat+sort ${i}`);
-    const r = [...times, ...mutations].sort(cmpBy(date, 'desc'));
-    console.timeEnd(`concat+sort ${i}`);
-    i++;
-    return r;
-  };
-  const [history, setHistory] = useState(mergeSort(dbTimes, dbTodoMutations));
+  const [history, setHistory] = useState(dbHistory);
   useAsyncEffect(async () => {
     const times = await db.time.findMany({include: timeInclude, orderBy: {start: 'desc'}});
     const mutations = await db.todoMutation.findMany({include: timeInclude, orderBy: {at: 'desc'}});
