@@ -156,6 +156,24 @@ const mergeSort = (times: Time[], mutations: TodoMutation[]) => {
   i++;
   return r;
 };
+const groupBy = (f: (at: Date) => string, history: (Time | TodoMutation)[]) => {
+  const r: {group: string, entries: (Time | TodoMutation)[]}[] = [];
+  let curGroup: string;
+  let i = -1;
+  history.forEach(timu => {
+    const group = f(new Date(date(timu)));
+    if (group != curGroup) {
+      r[++i] = {group, entries: []};
+      curGroup = group;
+    }
+    r[i].entries.push(timu);
+  });
+  return r;
+}
+const toDate = (d: Date) => d.toLocaleDateString(navigator.language);
+const toTime = (d: Date) => d.toLocaleTimeString(navigator.language);
+console.log(groupBy(toDate, mergeSort(dbTimes, dbTodoMutations)))
+
 const dbHistory = mergeSort(dbTimes, dbTodoMutations); // If we do this in History, it is executed 4 times instead of once. However, here it is always executed, not just when History is mounted.
 
 const calcPreMu = (mutations: TodoMutation[]) => {
@@ -189,8 +207,6 @@ function History() {
   return (<Box>
     {history.map((timu, index) => {
         // if ('end' in timu && !timu.end) return;
-        const toDate = (d: Date) => d.toLocaleDateString(navigator.language);
-        const toTime = (d: Date) => d.toLocaleTimeString(navigator.language);
         const at = date(timu);
         const atDate = toDate(new Date(at));
         const atTime = toTime(new Date(at));
