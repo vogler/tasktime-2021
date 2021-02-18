@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { atom, selectorFamily, useRecoilState } from 'recoil';
 import { Box, Button, ButtonGroup, Divider, Heading, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Text, Tooltip, VStack } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
-import { useAsyncDepEffect } from './lib/react';
+import { useAsyncDepEffect, useAsyncEffect } from './lib/react';
 import { diff, equals, duration, cmpBy } from './lib/util';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
-import { Todo, Time, include, dbTodoOrderBy, TimeMutation, TodoMutation } from '../shared/db';
+import { Todo, Time, include, dbTodoOrderBy, TimeMutation, TodoMutation, timeInclude } from '../shared/db';
 import { BrowserRouter as Router, Switch, Route, Link, NavLink, useRouteMatch, useLocation } from "react-router-dom";
 
 // @ts-ignore
@@ -147,29 +147,42 @@ function Tasks() { // Collect
 function History() {
   const [times, setTimes] = useState(dbTimes);
   const [todoMutations, setTodoMutations] = useState(dbTodoMutations);
+  useAsyncEffect(async () => {
+    setTimes(await db.time.findMany({include: timeInclude, orderBy: {start: 'desc'}}));
+    setTodoMutations(await db.todoMutation.findMany({include: timeInclude, orderBy: {at: 'desc'}}));
+    console.log('History reloaded');
+  }, []);
   // merge times and todoMutations; TODO: efficient merge sort since both are already sorted
   const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
+  // console.time('concat+sort');
   const history = [...times, ...todoMutations].sort(cmpBy(date, 'desc'));
+  // console.timeEnd('concat+sort');
+  // console.log('concat+sort');
   let curDate: string;
   return (<Box>
     {history.map((timu, index) => {
+        // if ('end' in timu && !timu.end) return;
         const toDate = (d: Date) => d.toLocaleDateString(navigator.language);
         const toTime = (d: Date) => d.toLocaleTimeString(navigator.language);
         const at = date(timu);
         const atDate = toDate(new Date(at));
-        if ('start' in timu) { // Time
-          const time = timu;
-          if (!time.end) return;
+        const atTime = toTime(new Date(at));
+        const TimeDetail = ({time}: {time: Time}) => {
           const startDate = new Date(time.start);
-          const endDate = new Date(time.end);
+          const endDate = new Date(time.end ?? Date.now());
           const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
-        } else { // TodoMutation
-          const mutation = timu;
-        }
+          const running = !time.end ? '(running)' : '';
+          return <Tooltip hasArrow label={`until ${toTime(endDate)}`}>{`for ${duration.format(seconds)} ${running}`}</Tooltip>;
+        };
+        const MutationDetail = ({mutation}: {mutation: TodoMutation}) => {
+          // const pick = (field: string) => mutation[field];
+          return (<>{mutation.done !== null && `done: ${mutation.done.toString()}`}</>);
+        };
         const key = timu.todoId + ' ' + at;
         return <Box key={key}>
           {curDate != atDate && (curDate = atDate) && <Heading size="lg">{atDate}</Heading>}
-          <p>{JSON.stringify(timu)}</p>
+          {/* <p>{JSON.stringify(timu)}</p> */}
+          {<p>{atTime} {'start' in timu ? <TimeDetail time={timu} /> : <MutationDetail mutation={timu} />} - <Tooltip hasArrow label={JSON.stringify(timu)}>{timu.todo.text}</Tooltip></p>}
           {/* <p><Tooltip hasArrow label={toTime(endDate)}>{toTime(at)}</Tooltip> for {duration.format(seconds)} - {timu.todo.text}</p> */}
         </Box>;
       }
