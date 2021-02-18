@@ -3,7 +3,7 @@ import { atom, selectorFamily, useRecoilState } from 'recoil';
 import { Box, Button, ButtonGroup, Divider, Flex, Heading, HStack, Icon, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Stack, Tag, TagLabel, TagLeftIcon, Text, Tooltip, VStack } from '@chakra-ui/react';
 import { FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { useAsyncDepEffect, useAsyncEffect } from './lib/react';
-import { diff, equals, duration, cmpBy } from './lib/util';
+import { diff, equals, duration, cmpBy, groupBy, toDateLS, toTimeLS } from './lib/util';
 import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
@@ -156,22 +156,7 @@ const mergeSort = (times: Time[], mutations: TodoMutation[]) => {
   i++;
   return r;
 };
-const groupBy = (f: (at: Date) => string, history: (Time | TodoMutation)[]) => {
-  const r: {group: string, entries: (Time | TodoMutation)[]}[] = [];
-  let curGroup: string;
-  let i = -1;
-  history.forEach(timu => {
-    const group = f(new Date(date(timu)));
-    if (group != curGroup) {
-      r[++i] = {group, entries: []};
-      curGroup = group;
-    }
-    r[i].entries.push(timu);
-  });
-  return r;
-}
-const toDate = (d: Date) => d.toLocaleDateString(navigator.language);
-const toTime = (d: Date) => d.toLocaleTimeString(navigator.language);
+const toDate = (x: Time | TodoMutation) => toDateLS(new Date(date(x))); // new not composable?
 console.log(groupBy(toDate, mergeSort(dbTimes, dbTodoMutations)))
 
 const dbHistory = mergeSort(dbTimes, dbTodoMutations); // If we do this in History, it is executed 4 times instead of once. However, here it is always executed, not just when History is mounted.
@@ -208,8 +193,8 @@ function History() {
     {history.map((timu, index) => {
         // if ('end' in timu && !timu.end) return;
         const at = date(timu);
-        const atDate = toDate(new Date(at));
-        const atTime = toTime(new Date(at));
+        const atDate = toDateLS(new Date(at));
+        const atTime = toTimeLS(new Date(at));
         const TimeDetail = ({time}: {time: Time}) => {
           const startDate = new Date(time.start);
           const endDate = new Date(time.end ?? Date.now());
@@ -219,7 +204,7 @@ function History() {
             <Tag variant="outline">
               <TagLeftIcon as={FaRegClock} />
               <TagLabel>
-                <Tooltip hasArrow label={`until ${toTime(endDate)}`}>{`${duration.format(seconds)}`}</Tooltip>
+                <Tooltip hasArrow label={`until ${toTimeLS(endDate)}`}>{`${duration.format(seconds)}`}</Tooltip>
               </TagLabel>
             </Tag>
             <Text>{running}</Text>
