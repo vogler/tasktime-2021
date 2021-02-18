@@ -91,10 +91,8 @@ function Tasks() { // Collect
     console.log('setTodo: diff:', data, 'times:', times);
     if (equals(data, {}) && !times) return; // no changes
     const {time, ...mutableData} = data; // need to filter out memoized fields. TODO generic pick of fields in TodoMutation?
-    if (!equals(mutableData, {})) {
-      const prev = await db.todoMutation.findFirst({select: {id: true}, where: {todoId: 59}, orderBy: {at: 'desc'}});
-      data.mutations = {create: {prevId: prev?.id, ...mutableData}};
-    }
+    if (!equals(mutableData, {}))
+      data.mutations = {create: {...mutableData}};
     data.times = times;
     const newTodo = await db.todo.update({data, where: {id}, include});
     console.log('setTodo: db:', newTodo);
@@ -160,14 +158,31 @@ const mergeSort = (times: Time[], mutations: TodoMutation[]) => {
 };
 const dbHistory = mergeSort(dbTimes, dbTodoMutations); // If we do this in History, it is executed 4 times instead of once. However, here it is always executed, not just when History is mounted.
 
+const calcPreMu = (mutations: TodoMutation[]) => {
+  // hashtable to lookup the previous mutation's text to show diff
+  let preMu: { [todoId: number]: {at: string; text: string}[] } = {};
+  // fill lookup hashtable preMu
+  mutations.forEach(m => {
+    if (m.text !== null) { // only care about text since done is just inverted
+      if (!preMu[m.todoId]) preMu[m.todoId] = [];
+      preMu[m.todoId].push({at: m.at.toString(), text: m.text});
+    }
+  });
+  return preMu;
+}
+const dbPreMu = calcPreMu(dbTodoMutations);
+
 function History() {
   // const [times, setTimes] = useState(dbTimes);
   // const [todoMutations, setTodoMutations] = useState(dbTodoMutations);
   const [history, setHistory] = useState(dbHistory);
+  const [preMu, setPreMu] = useState(dbPreMu);
   useAsyncEffect(async () => {
     const times = await db.time.findMany({include: timeInclude, orderBy: {start: 'desc'}});
     const mutations = await db.todoMutation.findMany({include: timeInclude, orderBy: {at: 'desc'}});
+    setPreMu(calcPreMu(mutations));
     setHistory(mergeSort(times, mutations));
+    console.log(preMu);
     console.log('History reloaded');
   }, []);
   let curDate: string;
@@ -194,8 +209,13 @@ function History() {
             <Text>{running}</Text>
           </>;
         };
-        const MutationDetail = ({mutation}: {mutation: TodoMutation}) => {
-          // const pick = (field: string) => mutation[field];
+        const MutationDetail = ({mutation, text = false}: {mutation: TodoMutation, text?: boolean}) => {
+          if (text) {
+            const index = preMu[mutation.todoId]?.findIndex(({at,..._}) => at == mutation.at.toString());
+            const oldText = preMu[mutation.todoId][index+1]?.text ?? '';
+            const now = mutation.text != timu.todo.text ? `(now ${timu.todo.text})` : '';
+            return <>{`${oldText} -> ${mutation.text} ${now}`}</>;
+          }
           return (<>
             {mutation.done !== null && <Icon as={mutation.done ? FaRegCheckCircle : FaRegCircle} />}
             {mutation.text !== null && <Icon as={FaRegEdit} />}
@@ -205,9 +225,17 @@ function History() {
         return <React.Fragment key={key}>
           {curDate != atDate && (curDate = atDate) && <Heading size="lg">{atDate}</Heading>}
           {<Flex>
-            <Box w={84} fontFamily="'Courier New', monospace">{atTime}</Box>
-            <Box w={95} textAlign="center">{'start' in timu ? <TimeDetail time={timu} /> : <MutationDetail mutation={timu} />}</Box>
-            <Tooltip hasArrow label={JSON.stringify(timu)}>{timu.todo.text}</Tooltip>
+            <Box w={82} fontFamily="'Courier New', monospace">{atTime}</Box>
+            <Box w={95} textAlign="center">
+              {'start' in timu
+                ? <TimeDetail time={timu} />
+                : <MutationDetail mutation={timu} />
+              }
+            </Box>
+            {'text' in timu && timu.text !== null
+              ? <MutationDetail mutation={timu} text={true} />
+              : timu.todo.text
+            }
           </Flex>}
         </React.Fragment>;
       }
