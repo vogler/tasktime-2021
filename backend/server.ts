@@ -80,7 +80,7 @@ app.listen(port, () => {
 });
 
 
-// replaces empty list in App.js with rows from the db
+// replaces empty list in .js files with rows from the db
 // this way the client does not have to issue a second request and wait to display data
 // TODO SSR with ReactDOMServer.renderToString to also serve the HTML
 // besides snowpack example, also see https://github.com/DavidWells/isomorphic-react-example

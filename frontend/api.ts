@@ -47,3 +47,6 @@ const dbm = <M extends model> (model: M) : dbm<M> => {
 };
 export const db = Object.fromEntries(models.map(s => [s, dbm(s)])) as { [M in model]: dbm<M> };
 // db.todo.findMany().then(console.log);
+
+// @ts-ignore
+globalThis.db = db; // for direct db access in Chrome console, TODO remove

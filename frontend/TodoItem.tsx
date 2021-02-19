@@ -5,7 +5,7 @@ import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegCl
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
 import { duration } from './lib/util';
 import { useDepEffect } from './lib/react';
-import { rgtime } from './App';
+import { rgtime } from './Tasks';
 import type { Todo, TimeMutation } from '../shared/db';
 
 // IconButton with defaults size="sm" variant="ghost"
