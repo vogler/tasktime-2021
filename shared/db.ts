@@ -1,4 +1,4 @@
-import type { Prisma, Todo } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import prisma from '@prisma/client'; // values like Prisma.ModelName via default import since CJS does not support named import
 
 // generic definitions for ./backend/server and ./frontend/api
@@ -8,18 +8,18 @@ export type action = Exclude<Prisma.PrismaAction, 'createMany' | 'executeRaw' | 
 export const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 'findFirst', 'updateMany', 'upsert', 'deleteMany', 'aggregate', 'count'] as const; // these are the actions defined on each model. TODO get from prisma? PrismaAction is just a type.
 
 
-// specific to Todo/Time
+// specific to Todo/Time/Mutation
 export const include = {times: {orderBy: {start: 'desc' as const}}}; // {times: true} had no reliable order for times; only needed for running Timer
 // export type TodoFlat = Todo;
 type TodoFull = Prisma.TodoGetPayload<{include: typeof include}>;
 export {TodoFull as Todo};
+export const todoOrderBy: Prisma.TodoOrderByInput = { createdAt: 'asc' };
 
-export const timeInclude = {todo: {select: {text: true, time: true, done: true}}};
-type TimeFull = Prisma.TimeGetPayload<{include: typeof timeInclude}>
+export const todoInclude = {todo: {select: {text: true, time: true, done: true}}};
+
+type TimeFull = Prisma.TimeGetPayload<{include: typeof todoInclude}>
 export {TimeFull as Time};
-type TodoMutationFull = Prisma.TodoMutationGetPayload<{include: typeof timeInclude}>
-export {TodoMutationFull as TodoMutation};
-
 export type TimeMutation = Prisma.TimeUpdateManyWithoutTodoInput;
 
-export const dbTodoOrderBy: Prisma.TodoOrderByInput = { createdAt: 'asc' };
+type TodoMutationFull = Prisma.TodoMutationGetPayload<{include: typeof todoInclude}>
+export {TodoMutationFull as TodoMutation};

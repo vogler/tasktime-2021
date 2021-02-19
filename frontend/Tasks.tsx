@@ -9,7 +9,7 @@ import InputForm from './lib/InputForm';
 import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
-import { Todo, include, dbTodoOrderBy, TimeMutation } from '../shared/db';
+import { Todo, include, todoOrderBy, TimeMutation } from '../shared/db';
 
 // initial data from db replaced by the server:
 export const dbTodos: Todo[] = [];
@@ -56,7 +56,7 @@ export default function Tasks() { // Collect
   const [todos, setTodos] = useRecoilState(atodos);
   const [showDone, setShowDone] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
-  const [orderBy, setOrderBy] = useState(dbTodoOrderBy); // this can sort by multiple fields, below we just sort by one
+  const [orderBy, setOrderBy] = useState(todoOrderBy); // this can sort by multiple fields, below we just sort by one
   const orderField = () => Object.keys(orderBy)[0];
   const orderOrder = () => Object.values(orderBy)[0];
 

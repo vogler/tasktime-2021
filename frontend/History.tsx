@@ -5,7 +5,7 @@ import { FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit } from 'react-icon
 import { useAsyncEffect } from './lib/react';
 import { duration, cmpBy, groupBy, toDateLS, toTimeLS } from './lib/util';
 import { db } from './api'; // api to db on server
-import { Time, TodoMutation, timeInclude } from '../shared/db';
+import { Time, TodoMutation, todoInclude } from '../shared/db';
 
 // initial data from db replaced by the server:
 const dbTimes: Time[] = [];
@@ -89,8 +89,8 @@ export default function History() {
   const [history, setHistory] = useState(dbHistory);
   const [preMu, setPreMu] = useState(dbPreMu);
   useAsyncEffect(async () => {
-    const times = await db.time.findMany({include: timeInclude, orderBy: {start: 'desc'}});
-    const mutations = await db.todoMutation.findMany({include: timeInclude, orderBy: {at: 'desc'}});
+    const times = await db.time.findMany({include: todoInclude, orderBy: {start: 'desc'}});
+    const mutations = await db.todoMutation.findMany({include: todoInclude, orderBy: {at: 'desc'}});
     setPreMu(calcPreMu(mutations));
     setHistory(groupBy(toDate, mergeSort(times, mutations)));
     console.log('History reloaded');

@@ -50,7 +50,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 }
 
 import { inspect } from 'util';
-import { actions, models, include, dbTodoOrderBy, timeInclude } from '../shared/db';
+import { actions, models, include, todoOrderBy, todoInclude } from '../shared/db';
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req: Request, res: Response) => {
@@ -87,13 +87,13 @@ app.listen(port, () => {
 const fillData = async (js: string) =>
   js.replace(
     'const dbTodos = [];',
-    `const dbTodos = ${JSON.stringify(await db.todo.findMany({include, orderBy: dbTodoOrderBy}))};`
+    `const dbTodos = ${JSON.stringify(await db.todo.findMany({include, orderBy: todoOrderBy}))};`
   ).replace( // include all in todos and extract/merge/sort on client instead?
     'const dbTimes = [];',
-    `const dbTimes = ${JSON.stringify(await db.time.findMany({include: timeInclude, orderBy: {start: 'desc'}}))};`
+    `const dbTimes = ${JSON.stringify(await db.time.findMany({include: todoInclude, orderBy: {start: 'desc'}}))};`
   ).replace(
     'const dbTodoMutations = [];',
-    `const dbTodoMutations = ${JSON.stringify(await db.todoMutation.findMany({include: timeInclude, orderBy: {at: 'desc'}}))};`
+    `const dbTodoMutations = ${JSON.stringify(await db.todoMutation.findMany({include: todoInclude, orderBy: {at: 'desc'}}))};`
   );
 
 // snowpack build on demand, HMR and SSR:
