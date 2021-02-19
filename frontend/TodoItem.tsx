@@ -10,8 +10,8 @@ import type { Todo, TimeMutation } from '../shared/db';
 
 // IconButton with defaults size="sm" variant="ghost"
 function IconButtonSG(props: IconButtonProps) {
-  const {size = "sm", variant = "ghost", ...rest} = props;
-  return (<IconButton size={size} variant={variant} {...rest}></IconButton>);
+  const { size = 'sm', variant = 'ghost', ...rest } = props;
+  return <IconButton size={size} variant={variant} {...rest}></IconButton>;
 }
 
 function EditableControls() { // TODO pull out into lib
@@ -95,7 +95,7 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
   const toggle = (done: boolean) => {
     setDone(done);
     // set({...todo, done}); // this was enough to just update done; now Timer handles updates to keep running/done in sync
-  }
+  };
   const submit = (text: string) => {
     if (text == todo.text) return;
     console.log(`Editable.submit: ${text}`);
@@ -104,7 +104,7 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
   // useEffect(() => { console.log('todo changed', todo); }, [todo]);
   // submitOnBlur true (default) will also submit on Esc (only with Surfingkeys enabled) and when clicking the cancel button, see https://github.com/chakra-ui/chakra-ui/issues/3198
   return (
-    <Flex opacity={todo.done ? '40%' : '100%'} >
+    <Flex opacity={todo.done ? '40%' : '100%'}>
       {/* <IconButtonSG aria-label="drag to reorder" icon={<FaGripVertical />} /> */}
       <Checkbox mr={2} isChecked={todo.done} onChange={e => toggle(e.target.checked)} colorScheme="green" />
       {/* <IconButtonSG onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} isRound={true} /> */}
@@ -126,5 +126,5 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
       <IconButtonSG onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} />
       <Timer {...{todo, done, set}} />
     </Flex>
-  )
+  );
 }

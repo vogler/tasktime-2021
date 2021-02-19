@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 export const useDepEffect: typeof useEffect = (f, deps) => { // skips initial render call, only calls f if deps actually change
   const didMountRef = useRef(false);

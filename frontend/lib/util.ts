@@ -19,21 +19,22 @@ export const equals = <T>(a: T, b: T): boolean => {
   // console.log('equals', a === b, a, b, typeof a, typeof b);
   if (a === b) return true;
   if (Array.isArray(a) && Array.isArray(b)) {
-    return a.every((v,i) => equals(v, b[i]));
+    return a.every((v, i) => equals(v, b[i]));
   }
   if (a instanceof Object && b instanceof Object) {
-    return Object.entries(a).every(([k,v]) => equals(v, b[k as keyof T]));
+    return Object.entries(a).every(([k, v]) => equals(v, b[k as keyof T]));
   }
   return false;
-}
+};
 
 // flat object diff, deep: https://github.com/mattphillips/deep-object-diff
-export const diff = <T extends {}>(a: T, b: T) => Object.fromEntries(Object.entries(b).filter(([k,v],i) => !equals(v, a[k as keyof T])));
+export const diff = <T extends {}>(a: T, b: T) => Object.fromEntries(Object.entries(b).filter(([k, v], i) => !equals(v, a[k as keyof T])));
 
-export const cmpBy = <X,Y>(f: (_:X) => Y, order: 'asc' | 'desc' = 'asc') => (a: X, b: X) => {
-  const c = f(a); const d = f(b);
+export const cmpBy = <X, Y>(f: (_: X) => Y, order: 'asc' | 'desc' = 'asc') => (a: X, b: X) => {
+  const c = f(a);
+  const d = f(b);
   const r = c < d ? -1 : c > d ? 1 : 0;
-  return order == 'asc' ? r : r*-1;
+  return order == 'asc' ? r : r * -1;
 };
 
 // group a sorted list of entries into a list of the groups
@@ -51,4 +52,4 @@ export const groupBy = <X,Y> (f: (x: X) => Y, entries: X[]) => {
     r[i].entries.push(entry);
   });
   return r;
-}
+};

@@ -3,15 +3,17 @@ import { action, actions, model, models } from '../shared/db';
 
 // json REST API
 type method = 'GET' | 'POST' | 'PUT' | 'DELETE';
-const rest = async (method: method, url: string, json?: {}) => { // CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
-  const res = await (fetch(url, {
+// CRUD/REST: Create = POST, Read = GET, Update = PUT, Delete = DELETE
+const rest = async (method: method, url: string, json?: {}) => {
+  const res = await fetch(url, {
     method,
-    headers: { // compressed json is fine. no need for protobuf, BSON etc.
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
+    headers: {
+      // compressed json is fine. no need for protobuf, BSON etc.
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(json), // not allowed for GET
-  }));
+  });
   const rjson = await res.json();
   if (res.status != 200) throw rjson.error || rjson;
   return rjson;

@@ -9,7 +9,7 @@ import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
 import { Todo, Time, include, dbTodoOrderBy, TimeMutation, TodoMutation, timeInclude } from '../shared/db';
-import { BrowserRouter as Router, Switch, Route, Link, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Link, useLocation } from 'react-router-dom';
 
 // @ts-ignore
 globalThis.db = db; // for direct db access in Chrome console, TODO remove
@@ -27,8 +27,7 @@ const gtime = atom({
 // shared global time for running timers. just using gtime would lead to re-render even if local timer is not running.
 export const rgtime = selectorFamily({
   key: 'rgtime',
-  get: (running: boolean) => ({get}) =>
-     running ? get(gtime) : 0
+  get: (running: boolean) => ({ get }) => running ? get(gtime) : 0,
 });
 function Timer() { // this is its own componenent, otherwise the whole app rerenders every second
   const [time, setTime] = useRecoilState(gtime);
@@ -37,7 +36,7 @@ function Timer() { // this is its own componenent, otherwise the whole app reren
     return () => clearTimeout(timer);
   }, [time]);
 
-  return (<>{time}</>);
+  return <>{time}</>;
 }
 
 const atodos = atom({ key: 'todos', default: dbTodos }); // recoil atom instead of useState since AddTodo should not rerender after addTodo and therefore must not be in/under some component that has the todos via useState
@@ -107,10 +106,11 @@ function Tasks() { // Collect
     <>
       <AddTodo />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
-        { filteredTodos.length
-          ? filteredTodos.map((todo, index) => <TodoItem {...{todo, showDetails}} key={todo.id} del={delTodo(index)} set={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
-          : "Nothing to show..."
-        }
+        {filteredTodos.length
+          ? filteredTodos.map((todo, index) => (
+              <TodoItem {...{ todo, showDetails }} key={todo.id} del={delTodo(index)} set={setTodo(index)} />
+            )) // do not use index as key since it changes with the order of the list and on deletion
+          : 'Nothing to show...'}
       </Box>
       <HStack mb={2}>
         <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
@@ -252,7 +252,7 @@ function Navigation() {
   const NavButton = ({ text, to = '/'+text.toLowerCase() } : { text: string, to?: string }) =>
     <Button as={Link} to={to} isActive={location.pathname == to} borderTopRadius="0">{text}</Button>;
   return (
-    <ButtonGroup isAttached variant="outline" >
+    <ButtonGroup isAttached variant="outline">
       <NavButton text="Tasks" to="/" />
       <NavButton text="History" />
     </ButtonGroup>
