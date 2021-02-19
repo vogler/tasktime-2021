@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tag, Tooltip, useEditableState } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tooltip, useEditableState } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
 import { duration } from './lib/util';
@@ -8,7 +8,7 @@ import { useDepEffect } from './lib/react';
 import { rgtime } from './App';
 import type { Todo, TimeMutation } from '../shared/db';
 
-// IconButton2 with defaults size="sm" variant="ghost"
+// IconButton with defaults size="sm" variant="ghost"
 function IconButton2(props: IconButtonProps) {
   const {size = "sm", variant = "ghost", ...rest} = props;
   return (<IconButton size={size} variant={variant} {...rest}></IconButton>);
@@ -83,7 +83,8 @@ function Timer({ todo, set, done }: { todo: Todo, set: set, done: boolean }) {
     <Button aria-label={running ? 'stop time' : 'start time'}
       leftIcon={running ? <FaStop /> : hover ? <FaPlay /> : <FaRegClock />}
       size="sm" variant="ghost" w={24} justifyContent="left"
-      onClick={() => setRunning(!running)} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>{duration.format(time)}
+      onClick={_ => setRunning(!running)} onMouseEnter={_ => setHover(true)} onMouseLeave={_ => setHover(false)}>
+        {duration.format(time)}
     </Button>
   );
 }
@@ -123,7 +124,7 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
       <Spacer />
       {/* <IconButton2 onClick={e => console.log(e)} aria-label="edit" icon={<FaRegEdit />} /> */}
       <IconButton2 onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} />
-      <Timer todo={todo} set={set} done={done} />
+      <Timer {...{todo, done, set}} />
     </Flex>
   )
 }

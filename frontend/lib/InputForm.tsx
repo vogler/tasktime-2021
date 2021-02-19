@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage, InputProps } from '@chakra-ui/react';
 // import { css, jsx } from '@emotion/react'
 import type { IconType } from 'react-icons';
@@ -37,7 +37,7 @@ export default function InputForm({ IconOrText = FaArrowRight, resetInput = true
     <form onSubmit={handleSubmit}>
       <FormControl isRequired isInvalid={error != ''} w={332}>
         <HStack>
-          <Input value={value} onChange={event => setValue(event.currentTarget.value)} {...p.inputProps} />
+          <Input {...{value}} onChange={event => setValue(event.currentTarget.value)} {...p.inputProps} />
           { (typeof IconOrText === 'string') // using just Button with rightIcon and no text instead of IconButton has wrong spacing
               ? <Button type="submit" isLoading={isLoading} {...p.buttonProps}>{IconOrText}</Button>
               : <IconButton type="submit" isLoading={isLoading} aria-label="submit" icon={<IconOrText /> } {...p.buttonProps} />

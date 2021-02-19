@@ -108,7 +108,7 @@ function Tasks() { // Collect
       <AddTodo />
       <Box shadow="md" borderWidth="1px" m="3" p="2">
         { filteredTodos.length
-          ? filteredTodos.map((todo, index) => <TodoItem todo={todo} key={todo.id} del={delTodo(index)} set={setTodo(index)} showDetails={showDetails} />) // do not use index as key since it changes with the order of the list and on deletion
+          ? filteredTodos.map((todo, index) => <TodoItem {...{todo, showDetails}} key={todo.id} del={delTodo(index)} set={setTodo(index)} />) // do not use index as key since it changes with the order of the list and on deletion
           : "Nothing to show..."
         }
       </Box>
