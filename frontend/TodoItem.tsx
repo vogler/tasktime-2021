@@ -9,7 +9,7 @@ import { rgtime } from './App';
 import type { Todo, TimeMutation } from '../shared/db';
 
 // IconButton with defaults size="sm" variant="ghost"
-function IconButton2(props: IconButtonProps) {
+function IconButtonSG(props: IconButtonProps) {
   const {size = "sm", variant = "ghost", ...rest} = props;
   return (<IconButton size={size} variant={variant} {...rest}></IconButton>);
 }
@@ -22,7 +22,7 @@ function EditableControls() { // TODO pull out into lib
       {/* <IconButton onClick={p.onCancel} aria-label="cancel" icon={<FaTimes />} /> */}
     </ButtonGroup>
   ) : (
-    // <IconButton2 onClick={p.onEdit} aria-label="edit" icon={<FaRegEdit />} />
+    // <IconButtonSG onClick={p.onEdit} aria-label="edit" icon={<FaRegEdit />} />
     <></>
   );
 }
@@ -105,9 +105,9 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
   // submitOnBlur true (default) will also submit on Esc (only with Surfingkeys enabled) and when clicking the cancel button, see https://github.com/chakra-ui/chakra-ui/issues/3198
   return (
     <Flex opacity={todo.done ? '40%' : '100%'} >
-      {/* <IconButton2 aria-label="drag to reorder" icon={<FaGripVertical />} /> */}
+      {/* <IconButtonSG aria-label="drag to reorder" icon={<FaGripVertical />} /> */}
       <Checkbox mr={2} isChecked={todo.done} onChange={e => toggle(e.target.checked)} colorScheme="green" />
-      {/* <IconButton2 onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} isRound={true} /> */}
+      {/* <IconButtonSG onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} isRound={true} /> */}
       <Editable defaultValue={todo.text} submitOnBlur={true} w="300px" onSubmit={submit} onCancel={e => console.log('Editable.cancel:', e)}>
         {(p) => (<>
           <Flex>
@@ -122,8 +122,8 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
         </>)}
       </Editable>
       <Spacer />
-      {/* <IconButton2 onClick={e => console.log(e)} aria-label="edit" icon={<FaRegEdit />} /> */}
-      <IconButton2 onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} />
+      {/* <IconButtonSG onClick={e => console.log(e)} aria-label="edit" icon={<FaRegEdit />} /> */}
+      <IconButtonSG onClick={del} aria-label="delete" icon={<FaRegTrashAlt />} />
       <Timer {...{todo, done, set}} />
     </Flex>
   )
