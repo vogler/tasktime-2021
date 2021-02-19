@@ -235,7 +235,7 @@ function History() {
         <Heading size="lg" mt={3}>{group.group}</Heading>
         <Box shadow="md" borderWidth="1px">
           {group.entries.map(timu =>
-            <HistoryEntry timu={timu} preMu={preMu} key={timu.todoId+date(timu)} />
+            <HistoryEntry timu={timu} preMu={preMu} key={timu.todoId + ('end' in timu ? 't' : 'm') + date(timu)} />
           )}
         </Box>
       </React.Fragment>
