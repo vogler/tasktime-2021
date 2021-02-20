@@ -12,7 +12,7 @@ import { db } from './api'; // api to db on server
 import { Todo, include, todoOrderBy, TimeMutation } from '../shared/db';
 
 // initial data from db replaced by the server:
-export const dbTodos: Todo[] = [];
+const dbTodos: Todo[] = [];
 
 
 // global time since load
