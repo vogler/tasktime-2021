@@ -51,6 +51,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 
 import { inspect } from 'util';
 import { actions, models, include, todoOrderBy, todoInclude } from '../shared/db';
+import { readFile } from 'snowpack/lib/util';
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req: Request, res: Response) => {
@@ -84,17 +85,31 @@ app.listen(port, () => {
 // this way the client does not have to issue a second request and wait to display data
 // TODO SSR with ReactDOMServer.renderToString to also serve the HTML
 // besides snowpack example, also see https://github.com/DavidWells/isomorphic-react-example
-const fillData = async (js: string) =>
-  js.replace(
-    'const dbTodos = [];',
-    `const dbTodos = ${JSON.stringify(await db.todo.findMany({include, orderBy: todoOrderBy}))};`
-  ).replace( // include all in todos and extract/merge/sort on client instead?
-    'const dbTimes = [];',
-    `const dbTimes = ${JSON.stringify(await db.time.findMany({include: todoInclude, orderBy: {start: 'desc'}}))};`
-  ).replace(
-    'const dbTodoMutations = [];',
-    `const dbTodoMutations = ${JSON.stringify(await db.todoMutation.findMany({include: todoInclude, orderBy: {at: 'desc'}}))};`
-  );
+const replacements = {
+  '/dist/Tasks.js': [
+    { variable: 'dbTodos',
+      query: () => db.todo.findMany({include, orderBy: todoOrderBy}) },
+  ],
+  '/dist/History.js': [
+    { variable: 'dbTimes',
+      query: () => db.time.findMany({include: todoInclude, orderBy: {start: 'desc'}}) },
+    { variable: 'dbTodoMutations',
+      query: () => db.todoMutation.findMany({include: todoInclude, orderBy: {at: 'desc'}}) },
+  ],
+};
+const fillData = async (url: string, js: string) => {
+  const file = url.replace(/\?.*$/, ''); // strip query string of HMR requests which append ?mtime=...
+  type file = keyof typeof replacements;
+  // type r = typeof replacements[file][number]; // error on reduce below: none of those signatures are compatible with each other
+  type r = { variable: string, query: () => Promise<any> }; // can't call reduce on incompatible Promise types
+  if (file in replacements) { // file is not narrowed to file because of subtyping and lack of closed types
+    const rs: r[] = replacements[file as file]; // so we need to assert the type on both (rs up, file down)
+    return await rs.reduce((a, r) => a.then(async s => s.replace(
+      `const ${r.variable} = [];`, // more generic: regex with .* instead of [], but can't easily use variable in regex
+      `const ${r.variable} = ${JSON.stringify(await r.query())};`)), Promise.resolve(js));
+  }
+  return js;
+}
 
 // snowpack build on demand, HMR and SSR:
 // https://www.snowpack.dev/guides/server-side-render#option-2%3A-on-demand-serving-(middleware)
@@ -112,11 +127,7 @@ if (process.env.NODE_ENV != 'production') {
       // console.log('snowpack.loadUrl:', req.url, '->', buildResult.originalFileLoc, `(${buildResult.contentType})`);
       if (buildResult.contentType)
         res.contentType(buildResult.contentType);
-      let r = buildResult.contents;
-      if (req.url.startsWith('/dist/App.js')) {
-        r = await fillData(r.toString());
-      }
-      res.send(r);
+      res.send(await fillData(req.url, buildResult.contents.toString()));
     } catch (err) {
       console.error('loadUrl failed for', req.method, req.url);
       res.sendStatus(404);
@@ -126,11 +137,11 @@ if (process.env.NODE_ENV != 'production') {
 } else { // above snowpack serves frontend-static/ and dist/ on demand and modifies index.html for HMR
   // in production we first do `npm run build` which puts both in build/
   const { readFileSync } = await import('fs');
-  const appjs = readFileSync('./build/dist/App.js').toString();
+  const fileContents = Object.fromEntries(Object.keys(replacements).map(s => [s, readFileSync(`./build${s}`).toString()]));
 
-  app.get('/dist/App.js', async (req: Request, res: Response) => {
+  app.get(Object.keys(replacements), async (req: Request, res: Response) => {
     res.contentType('application/javascript');
-    res.send(await fillData(appjs));
+    res.send(await fillData(req.url, fileContents[req.url]));
   });
   app.use(express.static('build'));
 }
