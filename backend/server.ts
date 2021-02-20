@@ -51,7 +51,6 @@ function assertIncludes(a: readonly string[], k: string): string {
 
 import { inspect } from 'util';
 import { actions, models, include, todoOrderBy, todoInclude } from '../shared/db';
-import { readFile } from 'snowpack/lib/util';
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req: Request, res: Response) => {
