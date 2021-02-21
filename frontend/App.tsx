@@ -8,10 +8,10 @@ function Navigation() {
   const location = useLocation();
   // console.log('location', location); // re-executes on e.g. setTodo (also if component definition is moved out)
   useEffect(() => {
-    document.title = 'track-time' + ' - ' + (location.pathname == '/' ? 'tasks' : location.pathname.replace(/^\//, ''));
+    document.title = 'track-time' + ' - ' + (location.pathname == '/' ? 'tasks' : location.pathname.replace(/^\//, '').replace(/\/$/, ''));
   }, [location]);
-  const NavButton = ({ text, to = '/'+text.toLowerCase() } : { text: string, to?: string }) =>
-    <Button as={Link} to={to} isActive={location.pathname == to} borderTopRadius="0">{text}</Button>;
+  const NavButton = ({ text, to = '/'+encodeURIComponent(text.toLowerCase()) } : { text: string, to?: string }) =>
+    <Button as={Link} to={to} isActive={location.pathname.replace(/$\//, '') == to.replace(/$\//, '')} borderTopRadius="0">{text}</Button>; // heroku adds a trailing slash on reload, so we strip it before checking
   return (
     <ButtonGroup isAttached variant="outline">
       <NavButton text="Tasks" to="/" />
