@@ -12,6 +12,14 @@ const dbTimes: Time[] = [];
 const dbTodoMutations: TodoMutation[] = [];
 
 
+// we want to have the union of (Time and TodoMutation) ordered by date desc
+// below we merge the two sorted lists from the server into one
+// if we want to do it with a query on the server, the following works (but not supported by Prisma):
+// select *, null as "text", null as "done" from "Time" union all select "todoId", "at" as "start", null as "end", "text", "done" from "TodoMutation" order by "start" desc;
+// -> not good since 'union' requires the same number of fields and compatible types, so we have to replace fields of other tables with null
+// select * from (select *, 'Time' as "table" from "Time") as "t1"
+// natural full join (select *, 'TodoMutation' as "table" from "TodoMutation") as "t2";
+
 const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
 let i = 0;
 const mergeSort = (times: Time[], mutations: TodoMutation[]) => { // O(n*log(n))?
