@@ -9,13 +9,14 @@ export const actions = ['findMany', 'create', 'update', 'delete', 'findUnique', 
 
 
 // specific to Todo/Time/Mutation
-export const include = {times: {orderBy: {start: 'desc' as const}}}; // {times: true} had no reliable order for times; only needed for running Timer
+export const include = {times: {orderBy: {at: 'desc' as const}}}; // {times: true} had no reliable order for times; only needed for running Timer
 // export type TodoFlat = Todo;
 type TodoFull = Prisma.TodoGetPayload<{include: typeof include}>;
 export {TodoFull as Todo};
 export const todoOrderBy: Prisma.TodoOrderByInput = { createdAt: 'asc' };
 
-export const todoInclude = {todo: {select: {text: true, time: true, done: true}}};
+const todoInclude = {todo: {select: {text: true, time: true, done: true}}};
+export const historyOpt = {include: todoInclude, orderBy: {at: 'desc' as const}};
 
 type TimeFull = Prisma.TimeGetPayload<{include: typeof todoInclude}>
 export {TimeFull as Time};

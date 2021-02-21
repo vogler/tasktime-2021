@@ -5,7 +5,7 @@ import { FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit } from 'react-icon
 import { useAsyncEffect } from './lib/react';
 import { duration, cmpBy, groupBy, toDateLS, toTimeLS } from './lib/util';
 import { db } from './api'; // api to db on server
-import { Time, TodoMutation, todoInclude } from '../shared/db';
+import { Time, TodoMutation, historyOpt } from '../shared/db';
 
 // initial data from db replaced by the server:
 const dbTimes: Time[] = [];
@@ -15,22 +15,24 @@ const dbTodoMutations: TodoMutation[] = [];
 // we want to have the union of (Time and TodoMutation) ordered by date desc
 // below we merge the two sorted lists from the server into one
 // if we want to do it with a query on the server, the following works (but not supported by Prisma):
-// select *, null as "text", null as "done" from "Time" union all select "todoId", "at" as "start", null as "end", "text", "done" from "TodoMutation" order by "start" desc;
+  // select *, null as "text", null as "done" from "Time" union all select "todoId", "at", null as "end", "text", "done" from "TodoMutation" order by "at" desc;
 // -> not good since 'union' requires the same number of fields and compatible types, so we have to replace fields of other tables with null
-// select * from (select *, 'Time' as "table" from "Time") as "t1"
-// natural full join (select *, 'TodoMutation' as "table" from "TodoMutation") as "t2";
+  // select * from (select *, 'Time' as "table" from "Time") as "t1"
+  // natural full join (select *, 'TodoMutation' as "table" from "TodoMutation") as "t2" order by "at" desc;
+// -> better because it works generically (but requires extra field to avoid accidental joins)
+// can prefix with 'explain analyze' to see execution plan
 
-const date = (x: Time | TodoMutation) => ('start' in x ? x.start : x.at).toString();
+const at = (x: Time | TodoMutation) => x.at.toString();
 let i = 0;
 const mergeSort = (times: Time[], mutations: TodoMutation[]) => { // O(n*log(n))?
   // TODO: more efficient merge sort since both are already sorted, see https://wsvincent.com/javascript-merge-two-sorted-arrays/
   console.time(`concat+sort ${i}`);
-  const r = [...times, ...mutations].sort(cmpBy(date, 'desc'));
+  const r = [...times, ...mutations].sort(cmpBy(at, 'desc'));
   console.timeEnd(`concat+sort ${i}`);
   i++;
   return r;
 };
-const toDate = (x: Time | TodoMutation) => toDateLS(new Date(date(x))); // new not composable?
+const toDate = (x: Time | TodoMutation) => toDateLS(new Date(at(x))); // new not composable?
 const dbHistory = groupBy(toDate, mergeSort(dbTimes, dbTodoMutations)); // If we do this in History, it is executed 4 times instead of once. However, here it is always executed, not just when History is mounted.
 
 const calcPreMu = (mutations: TodoMutation[]) => { // O(n)
@@ -48,7 +50,7 @@ const calcPreMu = (mutations: TodoMutation[]) => { // O(n)
 const dbPreMu = calcPreMu(dbTodoMutations);
 
 const TimeDetail = ({time}: {time: Time}) => {
-  const startDate = new Date(time.start);
+  const startDate = new Date(time.at);
   const endDate = new Date(time.end ?? Date.now());
   const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000);
   const running = !time.end ? '(running)' : '';
@@ -75,11 +77,11 @@ function HistoryEntry({timu, preMu}: {timu: Time | TodoMutation, preMu: typeof d
       {mutation.text !== null && <Icon as={FaRegEdit} />}
     </>);
   };
-  const time = toTimeLS(new Date(date(timu)));
+  const time = toTimeLS(new Date(at(timu)));
   return <Flex>
     <Box w={82} fontFamily="'Courier New', monospace">{time}</Box>
     <Box w={95} textAlign="center">
-      {'start' in timu
+      {'end' in timu
         ? <TimeDetail time={timu} />
         : <MutationDetail mutation={timu} />
       }
@@ -97,8 +99,8 @@ export default function History() {
   const [history, setHistory] = useState(dbHistory);
   const [preMu, setPreMu] = useState(dbPreMu);
   useAsyncEffect(async () => {
-    const times = await db.time.findMany({include: todoInclude, orderBy: {start: 'desc'}});
-    const mutations = await db.todoMutation.findMany({include: todoInclude, orderBy: {at: 'desc'}});
+    const times = await db.time.findMany(historyOpt);
+    const mutations = await db.todoMutation.findMany(historyOpt);
     setPreMu(calcPreMu(mutations));
     setHistory(groupBy(toDate, mergeSort(times, mutations)));
     console.log('History reloaded');
@@ -109,7 +111,7 @@ export default function History() {
         <Heading size="lg" mt={3}>{group.group}</Heading>
         <Box shadow="md" borderWidth="1px">
           {group.entries.map(timu =>
-            <HistoryEntry timu={timu} preMu={preMu} key={timu.todoId + ('end' in timu ? 't' : 'm') + date(timu)} />
+            <HistoryEntry timu={timu} preMu={preMu} key={timu.todoId + ('end' in timu ? 't' : 'm') + at(timu)} />
           )}
         </Box>
       </React.Fragment>

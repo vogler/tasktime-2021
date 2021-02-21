@@ -40,10 +40,10 @@ function DateDist(p: {date: Date, prefix?: string}) {
 type set = (todo: Todo, times?: TimeMutation) => void;
 
 function Timer({ todo, set, done }: { todo: Todo, set: set, done: boolean }) {
-  const lastTime = todo.times[0]; // relies on times being orderBy: {start: 'desc'}
+  const lastTime = todo.times[0]; // relies on times being orderBy: {at: 'desc'}
   const [running, setRunning] = useState(lastTime?.end === null);
   const gtime = useRecoilValue(rgtime(running)); // 0 if not running to avoid re-renders
-  const [startTime, setStartTime] = useState(lastTime ? Date.parse(lastTime.start.toString()) : 0); // calc diff since timer is not reliable
+  const [startTime, setStartTime] = useState(lastTime ? Date.parse(lastTime.at.toString()) : 0); // calc diff since timer is not reliable
   const interval = Math.round((Date.now() - startTime) / 1000); // time the current interval has been running
   const [time, setTime] = useState(todo.time + (running ? interval : 0)); // total time
   useEffect(() => { // run every second if running

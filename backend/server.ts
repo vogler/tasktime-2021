@@ -50,7 +50,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 }
 
 import { inspect } from 'util';
-import { actions, models, include, todoOrderBy, todoInclude } from '../shared/db';
+import { actions, models, include, todoOrderBy, historyOpt } from '../shared/db';
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req: Request, res: Response) => {
@@ -91,9 +91,9 @@ const replacements = {
   ],
   '/dist/History.js': [
     { variable: 'dbTimes',
-      query: () => db.time.findMany({include: todoInclude, orderBy: {start: 'desc'}}) },
+      query: () => db.time.findMany(historyOpt) },
     { variable: 'dbTodoMutations',
-      query: () => db.todoMutation.findMany({include: todoInclude, orderBy: {at: 'desc'}}) },
+      query: () => db.todoMutation.findMany(historyOpt) },
   ],
 };
 const fillData = async (url: string, js: string) => {

@@ -21,16 +21,16 @@ model Todo {
   text      String   // mutable
   done      Boolean  @default(false) // mutable
   mutations TodoMutation[]
-  time      Int      @default(0) // memo: select sum("end"-"start") from "Time" where "todoId"="id"
+  time      Int      @default(0) // memo: select sum("end"-"at") from "Time" where "todoId"="id"
   times     Time[]
 }
 
 model Time {
   todoId Int
   todo   Todo      @relation(fields: [todoId], references: [id])
-  start  DateTime  @default(now())
+  at     DateTime  @default(now())
   end    DateTime?
-  @@id([todoId, start])
+  @@id([todoId, at])
 }
 
 model TodoMutation {
