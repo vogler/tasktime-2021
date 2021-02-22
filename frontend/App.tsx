@@ -11,7 +11,7 @@ function Navigation() {
     document.title = 'track-time' + ' - ' + (location.pathname == '/' ? 'tasks' : location.pathname.replace(/^\//, '').replace(/\/$/, ''));
   }, [location]);
   const NavButton = ({ text, to = '/'+encodeURIComponent(text.toLowerCase()) } : { text: string, to?: string }) =>
-    <Button as={Link} to={to} isActive={location.pathname.replace(/$\//, '') == to.replace(/$\//, '')} borderTopRadius="0">{text}</Button>; // heroku adds a trailing slash on reload, so we strip it before checking
+    <Button as={Link} to={to} isActive={location.pathname.replace(/\/$/, '') == to.replace(/\/$/, '')} borderTopRadius="0">{text}</Button>; // heroku adds a trailing slash on reload, so we strip it before checking
   return (
     <ButtonGroup isAttached variant="outline">
       <NavButton text="Tasks" to="/" />
