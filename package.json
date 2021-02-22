@@ -4,7 +4,7 @@
     "frontend": "snowpack dev",
     "build": "snowpack build",
     "db-codegen": "prisma generate",
-    "db-push": "prisma db push --preview-feature --force",
+    "db-push": "prisma db push --preview-feature --accept-data-loss",
     "db-migrate": "prisma migrate dev --preview-feature",
     "db-inspect": "prisma studio",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx}\"",
