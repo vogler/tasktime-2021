@@ -24,7 +24,7 @@ const rest = async (method: method, url: string, json?: {}) => {
 // old customized concrete db functions on REST endpoint
 export namespace db_deprecated {
   type TodoOps = Prisma.TodoDelegate<true>; // true = rejectOnNotFound?
-  const req = (method: method) => (args: {}) => rest(method, 'todo', args);
+  const req = (method: method) => (args: {}) => rest(method, '/todo', args);
   export const findMany = req('GET') as TodoOps['findMany'];
   const _create = req('POST') as TodoOps['create'];
   const _update = req('PUT') as TodoOps['update'];
@@ -42,7 +42,7 @@ type dbm<M extends model> = Pick<PrismaClient[M], action>;
 
 // dbm('model').action runs db.model.action on the server
 const dbm = <M extends model> (model: M) : dbm<M> => {
-  const lift = <A extends action> (action: A) => ((args: {}) => rest('POST', `db/${model}/${action}`, args)) as PrismaClient[M][A];
+  const lift = <A extends action> (action: A) => ((args: {}) => rest('POST', `/db/${model}/${action}`, args)) as PrismaClient[M][A];
   return Object.fromEntries(actions.map(s => [s, lift(s)]));
 };
 export const db = Object.fromEntries(models.map(s => [s, dbm(s)])) as { [M in model]: dbm<M> };
