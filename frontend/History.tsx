@@ -106,14 +106,13 @@ export default function History() {
     console.log('History reloaded');
   }, []);
   return (<Box>
+    {!history.length && 'Nothing to show yet...'}
     {history.map((group, _) =>
       <React.Fragment key={group.group}>
         <Heading size="lg" mt={3}>{group.group}</Heading>
         <Box shadow="md" borderWidth="1px">
-          {group.entries.length
-            ? group.entries.map(timu => <HistoryEntry timu={timu} preMu={preMu} key={timu.todoId + ('end' in timu ? 't' : 'm') + at(timu)} />)
-            : 'Nothing to show...'
-          }
+          {group.entries.map(timu =>
+            <HistoryEntry timu={timu} preMu={preMu} key={timu.todoId + ('end' in timu ? 't' : 'm') + at(timu)} />)}
         </Box>
       </React.Fragment>
     )}
