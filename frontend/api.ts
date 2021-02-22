@@ -30,7 +30,7 @@ export namespace db_deprecated {
   const _update = req('PUT') as TodoOps['update'];
   const _delete = req('DELETE') as TodoOps['delete'];
   export const create = (data: Prisma.TodoCreateInput) => _create({ data }); // just for data, but more restrictive
-  export const update = ({updatedAt, ...data}: Prisma.TodoWhereUniqueInput & Prisma.TodoUpdateInput) => _update({ data, where: { id: data.id } }); // remove updatedAt from object so that it is set by db!
+  export const update = ({updatedAt, ...data}: Prisma.TodoWhereUniqueInput & Prisma.TodoUncheckedUpdateInput) => _update({ data, where: { id: data.id } }); // remove updatedAt from object so that it is set by db!
   export const delete_ = (data: Prisma.TodoWhereUniqueInput) => _delete({ where: { id: data.id } });
   // TODO make generic. Can't limit data to interface ..WhereUniqueInput w/o sth like ts-transformer-keys; delete fails if we pass more than id (deleteMany accepts ..WhereInput).
   // export values for types: https://github.com/prisma/prisma/discussions/5291

@@ -20,6 +20,9 @@ model Todo {
   updatedAt DateTime @updatedAt
   text      String   // mutable
   done      Boolean  @default(false) // mutable
+  parentId  Int?     // mutable; TODO not used yet
+  parent    Todo?    @relation("tree", fields: [parentId], references: [id])
+  children  Todo[]   @relation("tree")
   mutations TodoMutation[]
   time      Int      @default(0) // memo: select sum("end"-"at") from "Time" where "todoId"="id"
   times     Time[]

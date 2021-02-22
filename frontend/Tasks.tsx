@@ -57,8 +57,9 @@ export default function Tasks() { // Collect
   const [showDone, setShowDone] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
   const [orderBy, setOrderBy] = useState(todoOrderBy); // this can sort by multiple fields, below we just sort by one
-  const orderField = () => Object.keys(orderBy)[0];
-  const orderOrder = () => Object.values(orderBy)[0];
+  const order = {
+    field: Object.keys(orderBy)[0],
+    order: Object.values(orderBy)[0] ?? 'asc' };
 
   // no need for extra fetch anymore since server already sets initialTodos from db
   useAsyncDepEffect(async () => {
@@ -112,17 +113,17 @@ export default function Tasks() { // Collect
         <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
         <Button size="sm" leftIcon={showDetails ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDetails(!showDetails)}>{showDetails ? 'hide' : 'show'} details</Button>
         <Menu closeOnSelect={false} closeOnBlur={true}>
-          <MenuButton as={Button} size="sm" leftIcon={orderOrder() == 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />}>
+          <MenuButton as={Button} size="sm" leftIcon={order.order == 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />}>
             order by
           </MenuButton>
           <MenuList minWidth="200px">
-            <MenuOptionGroup defaultValue={orderField()} title="Field" type="radio" onChange={s => setOrderBy({[s.toString()]: orderOrder()})}>
+            <MenuOptionGroup defaultValue={order.field.toString()} title="Field" type="radio" onChange={s => setOrderBy({[s.toString()]: order.order})}>
               <MenuItemOption value="createdAt">createdAt</MenuItemOption>
               <MenuItemOption value="updatedAt">updatedAt</MenuItemOption>
               <MenuItemOption value="text">text</MenuItemOption>
             </MenuOptionGroup>
             <MenuDivider />
-            <MenuOptionGroup defaultValue={orderOrder()} title="Order" type="radio" onChange={s => setOrderBy({[orderField()]: s})}>
+            <MenuOptionGroup defaultValue={order.order.toString()} title="Order" type="radio" onChange={s => setOrderBy({[order.field]: s})}>
               <MenuItemOption value="asc">Ascending</MenuItemOption>
               <MenuItemOption value="desc">Descending</MenuItemOption>
             </MenuOptionGroup>
