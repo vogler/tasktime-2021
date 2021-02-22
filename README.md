@@ -9,6 +9,7 @@ This is a test project building some todo/time-tracking app using:
   - [Recoil](https://recoiljs.org/)
     - to avoid re-render of non-running timers (value-dependent dependency via `selectorFamily`)
     - to avoid re-mount of `InputForm` while adding a new item (decouple state from component tree)
+  - [react-router](https://reactrouter.com/web) for routing in the browser (routes are redirected to / by the server)
 - [chakra-ui](https://chakra-ui.com/) as UI component library
   - [react-icons](https://react-icons.github.io/react-icons)
   - maybe try [Formik](https://formik.org/) for forms
