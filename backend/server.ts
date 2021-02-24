@@ -37,6 +37,16 @@ app.use('/todo', async (req: Request, res: Response) => {
   res.json(await op);
 });
 
+// unions are not supported by prisma (see readme), use raw SQL:
+app.get('/db/union/:m1/:m2', async (req: Request, res: Response) => {
+  console.log(req.url, req.params, req.body);
+  const models = Object.keys(prisma.Prisma.ModelName) as (keyof typeof prisma.Prisma.ModelName)[];
+  const m1 = assertIncludes(models, req.params.m1);
+  const m2 = assertIncludes(models, req.params.m2);
+  const r = await db.$queryRaw(`select * from (select *, \'${m1}\' as "model" from "${m1}") as "m1" natural full join (select *, \'${m2}\' as "model" from "${m2}") as "m2" order by "at" desc`); // db.$queryRaw`...` does not allow variables for tables, TODO SQL injection?
+  res.json(r);
+});
+
 // const match = <T> (cases: {[k: string]: T}, pattern: string) => cases[pattern];
 const fail = (m: string) => { throw new Error(m) };
 // custom version (nicer error & cast) of: assert(a.includes(k as typeof a[number]));

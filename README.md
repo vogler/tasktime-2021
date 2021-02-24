@@ -54,10 +54,13 @@ Based on the generated code from Prisma, we define a generic server endpoint `/d
 ### Prisma
 - Would be nice to have values for the generated types to define custom functions: https://github.com/prisma/prisma/discussions/5291
   - Use the following? https://github.com/valentinpalkovic/prisma-json-schema-generator
+- No good way to get the union of several models/tables. See comments in `History.tsx`: we currently fetch all entries and then merge sort them on the client.
+  - [Support for a Union type #2505](https://github.com/prisma/prisma/issues/2505)
+  - [Option brand the model name into data #5315](https://github.com/prisma/prisma/issues/5315)
 - Does not support trees yet ([TypeORM does](https://typeorm.io/#/tree-entities)):
   - [Tree structures support #4562](https://github.com/prisma/prisma/issues/4562)
   - [Support recursive relationships #3725](https://github.com/prisma/prisma/issues/3725)
-    - recursive query (with [queryRaw](https://www.prisma.io/docs/concepts/components/prisma-client/raw-database-access])) to get transitive hull of first select:
+    - recursive query (with [queryRaw](https://www.prisma.io/docs/concepts/components/prisma-client/raw-database-access)) to get transitive hull of first select:
       ~~~sql
       with recursive subtodos as (select * from "Todo" where id=64 union select p.* from "Todo" p inner join subtodos s on s.id = p."parentId") select * from subtodos;`
       ~~~

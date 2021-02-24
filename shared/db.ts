@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import prisma from '@prisma/client'; // values like Prisma.ModelName via default import since CJS does not support named import
 
 // generic definitions for ./backend/server and ./frontend/api
+export const ModelName = prisma.Prisma.ModelName;
 export type model = Uncapitalize<keyof typeof Prisma.ModelName>;
 export const models = Object.keys(prisma.Prisma.ModelName).map(s => s[0].toLowerCase() + s.slice(1) as model);
 export type action = Exclude<Prisma.PrismaAction, 'createMany' | 'executeRaw' | 'queryRaw'>; // why are these not defined on PrismaClient[model]?

@@ -50,3 +50,8 @@ export const db = Object.fromEntries(models.map(s => [s, dbm(s)])) as { [M in mo
 
 // @ts-ignore
 globalThis.db = db; // for direct db access in Chrome console, TODO remove
+
+
+// custom raw queries
+// union, TODO: binary -> variadic
+export const db_union = async <m1 extends Prisma.ModelName, m2 extends Prisma.ModelName> (m1: m1, m2: m2) => await rest('GET', `/db/union/${m1}/${m2}`) as (PrismaClient[Uncapitalize<m1>] | PrismaClient[Uncapitalize<m2>])[];

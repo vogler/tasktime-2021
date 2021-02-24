@@ -4,8 +4,8 @@ import { Box, Flex, Heading, Icon, Tag, TagLabel, TagLeftIcon, Text, Tooltip } f
 import { FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit } from 'react-icons/fa';
 import { useAsyncEffect } from './lib/react';
 import { duration, cmpBy, groupBy, toDateLS, toTimeLS } from './lib/util';
-import { db } from './api'; // api to db on server
-import { Time, TodoMutation, historyOpt } from '../shared/db';
+import { db, db_union } from './api'; // api to db on server
+import { Time, TodoMutation, historyOpt, ModelName } from '../shared/db';
 
 // initial data from db replaced by the server:
 const dbTimes: Time[] = [];
@@ -21,6 +21,8 @@ const dbTodoMutations: TodoMutation[] = [];
   // natural full join (select *, 'TodoMutation' as "table" from "TodoMutation") as "t2" order by "at" desc;
 // -> better because it works generically (but requires extra field to avoid accidental joins)
 // can prefix with 'explain analyze' to see execution plan
+
+// TODO use db_union below
 
 const at = (x: Time | TodoMutation) => x.at.toString();
 let i = 0;
@@ -104,6 +106,9 @@ export default function History() {
     setPreMu(calcPreMu(mutations));
     setHistory(groupBy(toDate, mergeSort(times, mutations)));
     console.log('History reloaded');
+    // test union on server:
+    const hs = await db_union(ModelName.Time, ModelName.TodoMutation);
+    console.log(hs);
   }, []);
   return (<Box>
     {!history.length && 'Nothing to show yet...'}
