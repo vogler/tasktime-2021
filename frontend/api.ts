@@ -53,5 +53,4 @@ globalThis.db = db; // for direct db access in Chrome console, TODO remove
 
 
 // custom raw queries
-// union, TODO: binary -> variadic
-export const db_union = async <m1 extends ModelName, m2 extends ModelName> (m1: m1, m2: m2) => await rest('GET', `/db/union/${m1}/${m2}`) as (Model<m1> | Model<m2>)[];
+export const db_union = async <m extends ModelName> (...ms: m[]) => await rest('GET', `/db/union/${ms.join(',')}`) as Model<m>[];

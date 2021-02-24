@@ -69,18 +69,22 @@ app.post('/db/:model/:action', async (req: Request, res: Response) => {
 
 // unions are not supported by prisma (see readme), use raw SQL:
 // https://github.com/prisma/prisma/issues/2505#issuecomment-785229500
-// TODO binary -> variadic
-const db_union = <m1 extends ModelName, m2 extends ModelName> (m1: m1, m2: m2) : Promise<(Model<m1> | Model<m2>)[]> =>
-  db.$queryRaw(`select * from (select *, \'${m1}\' as "model" from "${m1}") as "m1" natural full join (select *, \'${m2}\' as "model" from "${m2}") as "m2" order by "at" desc`); // db.$queryRaw`...` does not allow variables for tables, TODO SQL injection?
+const db_union = <m extends ModelName> (...ms: m[]) : Promise<Model<m>[]> => {
+  const joins = ms.map(m => `(select *, \'${m}\' as "model" from "${m}") as "_${m}"`).join(' natural full join ');
+  // db.$queryRaw`...` does not allow variables for tables, TODO SQL injection?
+  return db.$queryRaw(`select * from ${joins} order by "at" desc`); // TODO type-safe orderBy on intersection of fields?
+}
 
-app.get('/db/union/:m1/:m2', async (req: Request, res: Response) => {
+app.get('/db/union/:models', async (req: Request, res: Response) => {
   console.log(req.url, req.params, req.body);
-  const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
-  const m1 = assertIncludes(models, req.params.m1);
-  const m2 = assertIncludes(models, req.params.m2);
-  res.json(await db_union(m1, m2));
+  try {
+    const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
+    const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
+    res.json(await db_union(...ms));
+  } catch (error) {
+    res.status(400).json({ error: error.toString() });
+  }
 });
-
 
 const react_routes = ['/history']; // URL is rewritten by react-router (not to /#history), so on refresh the server would not find /history
 app.get(react_routes, async (req: Request, res: Response, next: express.NextFunction) => {
