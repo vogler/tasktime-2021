@@ -15,7 +15,7 @@ This is a test project building some todo/time-tracking app using:
   - maybe try [Formik](https://formik.org/) for forms
 - [Prisma](https://www.prisma.io/) as ORM (instead of [TypeORM](https://github.com/typeorm/typeorm) which I had some issues [[1](https://github.com/typeorm/typeorm/issues/3238)] [[2](https://github.com/typeorm/typeorm/issues/4122)] with in https://github.com/vogler/syncmine)
   - PostgreSQL (or sqlite etc.) as database
-  - would be nice to have values for the generated types to define custom functions: https://github.com/prisma/prisma/discussions/5291
+  - missing some values/types, no trees, see notes below
 
 Tried Svelte and Firebase in an older iteration: https://github.com/vogler/track-time_svelte-firebase.
 By now Svelte seems to officially support TypeScript: https://svelte.dev/blog/svelte-and-typescript.
@@ -40,6 +40,7 @@ Seems strange that there is no framework/library that only requires the database
 Also, no one seems to care about duplication. GraphQL just introduces more boilerplate for little benefit compared to just calling database functions on the client (can also select subset of fields to save data; authentication/authorization can be a middleware on the server, just need some access annotations for the schema).
 Use row-level security in PostgreSQL for authorization and https://jwt.io to authenticate API requests as in [PostgREST's auth](https://postgrest.org/en/v7.0.0/auth.html)?
 
+Was not happy with
 - https://github.com/redwoodjs/redwood - only serverless, but need to manually setup a database server...
 - https://github.com/blitz-js/blitz - looks better, but just generates the boilerplate on the server instead of avoiding it
 - https://github.com/layrjs/layr - just MongoDB, too much boilerplate in models
@@ -49,6 +50,21 @@ Use row-level security in PostgreSQL for authorization and https://jwt.io to aut
 - https://github.com/PostgREST/postgrest - REST API server from existing PostgreSQL database; haskell, no good [client-side lib](https://postgrest.org/en/v7.0.0/ecosystem.html#clientside-libraries) in Typescript, [postgrester](https://github.com/SocialGouv/postgrester) just uses SQL strings
 
 Based on the generated code from Prisma, we define a generic server endpoint `/db/:model/:action` and a generic `db` object on the client that has Prisma's types but just relays the call to the server.
+
+### Prisma
+- Would be nice to have values for the generated types to define custom functions: https://github.com/prisma/prisma/discussions/5291
+  - Use the following? https://github.com/valentinpalkovic/prisma-json-schema-generator
+- Does not support trees yet ([TypeORM does](https://typeorm.io/#/tree-entities)):
+  - [Tree structures support #4562](https://github.com/prisma/prisma/issues/4562)
+  - [Support recursive relationships #3725](https://github.com/prisma/prisma/issues/3725)
+    - recursive query (with [queryRaw](https://www.prisma.io/docs/concepts/components/prisma-client/raw-database-access])) to get transitive hull of first select:
+      ~~~sql
+      with recursive subtodos as (select * from "Todo" where id=64 union select p.* from "Todo" p inner join subtodos s on s.id = p."parentId") select * from subtodos;`
+      ~~~
+  - raw query, native PostgreSQL type:
+    - https://www.cybertec-postgresql.com/en/postgresql-speeding-up-recursive-queries-and-hierarchic-data/
+      - https://www.cybertec-postgresql.com/en/postgresql-ltree-vs-with-recursive/
+      - https://www.postgresql.org/docs/current/ltree.html
 
 ### Typescript
 FP/types/meta:

@@ -20,9 +20,9 @@ model Todo {
   updatedAt DateTime @updatedAt
   text      String   // mutable
   done      Boolean  @default(false) // mutable
-  parentId  Int?     // mutable; TODO not used yet
+  parentId  Int?     // mutable; TODO not used yet, see readme > prisma > tree
   parent    Todo?    @relation("tree", fields: [parentId], references: [id])
-  children  Todo[]   @relation("tree")
+  children  Todo[]   @relation("tree") // include is not recursive but gets just one level
   mutations TodoMutation[]
   time      Int      @default(0) // memo: select sum("end"-"at") from "Time" where "todoId"="id"
   times     Time[]
