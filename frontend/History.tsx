@@ -13,16 +13,16 @@ const dbTodoMutations: TodoMutation[] = [];
 
 
 // we want to have the union of (Time and TodoMutation) ordered by date desc
-// below we merge the two sorted lists from the server into one
+// first approach was to merge the two sorted lists from the server into one locally
 // if we want to do it with a query on the server, the following works (but not supported by Prisma):
   // select *, null as "text", null as "done" from "Time" union all select "todoId", "at", null as "end", "text", "done" from "TodoMutation" order by "at" desc;
-// -> not good since 'union' requires the same number of fields and compatible types, so we have to replace fields of other tables with null
+  // -> not good since 'union' requires the same number of fields and compatible types, so we have to replace fields of other tables with null
+// better alternative because it works generically without padding fields (but requires extra field to avoid accidental joins):
   // select * from (select *, 'Time' as "table" from "Time") as "t1"
   // natural full join (select *, 'TodoMutation' as "table" from "TodoMutation") as "t2" order by "at" desc;
-// -> better because it works generically (but requires extra field to avoid accidental joins)
 // can prefix with 'explain analyze' to see execution plan
-
-// TODO use db_union below
+// -> implemented as raw query in db_union, see https://github.com/prisma/prisma/issues/2505#issuecomment-785283427
+// but has no support for include which we use below, so we keep the local merge for now TODO wait for progress on issue above
 
 const at = (x: Time | TodoMutation) => x.at.toString();
 let i = 0;
@@ -106,9 +106,9 @@ export default function History() {
     setPreMu(calcPreMu(mutations));
     setHistory(groupBy(toDate, mergeSort(times, mutations)));
     console.log('History reloaded');
-    // test union on server:
-    const hs = await db_union(ModelName.Time, ModelName.TodoMutation);
-    console.log(hs);
+    // test union on server (missing include Todo)
+    // const hs = await db_union(ModelName.Time, ModelName.TodoMutation);
+    // console.log(hs);
   }, []);
   return (<Box>
     {!history.length && 'Nothing to show yet...'}

@@ -57,7 +57,7 @@ Based on the generated code from Prisma, we define a generic server endpoint `/d
 - No good way to get the union of several models/tables. See comments in `History.tsx`: we currently fetch all entries and then merge sort them on the client.
   - [Support for a Union type #2505](https://github.com/prisma/prisma/issues/2505)
   - [Option brand the model name into data #5315](https://github.com/prisma/prisma/issues/5315)
-  - solved with natural full joins in `db_union`, summary: https://github.com/prisma/prisma/issues/2505#issuecomment-785283427
+  - implemented basic `db_union` with raw query, but is still missing `include` which we use, summary: https://github.com/prisma/prisma/issues/2505#issuecomment-785283427
 - Does not support trees yet ([TypeORM does](https://typeorm.io/#/tree-entities)):
   - [Tree structures support #4562](https://github.com/prisma/prisma/issues/4562)
   - [Support recursive relationships #3725](https://github.com/prisma/prisma/issues/3725)

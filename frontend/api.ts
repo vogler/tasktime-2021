@@ -52,5 +52,5 @@ export const db = Object.fromEntries(models.map(s => [s, dbm(s)])) as { [M in mo
 globalThis.db = db; // for direct db access in Chrome console, TODO remove
 
 
-// custom raw queries
+// raw queries for actions not supported by prisma
 export const db_union = async <m extends ModelName> (...ms: m[]) => await rest('GET', `/db/union/${ms.join(',')}`) as Model<m>[];
