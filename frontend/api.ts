@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from '@prisma/client'; // types for casting
-import { action, actions, model, models } from '../shared/db';
+import { action, actions, Model, model, ModelName, models } from '../shared/db';
 
 // json REST API
 type method = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -54,4 +54,4 @@ globalThis.db = db; // for direct db access in Chrome console, TODO remove
 
 // custom raw queries
 // union, TODO: binary -> variadic
-export const db_union = async <m1 extends Prisma.ModelName, m2 extends Prisma.ModelName> (m1: m1, m2: m2) => await rest('GET', `/db/union/${m1}/${m2}`) as (PrismaClient[Uncapitalize<m1>] | PrismaClient[Uncapitalize<m2>])[];
+export const db_union = async <m1 extends ModelName, m2 extends ModelName> (m1: m1, m2: m2) => await rest('GET', `/db/union/${m1}/${m2}`) as (Model<m1> | Model<m2>)[];

@@ -37,15 +37,6 @@ app.use('/todo', async (req: Request, res: Response) => {
   res.json(await op);
 });
 
-// unions are not supported by prisma (see readme), use raw SQL:
-app.get('/db/union/:m1/:m2', async (req: Request, res: Response) => {
-  console.log(req.url, req.params, req.body);
-  const models = Object.keys(prisma.Prisma.ModelName) as (keyof typeof prisma.Prisma.ModelName)[];
-  const m1 = assertIncludes(models, req.params.m1);
-  const m2 = assertIncludes(models, req.params.m2);
-  const r = await db.$queryRaw(`select * from (select *, \'${m1}\' as "model" from "${m1}") as "m1" natural full join (select *, \'${m2}\' as "model" from "${m2}") as "m2" order by "at" desc`); // db.$queryRaw`...` does not allow variables for tables, TODO SQL injection?
-  res.json(r);
-});
 
 // const match = <T> (cases: {[k: string]: T}, pattern: string) => cases[pattern];
 const fail = (m: string) => { throw new Error(m) };
@@ -60,7 +51,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 }
 
 import { inspect } from 'util';
-import { actions, models, include, todoOrderBy, historyOpt } from '../shared/db';
+import { actions, models, include, todoOrderBy, historyOpt, ModelName, Model } from '../shared/db';
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req: Request, res: Response) => {
@@ -75,6 +66,21 @@ app.post('/db/:model/:action', async (req: Request, res: Response) => {
     res.status(400).json({ error: error.toString() });
   }
 });
+
+// unions are not supported by prisma (see readme), use raw SQL:
+// https://github.com/prisma/prisma/issues/2505#issuecomment-785229500
+// TODO binary -> variadic
+const db_union = <m1 extends ModelName, m2 extends ModelName> (m1: m1, m2: m2) : Promise<(Model<m1> | Model<m2>)[]> =>
+  db.$queryRaw(`select * from (select *, \'${m1}\' as "model" from "${m1}") as "m1" natural full join (select *, \'${m2}\' as "model" from "${m2}") as "m2" order by "at" desc`); // db.$queryRaw`...` does not allow variables for tables, TODO SQL injection?
+
+app.get('/db/union/:m1/:m2', async (req: Request, res: Response) => {
+  console.log(req.url, req.params, req.body);
+  const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
+  const m1 = assertIncludes(models, req.params.m1);
+  const m2 = assertIncludes(models, req.params.m2);
+  res.json(await db_union(m1, m2));
+});
+
 
 const react_routes = ['/history']; // URL is rewritten by react-router (not to /#history), so on refresh the server would not find /history
 app.get(react_routes, async (req: Request, res: Response, next: express.NextFunction) => {
