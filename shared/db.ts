@@ -27,5 +27,5 @@ export type TimeMutation = Prisma.TimeUpdateManyWithoutTodoInput;
 type TodoMutationFull = Prisma.TodoMutationGetPayload<{include: typeof todoInclude}>
 export {TodoMutationFull as TodoMutation};
 
-type Await<T> = T extends PromiseLike<infer U> ? U : T
-export type Model <M extends Prisma.ModelName> = Await<ReturnType<PrismaClient[Uncapitalize<M>]['findMany']>>[number] & {model: M};
+export type Await<T> = T extends PromiseLike<infer U> ? U : T
+export type Model <M extends Prisma.ModelName> = M extends any ? Await<ReturnType<PrismaClient[Uncapitalize<M>]['findMany']>>[number] & {model: M} : never;
