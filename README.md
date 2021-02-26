@@ -75,6 +75,7 @@ FP/types/meta:
 - https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes-func.html
 - https://github.com/gcanti/fp-ts
 - https://github.com/gcanti/io-ts useful for Prisma abstraction? prob. would have to be used in the generated code.
+- https://github.com/gcanti/monocle-ts Lens, Prism, Traversal...
 - https://github.com/pfgray/ts-adt
 - https://github.com/kimamula/ts-transformer-keys via https://github.com/cevek/ttypescript for runtime type information
 - https://github.com/sindresorhus/type-fest
