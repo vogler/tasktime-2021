@@ -67,15 +67,14 @@ app.post('/db/:model/:action', async (req: Request, res: Response) => {
   }
 });
 
-// unions are not supported by prisma (see readme), use raw SQL:
-// https://github.com/prisma/prisma/issues/2505#issuecomment-785229500
+// unions are not supported by prisma (see readme), use raw SQL (order by fixed), example posted at https://github.com/prisma/prisma/issues/2505#issuecomment-785229500
 const db_union = <m extends ModelName> (...ms: m[]) : Promise<Model<m>[]> => {
   const joins = ms.map(m => `(select *, \'${m}\' as "model" from "${m}") as "_${m}"`).join(' natural full join ');
   // db.$queryRaw`...` does not allow variables for tables, TODO SQL injection?
   return db.$queryRaw(`select * from ${joins} order by "at" desc`); // TODO type-safe orderBy on intersection of fields?
 }
 
-app.get('/db/union/:models', async (req: Request, res: Response) => {
+app.get('/db/union-fixed/:models', async (req: Request, res: Response) => {
   console.log(req.url, req.params, req.body);
   try {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
@@ -86,28 +85,29 @@ app.get('/db/union/:models', async (req: Request, res: Response) => {
   }
 });
 
-// the above works, but is missing prisma's options like include, select, where, orderBy etc.
-// for include we could join above, but then we'd have to implement the object creation from fields etc.
+// The above works, but is missing prisma's options like include, select, where, orderBy etc.
+// For include we could join above, but then we'd have to implement the object creation from db fields etc.
+// So the following instead is the union of findMany on several models, and subsequent merge sort in case of orderBy.
+// Beware that args is currently also the union! So if you pass some value that is not in the intersection, the query will only fail at run-time!
+// Tried UnionToIntersection for arg but that resulted in never.
+// type UnionToIntersection<U> = (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
 type Delegate <M extends ModelName> = prisma.PrismaClient[Uncapitalize<M>]
-
-const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMany'], A extends Parameters<F>> (...ms: M[]) => async (...args: A) => {
+const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMany'], A extends Parameters<F>[number]> (...ms: M[]) => async (arg: A) => {
   const uc = (m: ModelName) => m[0].toLowerCase() + m.slice(1) as Uncapitalize<ModelName>;
   type rm = M extends any ? F extends Delegate<M>['findMany'] ? Await<ReturnType<F>>[number] & {model: M} : never : never;
   const ps = ms.map(uc).map(async model =>
     // @ts-ignore This expression is not callable. Each member of the union type '...' has signatures, but none of those signatures are compatible with each other.
-    (await db[model].findMany(args[0])).map(r => ({...r, model})) as rm[] // no way to introduce a fresh type/existential?
+    (await db[model].findMany(arg)).map(r => ({...r, model})) as rm[] // no way to introduce a fresh type/existential?
   );
   const rs = await Promise.all(ps); // results for each model
   return rs.flat();
 }
 
-app.get('/db/unionf/:models', async (req: Request, res: Response) => {
+app.get('/db/union/:models', async (req: Request, res: Response) => {
   console.log(req.url, inspect(req.body, { depth: null, colors: true }));
   try {
+    // const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
     // const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
-    // // @ts-ignore
-    // const ps = ms.map(async (model) => (await db[model]['findMany'](req.body)).map(r => ({...r, model})));
-    // let rs = (await Promise.all(ps)).flat();
     // if (req.body.orderBy) {
     //   // TODO use efficient merge sort instead of flat + sort
     //   const field = Object.keys(req.body.orderBy)[0];
