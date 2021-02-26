@@ -51,7 +51,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 }
 
 import { inspect } from 'util';
-import { actions, models, include, todoOrderBy, historyOpt, ModelName, Model } from '../shared/db';
+import { actions, models, include, todoOrderBy, historyOpt, ModelName, Model, Await } from '../shared/db';
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req: Request, res: Response) => {
@@ -81,6 +81,49 @@ app.get('/db/union/:models', async (req: Request, res: Response) => {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
     const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
     res.json(await db_union(...ms));
+  } catch (error) {
+    res.status(400).json({ error: error.toString() });
+  }
+});
+
+// the above works, but is missing prisma's options like include, select, where, orderBy etc.
+// for include we could join above, but then we'd have to implement the object creation from fields etc.
+type Delegate <M extends ModelName> = prisma.PrismaClient[Uncapitalize<M>]
+
+const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMany'], A extends Parameters<F>> (...ms: M[]) => async (...args: A) => {
+  const uc = (m: ModelName) => m[0].toLowerCase() + m.slice(1) as Uncapitalize<ModelName>;
+  type rm = M extends any ? F extends Delegate<M>['findMany'] ? Await<ReturnType<F>>[number] & {model: M} : never : never;
+  const ps = ms.map(uc).map(async model =>
+    // @ts-ignore This expression is not callable. Each member of the union type '...' has signatures, but none of those signatures are compatible with each other.
+    (await db[model].findMany(args[0])).map(r => ({...r, model})) as rm[] // no way to introduce a fresh type/existential?
+  );
+  const rs = await Promise.all(ps); // results for each model
+  return rs.flat();
+}
+
+app.get('/db/unionf/:models', async (req: Request, res: Response) => {
+  console.log(req.url, inspect(req.body, { depth: null, colors: true }));
+  try {
+    // const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
+    // // @ts-ignore
+    // const ps = ms.map(async (model) => (await db[model]['findMany'](req.body)).map(r => ({...r, model})));
+    // let rs = (await Promise.all(ps)).flat();
+    // if (req.body.orderBy) {
+    //   // TODO use efficient merge sort instead of flat + sort
+    //   const field = Object.keys(req.body.orderBy)[0];
+    //   const order = req.body.orderBy[field];
+    //   console.log(req.body.orderBy, field, order);
+    //   const map_field = (o: {[_: string]: any}) => o[field];
+    //   // rs = rs.sort(cmpBy(map_field, order));
+    // }
+    // res.json(rs);
+    const xs = await unionFindMany(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {at: 'desc'}});
+    const x = xs[0];
+    if (x.model == ModelName.Time) {
+      x
+    }
+    console.log(xs);
+    res.json(xs);
   } catch (error) {
     res.status(400).json({ error: error.toString() });
   }
