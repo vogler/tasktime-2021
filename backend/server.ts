@@ -87,19 +87,21 @@ app.get('/db/union-fixed/:models', async (req: Request, res: Response) => {
 
 // The above works, but is missing prisma's options like include, select, where, orderBy etc.
 // For include we could join above, but then we'd have to implement the object creation from db fields etc.
-// So the following instead is the union of findMany on several models, and subsequent merge sort in case of orderBy.
-// Beware that args is currently also the union! So if you pass some value that is not in the intersection, the query will only fail at run-time!
-// Tried UnionToIntersection for arg but that resulted in never.
+// So the following instead is the union of findMany on several models, and subsequent merge sort in case of orderBy, otherwise just concat+flatten.
+// Beware that arg is also the union, but contravariant! So if you pass some value that is not in the intersection, the query will only fail at run-time!
+// First ried UnionToIntersection for arg but that resulted in never, and is not what we want. Need a covariant union as arg!
 // type UnionToIntersection<U> = (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
 type Delegate <M extends ModelName> = prisma.PrismaClient[Uncapitalize<M>]
 const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMany'], A extends Parameters<F>[number]> (...ms: M[]) => async (arg: A) => {
+  // Distributive conditional types (naked type parameter) are distributed over union types. Can't define a type-level map due to lack of higher kinded types.
+  // First conditional maps over models (R<m1 | m2> -> R<m1> | R<m2>); second conditional establishes constraint F on new M - without we'd get the cross-product.
+  type row = M extends any ? F extends Delegate<M>['findMany'] ? Await<ReturnType<F>>[number] & {model: M} : never : never;
   const uc = (m: ModelName) => m[0].toLowerCase() + m.slice(1) as Uncapitalize<ModelName>;
-  type rm = M extends any ? F extends Delegate<M>['findMany'] ? Await<ReturnType<F>>[number] & {model: M} : never : never;
   const ps = ms.map(uc).map(async model =>
     // @ts-ignore This expression is not callable. Each member of the union type '...' has signatures, but none of those signatures are compatible with each other.
-    (await db[model].findMany(arg)).map(r => ({...r, model})) as rm[] // no way to introduce a fresh type/existential?
+    (await db[model].findMany(arg)).map(r => ({...r, model})) as row[] // no way to introduce a fresh type/existential?
   );
-  const rs = await Promise.all(ps); // results for each model
+  const rs = await Promise.all(ps); // rows for each model
   return rs.flat();
 }
 
@@ -117,7 +119,7 @@ app.get('/db/union/:models', async (req: Request, res: Response) => {
     //   // rs = rs.sort(cmpBy(map_field, order));
     // }
     // res.json(rs);
-    const xs = await unionFindMany(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {at: 'desc'}});
+    const xs = await unionFindMany(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {}});
     const x = xs[0];
     if (x.model == ModelName.Time) {
       x
