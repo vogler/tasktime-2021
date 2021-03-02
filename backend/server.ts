@@ -88,9 +88,15 @@ app.get('/db/union-fixed/:models', async (req: Request, res: Response) => {
 // The above works, but is missing prisma's options like include, select, where, orderBy etc.
 // For include we could join above, but then we'd have to implement the object creation from db fields etc.
 // So the following instead is the union of findMany on several models, and subsequent merge sort in case of orderBy, otherwise just concat+flatten.
-// Beware that arg is also the union, but contravariant! So if you pass some value that is not in the intersection, the query will only fail at run-time!
-// First ried UnionToIntersection for arg but that resulted in never, and is not what we want. Need a covariant union as arg!
-// type UnionToIntersection<U> = (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
+// Beware that arg is also the union, but contravariant! So if you pass some field that is not in the intersection, the query will only fail at run-time!
+// Attempted fix:
+  // UnionToIntersection on arg resulted in never and might not be what we want since intersection on objects means union of keys (like arguments -> contravariant). Not clear why it infers never: if I copy the inferred type w/o UnionToIntersection and apply it after, it works. Union of keys not a problem since they're the same (at least at the top-level)?
+  type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never
+  // Probably want a covariant union as arg, but seems like there's no way to change variance, so we try to intersect both keys and values instead.
+  type InterKeys<e, u> = e extends object ? { [k in keyof e & keyof u]?: InterKeys<e[k], u[k]> } : e // aside: {[k in keyof o]: o[k]} preserves optional, with {[k in keyof o & keyof o]: o[k]} it's gone - wtf? Seems like special case in the compiler -> just make all fields optional.
+  type CoInter<t> = UnionToIntersection<InterKeys<t, t>>
+  // With CoInter<u[k]> on copied original type we get: Type of property 'parent' circularly references itself in mapped type ...
+  // The above worked in tests with plain nested objects, but in the function below it resulted in Parameters<typeof query>[number] = {} | {} | undefined w/o UnionToIntersection and in never with.
 type Delegate <M extends ModelName> = prisma.PrismaClient[Uncapitalize<M>]
 const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMany'], A extends Parameters<F>[number]> (...ms: M[]) => async (arg: A) => {
   // Distributive conditional types (naked type parameter) are distributed over union types. Can't define a type-level map due to lack of higher kinded types.
@@ -119,7 +125,9 @@ app.get('/db/union/:models', async (req: Request, res: Response) => {
     //   // rs = rs.sort(cmpBy(map_field, order));
     // }
     // res.json(rs);
-    const xs = await unionFindMany(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {}});
+    const xs = await unionFindMany(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {at: 'desc'}});
+    const q = unionFindMany(ModelName.Time, ModelName.TodoMutation);
+    type arg = Parameters<typeof q>[number];
     const x = xs[0];
     if (x.model == ModelName.Time) {
       x
