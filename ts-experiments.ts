@@ -74,8 +74,8 @@ namespace union_intersection {
 
 
 type equal<a, b> = [a] extends [b] ? ([b] extends [a] ? true : false) : false
-type ai = {a: number, c?: 'c' | 'ca'}
-type bi = {b: number, c?: 'c' | 'cb'}
+type ai = {a: number, c: 'c' | 'ca'}
+type bi = {b: number, c: 'c' | 'cb'}
 type a = {select?: ai | null | undefined, ca: number, d?: 'd' | 'da'}
 type b = {select?: bi | null | undefined, cb: number, d?: 'd' | 'db'}
 
@@ -91,7 +91,7 @@ type b = {select?: bi | null | undefined, cb: number, d?: 'd' | 'db'}
 //  | {select: inter<bi> | inter<ai|bi>, d: inter<'d'|'db'> | inter<'d'|'da'|'db'}
 
 
-type InterKeys<e, u> = e extends object ? { [k in keyof e & keyof u]: InterKeys<e[k], u[k]> } : e
+type InterKeys<e, u> = e extends object ? { [k in keyof (e|u)]: InterKeys<e[k], u[k]> } : e
 type CoInter<t> = UnionToIntersection<InterKeys<t, t>>
 
 type x = CoInter<a|b|undefined>
@@ -123,14 +123,22 @@ const ui: ui = {orderBy: {text: 'desc'}} // with the copied type UnionToIntersec
 type xp = CoInter<arg> // with CoInter<u[k]> above we get: Type of property 'parent' circularly references itself in mapped type ...
 
 // the above loses information whether a field was optional
-type aa = {foo?: number | string, a:'a'} | {foo?: number | undefined, b:'b'}
-type xa = InterKeys<aa,aa>
+namespace optional_fields {
+  type aa = {foo?: number | string, a:'a'} | {foo?: number | undefined, b:'b'}
+  type xa = InterKeys<aa,aa>
 
-type o = {a?: number | undefined}
-type oa = o['a'] // just number
-type om = {[k in keyof o]: o[k]} // same as o
-type ks = keyof o & keyof o // same as just keyof o
-type ob = {[k in keyof o & keyof o]: o[k]} // {a: number} - wtf? can add ? after o] to make every field optional.
+  type o = {a?: number | undefined}
+  type oa = o['a'] // just number
+  type om = {[k in keyof o]: o[k]} // same as o
+  type ks = keyof o & keyof o // same as just keyof o
+  type ob = {[k in keyof o & keyof o]: o[k]} // {a: number} - wtf? why is it no longer optional? can add ? after o] to make every field optional.
+  type p1 = Pick<o, 'a'>
+  type a = {a?: number, c?: number}
+  type b = {b?: number, c?: number}
+  type ku = keyof (a|b)
+  type cp = Pick<a|b, keyof (a|b)> // this keeps optional info
+  type cb = {[k in keyof (a|b)]: (a|b)[k]} // same
+}
 
 type i = UnionToIntersection<{} | {} | undefined>
 

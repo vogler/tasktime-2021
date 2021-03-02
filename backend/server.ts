@@ -93,7 +93,7 @@ app.get('/db/union-fixed/:models', async (req: Request, res: Response) => {
   // UnionToIntersection on arg resulted in never and might not be what we want since intersection on objects means union of keys (like arguments -> contravariant). Not clear why it infers never: if I copy the inferred type w/o UnionToIntersection and apply it after, it works. Union of keys not a problem since they're the same (at least at the top-level)?
   type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never
   // Probably want a covariant union as arg, but seems like there's no way to change variance, so we try to intersect both keys and values instead.
-  type InterKeys<e, u> = e extends object ? { [k in keyof e & keyof u]?: InterKeys<e[k], u[k]> } : e // aside: {[k in keyof o]: o[k]} preserves optional, with {[k in keyof o & keyof o]: o[k]} it's gone - wtf? Seems like special case in the compiler -> just make all fields optional.
+  type InterKeys<e, u> = e extends object ? { [k in keyof (e|u)]: InterKeys<e[k], u[k]> } : e // NB: [k in keyof e & keyof u] lost info about optional!
   type CoInter<t> = UnionToIntersection<InterKeys<t, t>>
   // With CoInter<u[k]> on copied original type we get: Type of property 'parent' circularly references itself in mapped type ...
   // The above worked in tests with plain nested objects, but in the function below it resulted in Parameters<typeof query>[number] = {} | {} | undefined w/o UnionToIntersection and in never with.
