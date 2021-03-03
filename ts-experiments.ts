@@ -140,7 +140,7 @@ const uie: uie = {orderBy: {text: 'desc'}, distinct: 'text'} // now text is some
 
 type xp = CoInter<arg> // with CoInter<u[k]> above we get: Type of property 'parent' circularly references itself in mapped type ...
 
-// the above loses information whether a field was optional
+// the above initially lost information whether a field was optional. now fixed by `keyof (a|b)` instead of `keyof a & keyof b`
 namespace optional_fields {
   type aa = {foo?: number | string, a:'a'} | {foo?: number | undefined, b:'b'}
   type xa = InterKeys<aa,aa>
@@ -159,3 +159,24 @@ namespace optional_fields {
 }
 
 type i = UnionToIntersection<{} | {} | undefined>
+
+// argument in unionFindMany does not influence return type - is the information lost due to Parameters & ReturnType?
+namespace ArgInlfRet {
+  declare function f <T extends boolean> (arg: T) : (T extends true ? 'yes' : 'no');
+  type f = typeof f; // <T extends boolean>(arg: T) => T extends true ? "yes" : "no"
+  type a = Parameters<f>[number]; // boolean
+  type r = ReturnType<f>; // "yes" | "no"
+  const r = f(true); // "yes"
+
+  // type fs = { f: typeof f };
+  // declare function apply <K extends keyof fs, F extends fs[K], A extends Parameters<F>[number]> (f: K, arg: A): ReturnType<F>;
+  // const ra = apply('f', true); // "no" | "yes"
+
+  const fs = { f };
+  type App <F, A> = F extends (x:A) => infer R ? R : never;
+  type afa = App<typeof f, true>; // "yes" | "no" - typescript can't infer through generic functions :(
+  declare function apply <K extends keyof typeof fs, F extends typeof fs[K], A, R extends App<F,A>> (f: K, arg: A): R;
+  // not valid as return type: typeof (fs[f](arg)), F(A)
+  const rfs = fs['f'](true); // "yes"
+  const ra1 = apply('f', true); // "no" | "yes"
+}

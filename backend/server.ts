@@ -74,7 +74,7 @@ const db_union = <m extends ModelName> (...ms: m[]) : Promise<Model<m>[]> => {
   return db.$queryRaw(`select * from ${joins} order by "at" desc`); // TODO type-safe orderBy on intersection of fields?
 }
 
-app.get('/db/union-fixed/:models', async (req: Request, res: Response) => {
+app.get('/db/union-raw/:models', async (req: Request, res: Response) => {
   console.log(req.url, req.params, req.body);
   try {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
@@ -109,32 +109,38 @@ const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMany'], A
     (await db[model].findMany(arg)).map(r => ({...r, model})) as row[] // no way to introduce a fresh type/existential?
   );
   const rs = await Promise.all(ps); // rows for each model
+  if (arg?.orderBy) {
+    // TODO use merge sort instead of flatten + sort since lists in rs are already sorted
+    // @ts-ignore Type 'TimeOrderByInput' has no properties in common with type '{ [k in keyof row]?: {} | "asc" | "desc" | undefined; }'.
+    return rs.flat().sort(cmpBy(arg.orderBy));
+  }
   return rs.flat();
 }
 
-const q = unionFindMany(ModelName.Time, ModelName.TodoMutation);
-type arg1 = Parameters<typeof q>[number]; // { ... } | { ... } | undefined
-type arg2 = UnionToIntersection<arg1>; // never - why? If I copy the inferred type of arg1 from IntelliSense and apply UnionToIntersection, it works?!
+export const cmpBy = <X, K extends keyof X, O extends 'asc' | 'desc' | {}, OB extends {[k in K]?: O}>(orderBy: OB | OB[]) => (a: X, b: X) => {
+  const cmp = <T>(c: T, d: T) => c < d ? -1 : c > d ? 1 : 0;
+  const ord = (c: number, o: O) => o == 'asc' ? c : c * -1;
+  const orderBys = orderBy instanceof Array ? orderBy : [orderBy];
+  return orderBys.map(Object.entries).flat().reduce((r, [k,o]) => r == 0 ? ord(cmp(a[k as K], b[k as K]), o as O) : r, 0);
+};
 
-app.get('/db/union/:models', async (req: Request, res: Response) => {
+async () => { // unapplied, just here to check the types
+  const q = unionFindMany(ModelName.Time, ModelName.TodoMutation);
+  type arg1 = Parameters<typeof q>[number]; // { ... } | { ... } | undefined
+  type arg2 = UnionToIntersection<arg1>; // never - why? If I copy the inferred type of arg1 from IntelliSense and apply UnionToIntersection, it works?!
+  const xs = await unionFindMany(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: [{todoId: 'desc'}, {at: 'desc'}]});
+  const x = xs[0];
+  if (x.model == ModelName.Time) {
+    x // prisma.Time & { model: "Time"; } but lacking the include in the type :(
+  }
+};
+
+app.post('/db/union/:models', async (req: Request, res: Response) => {
   console.log(req.url, inspect(req.body, { depth: null, colors: true }));
   try {
-    // const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
-    // const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
-    // if (req.body.orderBy) {
-    //   // TODO use efficient merge sort instead of flat + sort
-    //   const field = Object.keys(req.body.orderBy)[0];
-    //   const order = req.body.orderBy[field];
-    //   console.log(req.body.orderBy, field, order);
-    //   const map_field = (o: {[_: string]: any}) => o[field];
-    //   // rs = rs.sort(cmpBy(map_field, order));
-    // }
-    // res.json(rs);
-    const xs = await unionFindMany(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {at: 'desc'}});
-    const x = xs[0];
-    if (x.model == ModelName.Time) {
-      x
-    }
+    const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
+    const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
+    const xs = await unionFindMany(...ms)(req.body);
     console.log(xs);
     res.json(xs);
   } catch (error) {
