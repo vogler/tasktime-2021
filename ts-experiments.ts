@@ -99,6 +99,9 @@ declare function f_union_cov(x: x)
 f_union_cov({select: {c: 'c'}, d: 'd'})
 
 import prisma from '@prisma/client'; // default import since CJS does not support named import
+// this is the inferred type that IntelliSense shows in server.ts for
+// const q = unionFindMany(ModelName.Time, ModelName.TodoMutation);
+// type arg = Parameters<typeof q>[number];
 type arg = {
   select?: prisma.Prisma.TimeSelect | null | undefined;
   include?: prisma.Prisma.TimeInclude | null | undefined;
@@ -120,6 +123,21 @@ type arg = {
 } | undefined;
 type ui = UnionToIntersection<arg>
 const ui: ui = {orderBy: {text: 'desc'}} // with the copied type UnionToIntersection is enough?!
+// with UnionToIntersection<A> in unionFindMany it inferres never instead... why doesn't behave the same as when just copying the type?
+// also tried to expand the type, but still inferred never
+
+// https://stackoverflow.com/questions/57683303/how-can-i-see-the-full-expanded-contract-of-a-typescript-type/57683652#57683652
+// expands object types one level deep
+type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+
+// expands object types recursively
+type ExpandRecursively<T> = T extends object
+  ? T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never
+  : T;
+
+type uie = Expand<ui> // should not change anything
+const uie: uie = {orderBy: {text: 'desc'}, distinct: 'text'} // now text is somehow no longer an error, but distinct is still checked correctly??
+
 type xp = CoInter<arg> // with CoInter<u[k]> above we get: Type of property 'parent' circularly references itself in mapped type ...
 
 // the above loses information whether a field was optional
@@ -141,12 +159,3 @@ namespace optional_fields {
 }
 
 type i = UnionToIntersection<{} | {} | undefined>
-
-// https://stackoverflow.com/questions/57683303/how-can-i-see-the-full-expanded-contract-of-a-typescript-type/57683652#57683652
-// expands object types one level deep
-type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
-
-// expands object types recursively
-type ExpandRecursively<T> = T extends object
-  ? T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never
-  : T;

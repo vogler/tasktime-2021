@@ -87,15 +87,16 @@ app.get('/db/union-fixed/:models', async (req: Request, res: Response) => {
 
 // The above works, but is missing prisma's options like include, select, where, orderBy etc.
 // For include we could join above, but then we'd have to implement the object creation from db fields etc.
-// So the following instead is the union of findMany on several models, and subsequent merge sort in case of orderBy, otherwise just concat+flatten.
+// So the following is the union of findMany on several models, and subsequent merge sort in case of orderBy, otherwise just concat+flatten.
 // Beware that arg is also the union, but contravariant! So if you pass some field that is not in the intersection, the query will only fail at run-time!
 // Attempted fix:
-  // UnionToIntersection on arg resulted in never and might not be what we want since intersection on objects means union of keys (like arguments -> contravariant). Not clear why it infers never: if I copy the inferred type w/o UnionToIntersection and apply it after, it works. Union of keys not a problem since they're the same (at least at the top-level)?
+  // UnionToIntersection on arg resulted in never. Not clear why - if I copy the inferred type w/o UnionToIntersection and apply it after, it works. Intersection on objects means union of keys (like arguments -> contravariant) but this should not be a problem on the top-level since they're the same for every query and keys of nested objects seem to be intersected.
   type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never
-  // Probably want a covariant union as arg, but seems like there's no way to change variance, so we try to intersect both keys and values instead.
+  // Covariant union as arg would intersect keys, but not values. Also, there are no variance annotations anyway.
+  // Alternatively tried to intersect both keys and values, but seems like UnionToIntersection alone would do the right thing.
   type InterKeys<e, u> = e extends object ? { [k in keyof (e|u)]: InterKeys<e[k], u[k]> } : e // NB: [k in keyof e & keyof u] lost info about optional!
+  // With CoInter<u[k]> instead of u[k] above applied on copied original type we get: Type of property 'parent' circularly references itself in mapped type ...
   type CoInter<t> = UnionToIntersection<InterKeys<t, t>>
-  // With CoInter<u[k]> on copied original type we get: Type of property 'parent' circularly references itself in mapped type ...
   // The above worked in tests with plain nested objects, but in the function below it resulted in Parameters<typeof query>[number] = {} | {} | undefined w/o UnionToIntersection and in never with.
 type Delegate <M extends ModelName> = prisma.PrismaClient[Uncapitalize<M>]
 const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMany'], A extends Parameters<F>[number]> (...ms: M[]) => async (arg: A) => {
@@ -110,6 +111,10 @@ const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMany'], A
   const rs = await Promise.all(ps); // rows for each model
   return rs.flat();
 }
+
+const q = unionFindMany(ModelName.Time, ModelName.TodoMutation);
+type arg1 = Parameters<typeof q>[number]; // { ... } | { ... } | undefined
+type arg2 = UnionToIntersection<arg1>; // never - why? If I copy the inferred type of arg1 from IntelliSense and apply UnionToIntersection, it works?!
 
 app.get('/db/union/:models', async (req: Request, res: Response) => {
   console.log(req.url, inspect(req.body, { depth: null, colors: true }));
@@ -126,8 +131,6 @@ app.get('/db/union/:models', async (req: Request, res: Response) => {
     // }
     // res.json(rs);
     const xs = await unionFindMany(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {at: 'desc'}});
-    const q = unionFindMany(ModelName.Time, ModelName.TodoMutation);
-    type arg = Parameters<typeof q>[number];
     const x = xs[0];
     if (x.model == ModelName.Time) {
       x
