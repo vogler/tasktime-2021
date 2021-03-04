@@ -159,6 +159,9 @@ const uie: uie = {orderBy: {text: 'desc'}, distinct: 'text'} // now text is some
 
 type xp = CoInter<arg> // with CoInter<u[k]> above we get: Type of property 'parent' circularly references itself in mapped type ...
 
+// reg. never being inferred: https://stackoverflow.com/questions/61693847/typescript-union-to-intersection-returns-values-as-never
+
+
 // the above initially lost information whether a field was optional. now fixed by `keyof (a|b)` instead of `keyof a & keyof b`
 namespace optional_fields {
   type aa = {foo?: number | string, a:'a'} | {foo?: number | undefined, b:'b'}
