@@ -53,19 +53,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 import { inspect } from 'util';
 import { actions, models, include, todoOrderBy, historyOpt, ModelName, Model, Await } from '../shared/db';
 
-// serves db.model.action(req.body)
-app.post('/db/:model/:action', async (req: Request, res: Response) => {
-  console.log(req.url, inspect(req.body, { depth: null, colors: true }));
-  try {
-    const model = assertIncludes(models, req.params.model);
-    const action = assertIncludes(actions, req.params.action); // see PrismaAction, but no value for the type
-    // @ts-ignore
-    const r = await db[model][action](req.body);
-    res.json(r);
-  } catch (error) {
-    res.status(400).json({ error: error.toString() });
-  }
-});
+// the following are experiments to allow union queries - the main point of this file is the endpoint /db/:model/:action
 
 // unions are not supported by prisma (see readme), use raw SQL (order by fixed), example posted at https://github.com/prisma/prisma/issues/2505#issuecomment-785229500
 const db_union = <m extends ModelName> (...ms: m[]) : Promise<Model<m>[]> => {
@@ -143,6 +131,20 @@ app.post('/db/union/:models', async (req: Request, res: Response) => {
     const xs = await unionFindMany(...ms)(req.body);
     console.log(xs);
     res.json(xs);
+  } catch (error) {
+    res.status(400).json({ error: error.toString() });
+  }
+});
+
+// serves db.model.action(req.body)
+app.post('/db/:model/:action', async (req: Request, res: Response) => {
+  console.log(req.url, inspect(req.body, { depth: null, colors: true }));
+  try {
+    const model = assertIncludes(models, req.params.model);
+    const action = assertIncludes(actions, req.params.action); // see PrismaAction, but no value for the type
+    // @ts-ignore
+    const r = await db[model][action](req.body);
+    res.json(r);
   } catch (error) {
     res.status(400).json({ error: error.toString() });
   }
