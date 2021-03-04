@@ -29,3 +29,4 @@ export {TodoMutationFull as TodoMutation};
 
 export type Await<T> = T extends PromiseLike<infer U> ? U : T
 export type Model <M extends Prisma.ModelName> = M extends any ? Await<ReturnType<PrismaClient[Uncapitalize<M>]['findMany']>>[number] & {model: M} : never;
+export type ModelArg <M extends Prisma.ModelName> = M extends any ? Parameters<PrismaClient[Uncapitalize<M>]['findMany']>[number] : never;

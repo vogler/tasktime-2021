@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from '@prisma/client'; // types for casting
-import { action, actions, Model, model, ModelName, models } from '../shared/db';
+import { action, actions, Model, model, ModelArg, ModelName, models } from '../shared/db';
 
 // json REST API
 type method = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -53,4 +53,7 @@ globalThis.db = db; // for direct db access in Chrome console, TODO remove
 
 
 // raw queries for actions not supported by prisma
-export const db_union = async <m extends ModelName> (...ms: m[]) => await rest('GET', `/db/union/${ms.join(',')}`) as Model<m>[];
+export const db_union_raw = async <m extends ModelName> (...ms: m[]) => await rest('GET', `/db/union-raw/${ms.join(',')}`) as Model<m>[];
+// UnionToIntersection<ModelArg<m>> results in never?!
+export const db_union = <m extends ModelName> (...ms: m[]) => async (arg: ModelArg<m>) => await rest('GET', `/db/union/${ms.join(',')}`) as Model<m>[];
+db_union(ModelName.Time, ModelName.TodoMutation)({})

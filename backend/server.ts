@@ -84,7 +84,9 @@ app.get('/db/union-raw/:models', async (req: Request, res: Response) => {
   // Alternatively tried to intersect both keys and values, but seems like UnionToIntersection alone would do the right thing.
   type InterKeys<e, u> = e extends object ? { [k in keyof (e|u)]: InterKeys<e[k], u[k]> } : e // NB: [k in keyof e & keyof u] lost info about optional!
   // With CoInter<u[k]> instead of u[k] above applied on copied original type we get: Type of property 'parent' circularly references itself in mapped type ...
-  type CoInter<t> = UnionToIntersection<InterKeys<t, t>>
+  type NonNeverKeys<T> = { [K in keyof T]: T[K] extends never ? never : K }[keyof T];
+  type StripNever<T> = T extends object ? { [K in NonNeverKeys<T>]: StripNever<T[K]>} : T;
+  type CoInter<t> = StripNever<UnionToIntersection<InterKeys<t, t>>>
   // The above worked in tests with plain nested objects, but in the function below it resulted in Parameters<typeof query>[number] = {} | {} | undefined w/o UnionToIntersection and in never with.
 type Delegate <M extends ModelName> = prisma.PrismaClient[Uncapitalize<M>]
 const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMany'], A extends Parameters<F>[number]> (...ms: M[]) => async (arg: A) => {

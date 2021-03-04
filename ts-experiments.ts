@@ -42,7 +42,7 @@ namespace map_union { // via distributive conditional
 
 type UnionToIntersection<U> = (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
 
-namespace union_intersection {
+namespace union_intersection_variance {
   type a = {a: number, c: 'c' | 'ca'}
   type b = {b: number, c: 'c' | 'cb'}
 
@@ -73,12 +73,12 @@ namespace union_intersection {
 }
 
 
-type equal<a, b> = [a] extends [b] ? ([b] extends [a] ? true : false) : false
 type ai = {a: number, c: 'c' | 'ca'}
 type bi = {b: number, c: 'c' | 'cb'}
 type a = {select?: ai | null | undefined, ca: number, d?: 'd' | 'da'}
 type b = {select?: bi | null | undefined, cb: number, d?: 'd' | 'db'}
 
+// type equal<a, b> = [a] extends [b] ? ([b] extends [a] ? true : false) : false
 // type inter_bin <a, b> = equal<a,b> extends true ? never : { [k in keyof a & keyof b]: inter<a[k]> | inter<b[k]> }
 // type inter_map <t, u> = t extends object ? inter_bin <t, u> : t
 // type inter <t> = inter_map <t, t>
@@ -90,13 +90,32 @@ type b = {select?: bi | null | undefined, cb: number, d?: 'd' | 'db'}
 // -> {select: inter<ai> | inter<ai|bi>, d: inter<'d'|'da'> | inter<'d'|'da'|'db'}
 //  | {select: inter<bi> | inter<ai|bi>, d: inter<'d'|'db'> | inter<'d'|'da'|'db'}
 
-
 type InterKeys<e, u> = e extends object ? { [k in keyof (e|u)]: InterKeys<e[k], u[k]> } : e
-type CoInter<t> = UnionToIntersection<InterKeys<t, t>>
+type CoInter<t> = StripNever<UnionToIntersection<InterKeys<t, t>>>
 
 type x = CoInter<a|b|undefined>
 declare function f_union_cov(x: x)
 f_union_cov({select: {c: 'c'}, d: 'd'})
+
+// -> Above works as expected, but when used with actual unionFindMany it returns never.
+// First thought because some fields have non-intersecting types and UnionToIntersection is only applied at the root, so all of it becomes never, instead of just the incompatible fields.
+// Tested below, but really just the fields become never. However, this is also a problem since there's no value for an object with a non-optional field of type never.
+// -> Later added StripNever above.
+type ax = {select?: ai | null | undefined, ca: number, d: number, e: string}
+type bx = {select?: bi | null | undefined, cb: number, d: string}
+((x: UnionToIntersection<ax|bx>) => {})({select: {c:'c'}}); // Type '{ c: "c"; }' is not assignable to type 'ai & bi'. Property 'a' is missing in type '{ c: "c"; }' but required in type 'ai'.
+((x: UnionToIntersection<ax|bx>) => {})({select: {c:'c', a:1, b:2}, ca:1, d:1, e:''}); // Type 'number' is not assignable to type 'never'..
+((x: CoInter<ax|bx>) => {})({select: {c:'c'}}); // Property 'd' is missing in type '{ select: { c: "c"; }; }' but required in type '{ select?: { c: "c" | "ca"; }; d: number; }'.
+((x: CoInter<ax|bx>) => {})({select: {c:'c'}, d: undefined}); // Type 'undefined' is not assignable to type 'never'
+
+type NonNeverKeys<T> = { [K in keyof T]: T[K] extends never ? never : K }[keyof T];
+type StripNever<T> = T extends object ? { [K in NonNeverKeys<T>]: StripNever<T[K]>} : T;
+type s1 = StripNever<string | number>
+type o2 = {foo: string, bar: never, baz: {bo: number, bu: never}}
+type f2 = NonNeverKeys<o2>
+type s2 = StripNever<o2>
+((x: StripNever<CoInter<ax|bx>>) => {})({select: {c:'c'}});
+
 
 import prisma from '@prisma/client'; // default import since CJS does not support named import
 // this is the inferred type that IntelliSense shows in server.ts for
@@ -123,7 +142,7 @@ type arg = {
 } | undefined;
 type ui = UnionToIntersection<arg>
 const ui: ui = {orderBy: {text: 'desc'}} // with the copied type UnionToIntersection is enough?!
-// with UnionToIntersection<A> in unionFindMany it inferres never instead... why doesn't behave the same as when just copying the type?
+// with UnionToIntersection<A> in unionFindMany it inferres never instead... why doesn't it behave the same as when just copying the type?
 // also tried to expand the type, but still inferred never
 
 // https://stackoverflow.com/questions/57683303/how-can-i-see-the-full-expanded-contract-of-a-typescript-type/57683652#57683652
@@ -160,8 +179,8 @@ namespace optional_fields {
 
 type i = UnionToIntersection<{} | {} | undefined>
 
-// argument in unionFindMany does not influence return type - is the information lost due to Parameters & ReturnType?
-namespace ArgInlfRet {
+// argument in unionFindMany does not influence return type -> typescript can't infer through generic functions
+namespace ArgInflfRet {
   declare function f <T extends boolean> (arg: T) : (T extends true ? 'yes' : 'no');
   type f = typeof f; // <T extends boolean>(arg: T) => T extends true ? "yes" : "no"
   type a = Parameters<f>[number]; // boolean
