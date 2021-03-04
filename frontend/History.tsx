@@ -112,8 +112,8 @@ export default function History() {
     setHistory(groupBy(toDate, mergeSort(times, mutations)));
     console.log('History reloaded');
     // test union on server (missing include Todo)
-    const hs = await db_union(ModelName.Time, ModelName.TodoMutation);
-    console.log(hs);
+    // const hs = await db_union(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {at: 'desc'}});
+    // console.log(hs);
   }, []);
   return (<Box>
     {!history.length && 'Nothing to show yet...'}

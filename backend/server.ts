@@ -131,7 +131,6 @@ app.post('/db/union/:models', async (req: Request, res: Response) => {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
     const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
     const xs = await unionFindMany(...ms)(req.body);
-    console.log(xs);
     res.json(xs);
   } catch (error) {
     res.status(400).json({ error: error.toString() });
