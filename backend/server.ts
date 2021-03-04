@@ -53,7 +53,7 @@ function assertIncludes(a: readonly string[], k: string): string {
 import { inspect } from 'util';
 import { actions, models, include, todoOrderBy, historyOpt, ModelName, Model, Await } from '../shared/db';
 
-// the following are experiments to allow union queries - the main point of this file is the endpoint /db/:model/:action
+// The following are experiments to allow union queries (also see top of History.tsx) - the main point of this file is the endpoint /db/:model/:action
 
 // unions are not supported by prisma (see readme), use raw SQL (order by fixed), example posted at https://github.com/prisma/prisma/issues/2505#issuecomment-785229500
 const db_union = <m extends ModelName> (...ms: m[]) : Promise<Model<m>[]> => {

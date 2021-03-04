@@ -55,5 +55,5 @@ globalThis.db = db; // for direct db access in Chrome console, TODO remove
 // raw queries for actions not supported by prisma
 export const db_union_raw = async <m extends ModelName> (...ms: m[]) => await rest('GET', `/db/union-raw/${ms.join(',')}`) as Model<m>[];
 // UnionToIntersection<ModelArg<m>> results in never?!
-export const db_union = <m extends ModelName> (...ms: m[]) => async (arg: ModelArg<m>) => await rest('GET', `/db/union/${ms.join(',')}`) as Model<m>[];
-db_union(ModelName.Time, ModelName.TodoMutation)({})
+export const db_union = <m extends ModelName> (...ms: m[]) => async (arg: ModelArg<m>) => await rest('POST', `/db/union/${ms.join(',')}`) as Model<m>[];
+// db_union(ModelName.Time, ModelName.TodoMutation)({select: {text: true}});

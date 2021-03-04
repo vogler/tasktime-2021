@@ -12,17 +12,22 @@ const dbTimes: Time[] = [];
 const dbTodoMutations: TodoMutation[] = [];
 
 
-// we want to have the union of (Time and TodoMutation) ordered by date desc
-// first approach was to merge the two sorted lists from the server into one locally
-// if we want to do it with a query on the server, the following works (but not supported by Prisma):
+// We want to have the union of (Time and TodoMutation) ordered by at (DateTime) desc.
+// First approach was to merge the two sorted lists from the server into one locally.
+
+// Then tried to do it with one query on the server. The following works (but not supported by Prisma):
   // select *, null as "text", null as "done" from "Time" union all select "todoId", "at", null as "end", "text", "done" from "TodoMutation" order by "at" desc;
   // -> not good since 'union' requires the same number of fields and compatible types, so we have to replace fields of other tables with null
-// better alternative because it works generically without padding fields (but requires extra field to avoid accidental joins):
+// Better alternative because it works generically without padding fields (but requires extra field to avoid accidental joins):
   // select * from (select *, 'Time' as "table" from "Time") as "t1"
   // natural full join (select *, 'TodoMutation' as "table" from "TodoMutation") as "t2" order by "at" desc;
-// can prefix with 'explain analyze' to see execution plan
+// Can prefix with 'explain analyze' to see execution plan.
 // -> implemented as raw query in db_union, see https://github.com/prisma/prisma/issues/2505#issuecomment-785283427
-// but has no support for include which we use below, so we keep the local merge for now TODO wait for progress on issue above
+// But raw queries lack the prisma features like include which we use below.
+// Then tried to implement unionFindMany which should also merge several queries and sort them, but on the server.
+// Works, but argument is not type-safe and return type is not influenced by the argument.
+
+// So we keep the local merge for now TODO wait for progress on issue above.
 
 const at = (x: Time | TodoMutation) => x.at.toString();
 let i = 0;
@@ -107,8 +112,8 @@ export default function History() {
     setHistory(groupBy(toDate, mergeSort(times, mutations)));
     console.log('History reloaded');
     // test union on server (missing include Todo)
-    // const hs = await db_union(ModelName.Time, ModelName.TodoMutation);
-    // console.log(hs);
+    const hs = await db_union(ModelName.Time, ModelName.TodoMutation);
+    console.log(hs);
   }, []);
   return (<Box>
     {!history.length && 'Nothing to show yet...'}
