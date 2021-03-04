@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import bodyParser from 'body-parser';
 
 const app = express();
@@ -14,7 +14,7 @@ import prisma from '@prisma/client'; // default import since CJS does not suppor
 const db = new prisma.PrismaClient();
 
 // deprecated manual REST API -> too much boilerplate -> expose db below
-app.use('/todo', async (req: Request, res: Response) => {
+app.use('/todo', async (req, res) => {
   console.log(req.method, req.url, req.body);
   const args = req.body;
   let op;
@@ -62,7 +62,7 @@ const db_union = <m extends ModelName> (...ms: m[]) : Promise<Model<m>[]> => {
   return db.$queryRaw(`select * from ${joins} order by "at" desc`); // TODO type-safe orderBy on intersection of fields?
 }
 
-app.get('/db/union-raw/:models', async (req: Request, res: Response) => {
+app.get('/db/union-raw/:models', async (req, res) => {
   console.log(req.url, req.params, req.body);
   try {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
@@ -125,7 +125,7 @@ async () => { // unapplied, just here to check the types
   }
 };
 
-app.post('/db/union/:models', async (req: Request, res: Response) => {
+app.post('/db/union/:models', async (req, res) => {
   console.log(req.url, inspect(req.body, { depth: null, colors: true }));
   try {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
@@ -138,7 +138,7 @@ app.post('/db/union/:models', async (req: Request, res: Response) => {
 });
 
 // serves db.model.action(req.body)
-app.post('/db/:model/:action', async (req: Request, res: Response) => {
+app.post('/db/:model/:action', async (req, res) => {
   console.log(req.url, inspect(req.body, { depth: null, colors: true }));
   try {
     const model = assertIncludes(models, req.params.model);
@@ -152,7 +152,7 @@ app.post('/db/:model/:action', async (req: Request, res: Response) => {
 });
 
 const react_routes = ['/history']; // URL is rewritten by react-router (not to /#history), so on refresh the server would not find /history
-app.get(react_routes, async (req: Request, res: Response, next: express.NextFunction) => {
+app.get(react_routes, async (req, res, next) => {
   console.log('reroute', req.url, 'to /');
   // res.sendFile('/index.html'); // no such file (since static handled by snowpack), also we want snowpack to patch the file for HMR
   req.url = '/'; // can't write req.path
@@ -205,7 +205,7 @@ if (process.env.NODE_ENV != 'production') {
   const server = await startServer({ config, lockfile: null }); // this starts a separate server on devOptions.port and a websocket for HMR on devOptions.hmrPort!
 
   // snowpack: build each file on request and respond with its built contents
-  app.use(async (req: Request, res: Response, next: express.NextFunction) => {
+  app.use(async (req, res, next) => {
     try {
       const buildResult = await server.loadUrl(req.url);
       // console.log('snowpack.loadUrl:', req.url, '->', buildResult.originalFileLoc, `(${buildResult.contentType})`);
@@ -223,7 +223,7 @@ if (process.env.NODE_ENV != 'production') {
   const { readFileSync } = await import('fs');
   const fileContents = Object.fromEntries(Object.keys(replacements).map(s => [s, readFileSync(`./build${s}`).toString()]));
 
-  app.get(Object.keys(replacements), async (req: Request, res: Response) => {
+  app.get(Object.keys(replacements), async (req, res) => {
     res.contentType('application/javascript');
     res.send(await fillData(req.url, fileContents[req.url]));
   });
