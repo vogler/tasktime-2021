@@ -32,36 +32,44 @@ app.use(session({secret: 'track-time', saveUninitialized: true, resave: false}))
 app.use(grant.express(auth_config));
 const fmtJSON = (js: any) => JSON.stringify(js, null, 2);
 app.get('/signin', (req, res) => {
-    const session = req.session as typeof req.session & { grant: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
-    res.end(fmtJSON(session.grant.response));
-  });
-app.get('/login', (req, res) => {
-  res.end('<html>Access denied! <a href="/connect/google">Login</a></html>');
+  // const session = req.session as typeof req.session & { grant: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
+  // res.end(fmtJSON(session.grant.response));
+  // TODO save user in DB
+  res.redirect('/');
 });
+type profile = { // just for google, same for others?
+  name: string;
+  given_name: string;
+  family_name: string;
+  picture: string;
+  email: string;
+  email_verified: boolean;
+  locale: string;
+}
+const getAuth = (req: express.Request) => {
+  const session = req.session as typeof req.session & { grant?: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
+  const r = session.grant?.response;
+  if (!r || !r.access_token || !r.profile) return undefined;
+  return r as typeof r & {profile: profile};
+};
 app.get('/logout', (req, res) => {
+  console.log('logout', getAuth(req)?.profile.email)
   req.session.destroy(console.log);
   res.redirect('/');
 });
-// app.get('/env', (req,res) => {
-//   res.end(fmtJSON(process.env));
-// });
-const isProtected = (url: string) => ['/db', '/todo'].filter(prefix => url.startsWith(prefix)).length != 0
 const isAuthorized = (req: express.Request) => {
-  if(!isProtected(req.url)) return true;
-  const session = req.session as typeof req.session & { grant?: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
-  const token = session.grant?.response?.access_token;
-  console.log(req.url, token);
-  if (!token) return false;
   // TODO verify token, get userId and use in queries
   return true;
 };
-app.use((req, res, next) => {
-  console.log(req.method, req.url, req.body, req.session);
-  if (isAuthorized(req)) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
+app.use(['/db', '/todo'], (req, res, next) => {
+  console.log('check auth for', req.method, req.originalUrl, inspect(req.body, { depth: null, colors: true })); // , req.session
+  const auth = getAuth(req);
+  const msg = (reason: string) => `<html>Access denied! Reason: ${reason}. Please go to <a href="/">start</a> and login.</html>`;
+  if (!auth?.access_token || !auth.profile) return res.status(401).end(msg('Not authenticated'));
+  console.log('Authenticated as', auth.profile.email);
+  if (!isAuthorized(req)) return res.status(403).end(msg('Not authorized'));
+  next();
+  // res.redirect('/login');
 });
 
 
@@ -72,7 +80,6 @@ const db = new prisma.PrismaClient();
 
 // deprecated manual REST API -> too much boilerplate -> expose db below
 app.use('/todo', async (req, res) => {
-  console.log(req.method, req.url, req.body);
   const args = req.body;
   let op;
   switch (req.method) {
@@ -120,7 +127,6 @@ const db_union = <m extends ModelName> (...ms: m[]) : Promise<Model<m>[]> => {
 }
 
 app.get('/db/union-raw/:models', async (req, res) => {
-  console.log(req.url, req.params, req.body);
   try {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
     const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
@@ -183,7 +189,6 @@ async () => { // unapplied, just here to check the types
 };
 
 app.post('/db/union/:models', async (req, res) => {
-  console.log(req.url, inspect(req.body, { depth: null, colors: true }));
   try {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
     const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
@@ -196,7 +201,6 @@ app.post('/db/union/:models', async (req, res) => {
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req, res) => {
-  console.log(req.url, inspect(req.body, { depth: null, colors: true }));
   try {
     const model = assertIncludes(models, req.params.model);
     const action = assertIncludes(actions, req.params.action); // see PrismaAction, but no value for the type
