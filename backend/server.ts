@@ -28,10 +28,10 @@ const auth_config = {
     'callback': '/signin'
   }
 };
-app.use('/connect', (req, res, next) => {
+app.all('/connect/:provider', (req, res, next) => {
   const origin = process.env.auth_origin ?? req.headers.referer?.replace(/\/$/, '') ?? `https://${req.headers.host}`;
   res.locals.grant = {dynamic: {origin}};
-  console.log(res.locals.grant);
+  console.log(req.originalUrl, res.locals.grant);
   next();
 });
 app.use(session({secret: 'track-time', saveUninitialized: true, resave: false}));
