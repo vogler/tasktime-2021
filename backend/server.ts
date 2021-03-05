@@ -245,6 +245,7 @@ const fillData = async (url: string, js: string) => {
   type r = { variable: string, query: () => Promise<any> }; // can't call reduce on incompatible Promise types
   if (file in replacements) { // file is not narrowed to file because of subtyping and lack of closed types
     const rs: r[] = replacements[file as file]; // so we need to assert the type on both (rs up, file down)
+    console.log('fillData', file, rs.map(x => x.variable));
     return await rs.reduce((a, r) => a.then(async s => s.replace(
       `const ${r.variable} = [];`, // more generic: regex with .* instead of [], but can't easily use variable in regex
       `const ${r.variable} = ${JSON.stringify(await r.query())};`)), Promise.resolve(js));
