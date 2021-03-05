@@ -21,7 +21,7 @@ const rest = async (method: method, url: string, json?: {}) => {
 
 // We could just use rest() as defined above, but we want to have the actions with types from Prisma for type-safety and autocomplete!
 
-// old customized concrete db functions on REST endpoint
+// old customized concrete db functions on REST endpoint -> removed on server
 export namespace db_deprecated {
   type TodoOps = Prisma.TodoDelegate<true>; // true = rejectOnNotFound?
   const req = (method: method) => (args: {}) => rest(method, '/todo', args);

@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import { inspect } from 'util';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -67,7 +68,7 @@ const isAuthorized = (req: express.Request) => {
   // TODO verify token, get userId and use in queries
   return true;
 };
-app.use(['/db', '/todo'], (req, res, next) => {
+app.use('/db', (req, res, next) => {
   console.log('check auth for', req.method, req.originalUrl, inspect(req.body, { depth: null, colors: true })); // , req.session
   const auth = getAuth(req);
   const msg = (reason: string) => `<html>Access denied! Reason: ${reason}. Please go to <a href="/">start</a> and login.</html>`;
@@ -84,30 +85,6 @@ app.use(['/db', '/todo'], (req, res, next) => {
 import prisma from '@prisma/client'; // default import since CJS does not support named import
 const db = new prisma.PrismaClient();
 
-// deprecated manual REST API -> too much boilerplate -> expose db below
-app.use('/todo', async (req, res) => {
-  const args = req.body;
-  let op;
-  switch (req.method) {
-    case 'GET':
-      op = db.todo.findMany(args); // where, orderBy etc.
-      break;
-    case 'POST':
-      op = db.todo.create(args);
-      break;
-    case 'PUT':
-      op = db.todo.update(args);
-      break;
-    case 'DELETE':
-      op = db.todo.delete(args);
-      break;
-    default:
-      throw Error(`Invalid method ${req.method}`);
-  }
-  res.json(await op);
-});
-
-
 // const match = <T> (cases: {[k: string]: T}, pattern: string) => cases[pattern];
 const fail = (m: string) => { throw new Error(m) };
 // custom version (nicer error & cast) of: assert(a.includes(k as typeof a[number]));
@@ -120,7 +97,6 @@ function assertIncludes(a: readonly string[], k: string): string {
   return a.includes(k) ? k : fail(`Invalid parameter: ${k} is not in [${a.join(', ')}]!`);
 }
 
-import { inspect } from 'util';
 import { actions, models, include, todoOrderBy, historyOpt, ModelName, Model, Await } from '../shared/db';
 
 // The following are experiments to allow union queries (also see top of History.tsx) - the main point of this file is the endpoint /db/:model/:action
