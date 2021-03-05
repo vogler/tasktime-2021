@@ -42,6 +42,7 @@ const mergeSort = (times: Time[], mutations: TodoMutation[]) => { // O(n*log(n))
 const toDate = (x: Time | TodoMutation) => toDateLS(new Date(at(x))); // new not composable?
 const dbHistory = groupBy(toDate, mergeSort(dbTimes, dbTodoMutations)); // If we do this in History, it is executed 4 times instead of once. However, here it is always executed, not just when History is mounted.
 
+// mutations per todo
 const calcPreMu = (mutations: TodoMutation[]) => { // O(n)
   // hashtable to lookup the previous mutation's text to show diff
   let preMu: { [todoId: number]: {at: string; text: string}[] } = {};

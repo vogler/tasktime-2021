@@ -71,10 +71,9 @@ const isAuthorized = (req: express.Request) => {
 app.use('/db', (req, res, next) => {
   console.log('check auth for', req.method, req.originalUrl, inspect(req.body, { depth: null, colors: true })); // , req.session
   const auth = getAuth(req);
-  const msg = (reason: string) => `<html>Access denied! Reason: ${reason}. Please go to <a href="/">start</a> and login.</html>`;
-  if (!auth?.access_token || !auth.profile) return res.status(401).end(msg('Not authenticated'));
+  if (!auth?.access_token || !auth.profile) return res.status(401).json({error: 'Not authenticated'});
   console.log('Authenticated as', auth.profile.email);
-  if (!isAuthorized(req)) return res.status(403).end(msg('Not authorized'));
+  if (!isAuthorized(req)) return res.status(403).json({error: 'Not authorized'});
   next();
   // res.redirect('/login');
 });
