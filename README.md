@@ -16,6 +16,9 @@ This is a test project building some todo/time-tracking app using:
 - [Prisma](https://www.prisma.io/) as ORM (instead of [TypeORM](https://github.com/typeorm/typeorm) which I had some issues [[1](https://github.com/typeorm/typeorm/issues/3238)] [[2](https://github.com/typeorm/typeorm/issues/4122)] with in https://github.com/vogler/syncmine)
   - PostgreSQL (or sqlite etc.) as database
   - missing some values/types, no trees, see notes below
+- [grant](https://github.com/simov/grant) for OAuth with google; requires little code, dynamic json config. Discarded alternatives:
+  - [auth0](https://auth0.com/) free plan has 7k users and 2 social connections; their React example uses hook, so page first loads, then checks auth and then loads rest -> too many round trips (same as with firebase)
+  - [passport](https://github.com/jaredhanson/passport) has passport-local for username+password and normalized profile information, but requires way too much code
 
 Tried Svelte and Firebase in an older iteration: https://github.com/vogler/track-time_svelte-firebase.
 By now Svelte seems to officially support TypeScript: https://svelte.dev/blog/svelte-and-typescript.
