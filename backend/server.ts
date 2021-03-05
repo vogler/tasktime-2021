@@ -8,6 +8,63 @@ app.use(bodyParser.json());
 // app.use(cookieParser());
 // app.use(compress());
 
+
+// oauth with grant
+import session from 'express-session';
+import grant, { GrantSession } from 'grant';
+const auth_config = {
+  'defaults': {
+    'origin': `http://localhost:${port}`, // req.headers.host = localhost:8080, req.hostname = localhost, os.hostname() = Ralfs-MBP.fritz.box
+    'transport': 'session',
+    'state': true
+  },
+  'google': {
+    'key': process.env.auth_google_key,
+    'secret': process.env.auth_google_secret,
+    'response': ['tokens', 'profile'],
+    'scope': ['openid', 'email', 'profile'],
+    'nonce': true,
+    'custom_params': { 'access_type': 'offline' },
+    'callback': '/signin'
+  }
+};
+app.use(session({secret: 'track-time', saveUninitialized: true, resave: false}));
+app.use(grant.express(auth_config));
+const fmtJSON = (js: any) => JSON.stringify(js, null, 2);
+app.get('/signin', (req, res) => {
+    const session = req.session as typeof req.session & { grant: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
+    res.end(fmtJSON(session.grant.response));
+  });
+app.get('/login', (req, res) => {
+  res.end('<html>Access denied! <a href="/connect/google">Login</a></html>');
+});
+app.get('/logout', (req, res) => {
+  req.session.destroy(console.log);
+  res.redirect('/');
+});
+// app.get('/env', (req,res) => {
+//   res.end(fmtJSON(process.env));
+// });
+const isProtected = (url: string) => ['/db', '/todo'].filter(prefix => url.startsWith(prefix)).length != 0
+const isAuthorized = (req: express.Request) => {
+  if(!isProtected(req.url)) return true;
+  const session = req.session as typeof req.session & { grant?: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
+  const token = session.grant?.response?.access_token;
+  console.log(req.url, token);
+  if (!token) return false;
+  // TODO verify token, get userId and use in queries
+  return true;
+};
+app.use((req, res, next) => {
+  console.log(req.method, req.url, req.body, req.session);
+  if (isAuthorized(req)) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
+});
+
+
 // access database with prisma:
 // import { PrismaClient } from '@prisma/client'; // SyntaxError: Named export 'PrismaClient' not found. The requested module '@prisma/client' is a CommonJS module, which may not support all module.exports as named exports. See https://github.com/prisma/prisma/pull/4920
 import prisma from '@prisma/client'; // default import since CJS does not support named import

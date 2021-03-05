@@ -21,10 +21,22 @@ function Navigation() {
 }
 
 export default function () {
+  const user = {
+    "name": "Ralf Vogler",
+    "given_name": "Ralf",
+    "family_name": "Vogler",
+    "picture": "https://lh3.googleusercontent.com/a-/AOh14GhXmtSBB2KRw7SqW66l7oWE0R6X5jRwD6OX0_CwQcc=s96-c",
+    "email": "ralf.vogler@gmail.com",
+    "email_verified": true,
+    "locale": "en-GB"
+  };
   return (
     <Router>
       <VStack>
         <Navigation />
+        <a href="/connect/google">Login</a>
+        <a href="/logout">Logout</a>
+        <img alt="user photo" title="{user.displayName} ({user.email})" src={user.picture ? user.picture : "https://eu.ui-avatars.com/api/?name="+user.name} width="32" style={{verticalAlign: 'middle', borderRadius: '50%'}} />
         <Switch>
           <Route exact path="/">
             <Tasks />
