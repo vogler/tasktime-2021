@@ -89,7 +89,7 @@ import { actions, models, include, todoOrderBy, historyOpt, ModelName } from '..
 import { assertIncludes } from './util';
 import { naturalFullJoin, unionFindMany } from './db_union';
 
-// The following are experiments to allow union queries (also see top of History.tsx) - the main point of this file is the endpoint /db/:model/:action
+// The following are experiments to allow union queries (also see top of History.tsx) - the main endpoint for db access is the below /db/:model/:action
 
 // raw query with natural full join, fixed order by "at" desc
 app.get('/db/union-raw/:models', async (req, res) => {
@@ -127,19 +127,6 @@ app.post('/db/:model/:action', async (req, res) => {
   }
 });
 
-const react_routes = ['/history']; // URL is rewritten by react-router (not to /#history), so on refresh the server would not find /history
-app.get(react_routes, async (req, res, next) => {
-  console.log('reroute', req.url, 'to /');
-  // res.sendFile('/index.html'); // no such file (since static handled by snowpack), also we want snowpack to patch the file for HMR
-  req.url = '/'; // can't write req.path
-  next();
-});
-
-// start the Express server
-app.listen(port, () => {
-  console.log(`server started at http://localhost:${port}`);
-});
-
 
 // replaces empty list in .js files with rows from the db
 // this way the client does not have to issue a second request and wait to display data
@@ -171,6 +158,16 @@ const fillData = async (url: string, js: string) => {
   }
   return js;
 }
+
+
+const react_routes = ['/history']; // URL is rewritten by react-router (not to /#history), so on refresh the server would not find /history
+app.get(react_routes, async (req, res, next) => {
+  console.log('reroute', req.url, 'to /');
+  // res.sendFile('/index.html'); // no such file (since static handled by snowpack), also we want snowpack to patch the file for HMR
+  req.url = '/'; // can't write req.path
+  next();
+});
+
 
 // snowpack build on demand, HMR and SSR:
 // https://www.snowpack.dev/guides/server-side-render#option-2%3A-on-demand-serving-(middleware)
@@ -206,3 +203,8 @@ if (process.env.NODE_ENV != 'production') {
   });
   app.use(express.static('build'));
 }
+
+// start the Express server
+app.listen(port, () => {
+  console.log(`server started at http://localhost:${port}`);
+});
