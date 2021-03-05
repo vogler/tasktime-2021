@@ -14,7 +14,7 @@ import session from 'express-session';
 import grant, { GrantSession } from 'grant';
 const auth_config = {
   'defaults': {
-    'origin': process.env.auth_origin ?? `http://localhost:${port}`, // no good way to get URL of server, so we configure it via .env; could get it from request: req.headers.host = localhost:8080, req.hostname = localhost, os.hostname() = Ralfs-MBP.fritz.box; https://github.com/simov/grant/issues/227
+    // 'origin': process.env.auth_origin ?? `http://localhost:${port}`, // set dynamically below, https://github.com/simov/grant/issues/227
     'transport': 'session',
     'state': true
   },
@@ -28,6 +28,12 @@ const auth_config = {
     'callback': '/signin'
   }
 };
+app.use('/connect', (req, res, next) => {
+  const origin = process.env.auth_origin ?? req.headers.referer?.replace(/\/$/, '') ?? `https://${req.headers.host}`;
+  res.locals.grant = {dynamic: {origin}};
+  console.log(res.locals.grant);
+  next();
+});
 app.use(session({secret: 'track-time', saveUninitialized: true, resave: false}));
 app.use(grant.express(auth_config));
 const fmtJSON = (js: any) => JSON.stringify(js, null, 2);
