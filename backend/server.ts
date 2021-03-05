@@ -14,7 +14,7 @@ import session from 'express-session';
 import grant, { GrantSession } from 'grant';
 const auth_config = {
   'defaults': {
-    'origin': `http://localhost:${port}`, // req.headers.host = localhost:8080, req.hostname = localhost, os.hostname() = Ralfs-MBP.fritz.box
+    'origin': process.env.auth_origin ?? `http://localhost:${port}`, // req.headers.host = localhost:8080, req.hostname = localhost, os.hostname() = Ralfs-MBP.fritz.box
     'transport': 'session',
     'state': true
   },
