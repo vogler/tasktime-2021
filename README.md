@@ -28,7 +28,7 @@ If you want to use sqlite instead of PostgreSQL, edit `backend/schema.prisma`.
 - set `DATABASE_URL`, e.g. create `.env` file with `DATABASE_URL = 'postgresql://user@localhost:5432/track-time'`
 - setup tables: `npm run db-push`
 
-Use `npm run` to start the server with reload on changes and HMR via snowpack.
+Use `npm start` to start the server with reload on changes and HMR via snowpack.
 For production see heroku.com example in `Procfile`.
 
 ## Notes
