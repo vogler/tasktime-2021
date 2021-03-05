@@ -15,7 +15,7 @@ import session from 'express-session';
 import grant, { GrantSession } from 'grant';
 const auth_config = {
   'defaults': {
-    // 'origin': process.env.auth_origin ?? `http://localhost:${port}`, // set dynamically below, https://github.com/simov/grant/issues/227
+    'origin': process.env.auth_origin ?? `http://localhost:${port}`, // set dynamically below, https://github.com/simov/grant/issues/227
     'transport': 'session',
     'state': true
   },
@@ -29,22 +29,16 @@ const auth_config = {
     'callback': '/signin'
   }
 };
-app.all('/connect/:provider', (req, res, next) => {
-  const origin = process.env.auth_origin ?? req.headers.referer?.replace(/\/$/, '') ?? `https://${req.headers.host}`;
-  res.locals.grant = {dynamic: {origin}};
-  console.log(req.originalUrl, res.locals.grant);
-  next();
-});
+// app.all('/connect/:provider', (req, res, next) => { // dynamically set origin
+//   const origin = process.env.auth_origin ?? req.headers.referer?.replace(/\/$/, '') ?? `https://${req.headers.host}`;
+//   res.locals.grant = {dynamic: {origin}};
+//   console.log(req.originalUrl, res.locals.grant);
+//   next();
+// });
 app.use(session({secret: 'track-time', saveUninitialized: true, resave: false}));
 app.use(grant.express(auth_config));
-const fmtJSON = (js: any) => JSON.stringify(js, null, 2);
-app.get('/signin', (req, res) => {
-  // const session = req.session as typeof req.session & { grant: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
-  // res.end(fmtJSON(session.grant.response));
-  // TODO save user in DB
-  res.redirect('/');
-});
 type profile = { // just for google, same for others?
+  sub: string;
   name: string;
   given_name: string;
   family_name: string;
@@ -59,13 +53,25 @@ const getAuth = (req: express.Request) => {
   if (!r || !r.access_token || !r.profile) return undefined;
   return r as typeof r & {profile: profile};
 };
+app.get('/signin', async (req, res) => {
+  // const session = req.session as typeof req.session & { grant: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
+  // res.end(JSON.stringify(session.grant.response, null, 2));
+  const auth = getAuth(req);
+  const user = auth?.profile;
+  if (!auth?.access_token) return res.status(500).end('Did not get access_token from OAuth provider!');
+  if (!user) return res.status(500).end(`Did not get profile from OAuth provider!. Got: ${user}`);
+  const dbUser = await db.user.upsert({where: {sub: user.sub}, update: user, create: user});
+  // await db.session.create({data: {user: {connect: {id: dbUser.id}}, token: auth?.access_token}}); // error: Invalid response data: the query result was required, but an empty Object((Weak)) was returned instead.
+  console.log('signin', user.email, dbUser);
+  res.redirect('/');
+});
 app.get('/logout', (req, res) => {
   console.log('logout', getAuth(req)?.profile.email)
   req.session.destroy(console.log);
   res.redirect('/');
 });
 const isAuthorized = (req: express.Request) => {
-  // TODO verify token, get userId and use in queries
+  // TODO verify token, check that user in query matches user from token, or somehow add user to queries on server?
   return true;
 };
 app.use('/db', (req, res, next) => {
@@ -87,6 +93,7 @@ export const db = new prisma.PrismaClient();
 import { actions, models, include, todoOrderBy, historyOpt, ModelName } from '../shared/db';
 import { assertIncludes } from './util';
 import { naturalFullJoin, unionFindMany } from './db_union';
+import { connect } from 'http2';
 
 // The following are experiments to allow union queries (also see top of History.tsx) - the main endpoint for db access is the below /db/:model/:action
 
@@ -132,28 +139,34 @@ app.post('/db/:model/:action', async (req, res) => {
 // TODO SSR with ReactDOMServer.renderToString to also serve the HTML
 // besides snowpack example, also see https://github.com/DavidWells/isomorphic-react-example
 const replacements = {
+  '/dist/App.js': [
+    { variable: 'user',
+      query: (email: string) => db.user.findUnique({where: {email}}) },
+  ],
   '/dist/Tasks.js': [
     { variable: 'dbTodos',
-      query: () => db.todo.findMany({include, orderBy: todoOrderBy}) },
+      query: (email: string) => db.todo.findMany({include, orderBy: todoOrderBy, where: {user: {email}}}) },
   ],
   '/dist/History.js': [
     { variable: 'dbTimes',
-      query: () => db.time.findMany(historyOpt) },
+      query: (email: string) => db.time.findMany({...historyOpt, where: {todo: {user: {email}}}}) },
     { variable: 'dbTodoMutations',
-      query: () => db.todoMutation.findMany(historyOpt) },
+      query: (email: string) => db.todoMutation.findMany({...historyOpt, where: {todo: {user: {email}}}}) },
   ],
 };
-const fillData = async (url: string, js: string) => {
-  const file = url.replace(/\?.*$/, ''); // strip query string of HMR requests which append ?mtime=...
+const fillData = async (req: express.Request, js: string) => {
+  const file = req.url.replace(/\?.*$/, ''); // strip query string of HMR requests which append ?mtime=...
   type file = keyof typeof replacements;
   // type r = typeof replacements[file][number]; // error on reduce below: none of those signatures are compatible with each other
-  type r = { variable: string, query: () => Promise<any> }; // can't call reduce on incompatible Promise types
+  type r = { variable: string, query: (user: string) => Promise<any> }; // can't call reduce on incompatible Promise types
   if (file in replacements) { // file is not narrowed to file because of subtyping and lack of closed types
+    const auth = getAuth(req);
+    if (!auth?.profile.email) return js;
     const rs: r[] = replacements[file as file]; // so we need to assert the type on both (rs up, file down)
     console.log('fillData', file, rs.map(x => x.variable));
     return await rs.reduce((a, r) => a.then(async s => s.replace(
-      `const ${r.variable} = [];`, // more generic: regex with .* instead of [], but can't easily use variable in regex
-      `const ${r.variable} = ${JSON.stringify(await r.query())};`)), Promise.resolve(js));
+      new RegExp(`const ${r.variable} = .+;`), // can't use variable in /regexp/
+      `const ${r.variable} = ${JSON.stringify(await r.query(auth.profile.email))};`)), Promise.resolve(js));
   }
   return js;
 }
@@ -184,7 +197,7 @@ if (process.env.NODE_ENV != 'production') {
       // console.log('snowpack.loadUrl:', req.url, '->', buildResult.originalFileLoc, `(${buildResult.contentType})`);
       if (buildResult.contentType)
         res.contentType(buildResult.contentType);
-      res.send(await fillData(req.url, buildResult.contents.toString()));
+      res.send(await fillData(req, buildResult.contents.toString()));
     } catch (err) {
       console.error('loadUrl failed for', req.method, req.url);
       res.sendStatus(404);
@@ -198,7 +211,7 @@ if (process.env.NODE_ENV != 'production') {
 
   app.get(Object.keys(replacements), async (req, res) => {
     res.contentType('application/javascript');
-    res.send(await fillData(req.url, fileContents[req.url]));
+    res.send(await fillData(req, fileContents[req.url]));
   });
   app.use(express.static('build'));
 }

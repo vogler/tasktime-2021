@@ -3,6 +3,10 @@ import { Button, ButtonGroup, VStack } from '@chakra-ui/react';
 import { BrowserRouter as Router, Switch, Route, Link, useLocation } from 'react-router-dom';
 import Tasks from './Tasks';
 import History from './History';
+import type { User } from '@prisma/client';
+
+// replaced by server:
+export const user: User | undefined = undefined;
 
 function Navigation() {
   const location = useLocation();
@@ -20,23 +24,13 @@ function Navigation() {
   );
 }
 
-export default function () {
-  const user = {
-    "name": "Ralf Vogler",
-    "given_name": "Ralf",
-    "family_name": "Vogler",
-    "picture": "https://lh3.googleusercontent.com/a-/AOh14GhXmtSBB2KRw7SqW66l7oWE0R6X5jRwD6OX0_CwQcc=s96-c",
-    "email": "ralf.vogler@gmail.com",
-    "email_verified": true,
-    "locale": "en-GB"
-  };
+function App({user} : {user: User}) {
   return (
     <Router>
       <VStack>
         <Navigation />
-        <a href="/connect/google">Login</a>
+        <img alt="user photo" title={`${user.name} (${user.email})`} src={user.picture ? user.picture : "https://eu.ui-avatars.com/api/?name="+user.name} width="32" style={{verticalAlign: 'middle', borderRadius: '50%'}} />
         <a href="/logout">Logout</a>
-        <img alt="user photo" title="{user.displayName} ({user.email})" src={user.picture ? user.picture : "https://eu.ui-avatars.com/api/?name="+user.name} width="32" style={{verticalAlign: 'middle', borderRadius: '50%'}} />
         <Switch>
           <Route exact path="/">
             <Tasks />
@@ -48,4 +42,15 @@ export default function () {
       </VStack>
     </Router>
   );
+}
+
+function LandingPage() {
+  return (
+    <VStack>
+      <a href="/connect/google">Login with Google</a>
+    </VStack>
+  );
+}
+export default function () {
+  return user ? <App {...{user}} /> : <LandingPage />;
 }

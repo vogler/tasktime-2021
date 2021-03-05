@@ -4,8 +4,8 @@ datasource db {
 
   // replace, set variable or create .env file which is read automatically
   url      = env("DATABASE_URL")
- // "postgresql://voglerr@localhost:5432/track-time"
- // "file:./sqlite.db"
+  // "postgresql://voglerr@localhost:5432/track-time"
+  // "file:./sqlite.db"
 }
 
 generator client {
@@ -23,9 +23,11 @@ model Todo {
   parentId  Int?     // mutable; TODO not used yet, see readme > prisma > tree
   parent    Todo?    @relation("tree", fields: [parentId], references: [id])
   children  Todo[]   @relation("tree") // include is not recursive but gets just one level
-  mutations TodoMutation[]
   time      Int      @default(0) // memo: select sum("end"-"at") from "Time" where "todoId"="id"
   times     Time[]
+  mutations TodoMutation[]
+  userId    Int
+  user      User     @relation("user", fields: [userId], references: [id])
 }
 
 model Time {
@@ -58,4 +60,27 @@ model TodoMutation {
   // -> use option 2
   text   String?
   done   Boolean?
+}
+
+model User { // corresponds to fields of google openid profile
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  email          String    @unique
+  email_verified Boolean
+  name           String
+  given_name     String
+  family_name    String
+  picture        String
+  sub            String    @unique // A Google account can have multiple email addresses at different points in time, but the sub value is never changed. Use sub within your application as the unique-identifier key for the user.
+  locale         String
+  sessions       Session[]
+  todos          Todo[]    @relation("user")
+}
+
+model Session { // needed?
+  userId   Int
+  user     User      @relation(fields: [userId], references: [id])
+  at       DateTime  @default(now())
+  token    String    @unique
+  @@id([userId, at])
 }

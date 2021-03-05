@@ -32,6 +32,7 @@ const dbTodoMutations: TodoMutation[] = [];
 const at = (x: Time | TodoMutation) => x.at.toString();
 let i = 0;
 const mergeSort = (times: Time[], mutations: TodoMutation[]) => { // O(n*log(n))?
+  if (!times.length && !mutations.length) return [];
   // TODO: more efficient merge sort since both are already sorted, see https://wsvincent.com/javascript-merge-two-sorted-arrays/
   console.time(`concat+sort ${i}`);
   const r = [...times, ...mutations].sort(cmpBy(at, 'desc'));

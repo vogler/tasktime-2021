@@ -10,6 +10,7 @@ import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
 import { Todo, include, todoOrderBy, TimeMutation } from '../shared/db';
+import { user } from './App';
 
 // initial data from db replaced by the server:
 const dbTodos: Todo[] = [];
@@ -44,7 +45,7 @@ function AddTodo() {
     if (text == '') return 'Task is empty';
     // if (todos.includes(value)) return 'Todo exists';
     // await delay(1000);
-    const todo = await db.todo.create({data: {text, mutations: {create: {text}}}, include});
+    const todo = await db.todo.create({data: {text, mutations: {create: {text}}, user: {connect: {id: user?.id}}}, include});
     setTodos([...todos, todo]);
     console.log('addTodo', todo, todos); // todos not updated yet here
   };
