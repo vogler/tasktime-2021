@@ -14,7 +14,7 @@ import session from 'express-session';
 import grant, { GrantSession } from 'grant';
 const auth_config = {
   'defaults': {
-    'origin': process.env.auth_origin ?? `http://localhost:${port}`, // req.headers.host = localhost:8080, req.hostname = localhost, os.hostname() = Ralfs-MBP.fritz.box
+    'origin': process.env.auth_origin ?? `http://localhost:${port}`, // no good way to get URL of server, so we configure it via .env; could get it from request: req.headers.host = localhost:8080, req.hostname = localhost, os.hostname() = Ralfs-MBP.fritz.box; https://github.com/simov/grant/issues/227
     'transport': 'session',
     'state': true
   },
