@@ -1,8 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Button, ButtonGroup, VStack } from '@chakra-ui/react';
 import { BrowserRouter as Router, Switch, Route, Link, useLocation } from 'react-router-dom';
-import Tasks from './Tasks';
-import History from './History';
 import type { User } from '@prisma/client';
 
 // replaced by server:
@@ -25,20 +23,26 @@ function Navigation() {
 }
 
 function App({user} : {user: User}) {
+  // https://reactjs.org/docs/code-splitting.html#route-based-code-splitting
+  // SSR: https://loadable-components.com/docs/loadable-vs-react-lazy/
+  const Tasks = React.lazy(() => import('./Tasks'));
+  const History = React.lazy(() => import('./History'));
   return (
     <Router>
       <VStack>
         <Navigation />
-        <img alt="user photo" title={`${user.name} (${user.email})`} src={user.picture ? user.picture : "https://eu.ui-avatars.com/api/?name="+user.name} width="32" style={{verticalAlign: 'middle', borderRadius: '50%'}} />
+        <img alt="photo" title={`${user.name} (${user.email})`} src={user.picture ? user.picture : "https://eu.ui-avatars.com/api/?name="+user.name} width="32" style={{verticalAlign: 'middle', borderRadius: '50%'}} />
         <a href="/logout">Logout</a>
-        <Switch>
-          <Route exact path="/">
-            <Tasks />
-          </Route>
-          <Route path="/history">
-            <History />
-          </Route>
-        </Switch>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Switch>
+            <Route exact path="/">
+              <Tasks />
+            </Route>
+            <Route path="/history">
+              <History />
+            </Route>
+          </Switch>
+        </Suspense>
       </VStack>
     </Router>
   );
