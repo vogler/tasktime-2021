@@ -8,6 +8,7 @@ const port = process.env.PORT || 8080;
 app.use(bodyParser.json());
 // app.use(cookieParser());
 // app.use(compress());
+// https://github.com/yosuke-furukawa/server-timing
 
 
 // oauth with grant
@@ -93,7 +94,6 @@ export const db = new prisma.PrismaClient();
 import { actions, models, include, todoOrderBy, historyOpt, ModelName } from '../shared/db';
 import { assertIncludes } from './util';
 import { naturalFullJoin, unionFindMany } from './db_union';
-import { connect } from 'http2';
 
 // The following are experiments to allow union queries (also see top of History.tsx) - the main endpoint for db access is the below /db/:model/:action
 
