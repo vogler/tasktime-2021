@@ -66,9 +66,15 @@ app.get('/signin', async (req, res) => {
   console.log('signin', user.email, dbUser);
   res.redirect('/');
 });
-app.get('/logout', (req, res) => {
-  console.log('logout', getAuth(req)?.profile.email)
+import axios from 'axios';
+app.get('/logout', async (req, res) => {
+  const auth = getAuth(req);
+  console.log('logout', auth?.profile.email);
   req.session.destroy(console.log);
+  if (req.query.revoke && auth?.access_token) { // if not revoked, google login will be automatic and not allow to choose a different account
+    const r = await axios.post(`https://oauth2.googleapis.com/revoke?token=${auth.access_token}`);
+    console.log('revoked token', r);
+  }
   res.redirect('/');
 });
 const isAuthorized = (req: express.Request) => {

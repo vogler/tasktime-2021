@@ -32,7 +32,7 @@ function App({user} : {user: User}) {
       <VStack>
         <Navigation />
         <img alt="photo" title={`${user.name} (${user.email})`} src={user.picture ? user.picture : "https://eu.ui-avatars.com/api/?name="+user.name} width="32" style={{verticalAlign: 'middle', borderRadius: '50%'}} />
-        <a href="/logout">Logout</a>
+        <a href="/logout?revoke=1">Logout</a>
         <Suspense fallback={<div>Loading...</div>}>
           <Switch>
             <Route exact path="/">
