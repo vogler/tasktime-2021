@@ -122,7 +122,7 @@ export default function History() {
     {history.map((group, _) =>
       <React.Fragment key={group.group}>
         <Heading size="lg" mt={3}>{group.group}</Heading>
-        <Box shadow="md" borderWidth="1px">
+        <Box shadow="md" borderWidth="1px" px={3} py={2}>
           {group.entries.map(timu =>
             <HistoryEntry timu={timu} preMu={preMu} key={timu.todoId + ('end' in timu ? 't' : 'm') + at(timu)} />)}
         </Box>
