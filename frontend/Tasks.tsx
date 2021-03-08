@@ -10,7 +10,7 @@ import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
 import { Todo, include, todoOrderBy, TimeMutation } from '../shared/db';
-import { user } from './App';
+import { maxW, user } from './App';
 
 // initial data from db replaced by the server:
 const dbTodos: Todo[] = [];
@@ -104,7 +104,7 @@ export default function Tasks() { // Collect
 
   return (
     <>
-      <VStack w='100%' maxW={420}>
+      <VStack w='100%' maxW={maxW}>
         <AddTodo />
         <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%'>
           {filteredTodos.length
