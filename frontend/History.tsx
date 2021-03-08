@@ -6,6 +6,7 @@ import { useAsyncEffect } from './lib/react';
 import { duration, cmpBy, groupBy, toDateLS, toTimeLS } from './lib/util';
 import { db, db_union } from './api'; // api to db on server
 import { Time, TodoMutation, historyOpt, ModelName } from '../shared/db';
+import { maxW } from './App';
 
 // initial data from db replaced by the server:
 const dbTimes: Time[] = [];
@@ -117,12 +118,12 @@ export default function History() {
     // const hs = await db_union(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {at: 'desc'}});
     // console.log(hs);
   }, []);
-  return (<Box w='100%' maxW={420}>
+  return (<Box w='100%' maxW={maxW}>
     {!history.length && 'Nothing to show yet...'}
     {history.map((group, _) =>
       <React.Fragment key={group.group}>
-        <Heading size="lg" mt={3}>{group.group}</Heading>
-        <Box shadow="md" borderWidth="1px" px={3} py={2}>
+        <Heading size="lg">{group.group}</Heading>
+        <Box shadow="md" borderWidth="1px" px={3} py={2} mb={4}>
           {group.entries.map(timu =>
             <HistoryEntry timu={timu} preMu={preMu} key={timu.todoId + ('end' in timu ? 't' : 'm') + at(timu)} />)}
         </Box>
