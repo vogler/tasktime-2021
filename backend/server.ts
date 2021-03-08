@@ -39,7 +39,9 @@ const auth_config = {
 // https://github.com/expressjs/session#secret should be random from env to avoid session hijacking`
 // "Warning: connect.session() MemoryStore is not designed for a production environment, as it will leak memory, and will not scale past a single process."
 // -> use https://github.com/voxpelli/node-connect-pg-simple
-app.use(session({secret: 'track-time', saveUninitialized: true, resave: false})); // defaults: httpOnly
+import connectPgSimple from 'connect-pg-simple';
+const store = new (connectPgSimple(session))({createTableIfMissing: true} as any); // still get error: relation "session" does not exist; https://github.com/voxpelli/node-connect-pg-simple/issues/200
+app.use(session({secret: 'track-time', saveUninitialized: true, resave: false, store})); // defaults: httpOnly
 app.use(grant.express(auth_config));
 type profile = { // just for google, same for others?
   sub: string;
