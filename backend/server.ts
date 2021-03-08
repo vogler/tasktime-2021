@@ -47,7 +47,7 @@ const auth_config = {
     'secret': process.env.auth_github_secret,
     'scope': ['read:user', 'user:email'],
   },
-  'facebook': { // https://developers.facebook.com/apps/{key}/fb-login/settings/
+  'facebook': { // https://developers.facebook.com/apps/
     'key': process.env.auth_facebook_key,
     'secret': process.env.auth_facebook_secret,
     'scope': ['email', 'public_profile'], // {name: string, id: string}; email is not returned by oauth! have to query after.
