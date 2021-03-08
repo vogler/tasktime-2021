@@ -2,6 +2,11 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { inspect } from 'util';
 
+// access database with prisma:
+// import { PrismaClient } from '@prisma/client'; // SyntaxError: Named export 'PrismaClient' not found. The requested module '@prisma/client' is a CommonJS module, which may not support all module.exports as named exports. See https://github.com/prisma/prisma/pull/4920
+import prisma from '@prisma/client'; // default import since CJS does not support named import
+export const db = new prisma.PrismaClient();
+
 const app = express();
 const port = process.env.PORT || 8080;
 
@@ -37,9 +42,11 @@ const auth_config = {
 //   next();
 // });
 // https://github.com/expressjs/session#secret should be random from env to avoid session hijacking`
-// "Warning: connect.session() MemoryStore is not designed for a production environment, as it will leak memory, and will not scale past a single process."
-// -> use https://github.com/voxpelli/node-connect-pg-simple
-app.use(session({secret: 'track-time', saveUninitialized: true, resave: false})); // defaults: httpOnly
+// "Warning: connect.session() MemoryStore is not designed for a production environment, as it will leak memory, and will not scale past a single process." -> use https://github.com/kleydon/prisma-session-store
+import { PrismaSessionStore } from '@quixo3/prisma-session-store';
+const ms_day = 1000*60*60*24;
+const store = new PrismaSessionStore(db, {ttl: ms_day*14, checkPeriod: ms_day});
+app.use(session({secret: 'track-time', saveUninitialized: true, resave: false, store})); // defaults: httpOnly
 app.use(grant.express(auth_config));
 type profile = { // just for google, same for others?
   sub: string;
@@ -95,11 +102,7 @@ app.use('/db', (req, res, next) => {
 });
 
 
-// access database with prisma:
-// import { PrismaClient } from '@prisma/client'; // SyntaxError: Named export 'PrismaClient' not found. The requested module '@prisma/client' is a CommonJS module, which may not support all module.exports as named exports. See https://github.com/prisma/prisma/pull/4920
-import prisma from '@prisma/client'; // default import since CJS does not support named import
-export const db = new prisma.PrismaClient();
-
+// db endpoints
 import { actions, models, include, todoOrderBy, historyOpt, ModelName } from '../shared/db';
 import { assertIncludes } from './util';
 import { naturalFullJoin, unionFindMany } from './db_union';

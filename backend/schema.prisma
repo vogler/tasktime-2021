@@ -73,14 +73,12 @@ model User { // corresponds to fields of google openid profile
   picture        String
   sub            String    @unique // A Google account can have multiple email addresses at different points in time, but the sub value is never changed. Use sub within your application as the unique-identifier key for the user.
   locale         String
-  sessions       Session[]
   todos          Todo[]    @relation("user")
 }
 
-model Session { // needed?
-  userId   Int
-  user     User      @relation(fields: [userId], references: [id])
-  at       DateTime  @default(now())
-  token    String    @unique
-  @@id([userId, at])
+model Session { // as defined by @quixo3/prisma-session-store
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
 }
