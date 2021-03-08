@@ -148,8 +148,10 @@ app.get('/logout', async (req, res) => {
       if (provider == 'google') {
           await axios.post(`https://oauth2.googleapis.com/revoke?token=${token}`);
       }
-      if (provider == 'github') { // https://docs.github.com/en/rest/reference/apps#revoke-a-grant-for-an-application
-        await axios.delete(`https://api.github.com/applications/${process.env.auth_github_key}/grants/${token}`);
+      if (provider == 'github') {
+        // https://docs.github.com/en/rest/reference/apps#delete-an-app-token
+        // doc is out of date, description is correct, example is missing basic auth, without it it errors with "message": "Not Found"
+        await axios.delete(`https://api.github.com/applications/${process.env.auth_github_key}/token`, {data: {access_token: token}, auth: {username: process.env.auth_github_key ?? '', password: process.env.auth_github_secret ?? ''}});
       }
       if (provider == 'facebook') { // https://developers.facebook.com/docs/facebook-login/permissions/requesting-and-revoking#revokelogin
         await axios.delete(`https://graph.facebook.com/me/permissions?access_token=${token}`);
