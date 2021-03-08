@@ -29,7 +29,7 @@ function App({user} : {user: User}) {
   const History = React.lazy(() => import('./History'));
   return (
     <Router>
-      <VStack>
+      <VStack mx={2}>
         <Navigation />
         <img alt="photo" title={`${user.name} (${user.email})`} src={user.picture ? user.picture : "https://eu.ui-avatars.com/api/?name="+user.name} width="32" style={{verticalAlign: 'middle', borderRadius: '50%'}} />
         <a href="/logout?revoke=1">Logout</a>

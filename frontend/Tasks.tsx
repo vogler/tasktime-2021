@@ -103,7 +103,7 @@ export default function Tasks() { // Collect
   return (
     <>
       <AddTodo />
-      <Box shadow="md" borderWidth="1px" m="3" p="2">
+      <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%' maxW={400}>
         {filteredTodos.length
           ? filteredTodos.map((todo, index) => (
               <TodoItem {...{ todo, showDetails }} key={todo.id} del={delTodo(index)} set={setTodo(index)} />
