@@ -111,7 +111,7 @@ export default function Tasks() { // Collect
             ? filteredTodos.map((todo, index) => (
                 <TodoItem {...{ todo, showDetails }} key={todo.id} del={delTodo(index)} set={setTodo(index)} />
               )) // do not use index as key since it changes with the order of the list and on deletion
-            : 'Nothing to show...'}
+            : <Text px={2} py={1}>Nothing to show...</Text>}
         </Box>
       </VStack>
       <HStack mb={2}>
