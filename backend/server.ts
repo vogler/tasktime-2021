@@ -100,7 +100,16 @@ app.get('/signin', async (req, res) => {
     user.picture = profile.picture;
   }
   if (provider == 'github') {
-
+    const {data} = await axios.get(`https://api.github.com/user`, {headers: {'Authorization': `token ${token}`}});
+    user.email = data.email;
+    user.name = data.name;
+    user.picture = data.avatar_url;
+    if (!data.email) { // https://stackoverflow.com/questions/35373995/github-user-email-is-null-despite-useremail-scope
+      const {data} = await axios.get(`https://api.github.com/user/emails`, {headers: {'Authorization': `token ${token}`}});
+      const emails = data as {email: string, primary: boolean, verified: boolean, visibility?: string}[];
+      const email = emails.filter(o => o.primary)[0];
+      user.email = email.email;
+    }
   }
   if (provider == 'facebook') {
     const {data} = await axios.get(`https://graph.facebook.com/me?fields=email,name,first_name,last_name,locale,picture&access_token=${token}`);
@@ -144,9 +153,7 @@ app.get('/logout', async (req, res) => {
       }
       if (provider == 'twitter') { // https://developer.twitter.com/en/docs/authentication/api-reference/invalidate_bearer_token
         const client = new Twitter({consumer_key: process.env.auth_twitter_key ?? '', consumer_secret: process.env.auth_twitter_secret ?? '', access_token_key: r.access_token ?? '', access_token_secret: r.access_secret ?? ''});
-
-          console.log(await client.post('oauth/invalidate_token', {access_token: token}));
-
+        console.log(await client.post('oauth/invalidate_token', {access_token: token}));
       }
       console.log('revoked token for', req.session.email, 'on', provider);
     } catch (e) {
