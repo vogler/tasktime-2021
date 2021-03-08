@@ -48,13 +48,16 @@ function App({user} : {user: User}) {
   );
 }
 
+import Auth from './lib/Auth';
 function LandingPage() {
   return (
     <VStack>
-      <a href="/connect/google">Login with Google</a>
+      <Auth />
     </VStack>
   );
 }
+
 export default function () {
+  // if we use React.lazy for LandingPage, we need to put Supsense here, but then you actually see 'Loading...'
   return user ? <App {...{user}} /> : <LandingPage />;
 }

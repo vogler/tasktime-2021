@@ -18,23 +18,52 @@ app.use(bodyParser.json());
 
 // oauth with grant
 import session from 'express-session';
-import grant, { GrantSession } from 'grant';
+declare module 'express-session' { // fields we want to add to session
+  interface SessionData {
+    userId: number
+    email: string
+    grant: GrantSession
+  }
+}
+import grant, { GrantResponse, GrantSession } from 'grant';
 const auth_config = {
   'defaults': {
     'origin': process.env.auth_origin ?? `http://localhost:${port}`, // set dynamically below, https://github.com/simov/grant/issues/227
     'transport': 'session',
-    'state': true
+    'state': true,
+    'nonce': true,
+    'scope': ['openid', 'email', 'profile'],
+    'response': ['tokens', 'profile'],
+    'callback': '/signin',
   },
-  'google': {
+  'google': { // https://console.developers.google.com/
     'key': process.env.auth_google_key,
     'secret': process.env.auth_google_secret,
-    'response': ['tokens', 'profile'],
-    'scope': ['openid', 'email', 'profile'],
-    'nonce': true,
     'custom_params': { 'access_type': 'offline' },
-    'callback': '/signin'
+  },
+  'github': { // https://github.com/settings/applications/1492468
+    'key': process.env.auth_github_key,
+    'secret': process.env.auth_github_secret,
+  },
+  'facebook': { // https://developers.facebook.com/apps/{key}/fb-login/settings/
+    'key': process.env.auth_facebook_key,
+    'secret': process.env.auth_facebook_secret,
+    'scope': ['email', 'public_profile'], // {name: string, id: string}; email is not returned by oauth! have to query after.
+  },
+  'twitter': {
+
   }
 };
+type google_profile = {
+  sub: string;
+  name: string;
+  given_name: string;
+  family_name: string;
+  picture: string;
+  email: string;
+  email_verified: boolean;
+  locale: string;
+}
 // app.all('/connect/:provider', (req, res, next) => { // dynamically set origin
 //   const origin = process.env.auth_origin ?? req.headers.referer?.replace(/\/$/, '') ?? `https://${req.headers.host}`;
 //   res.locals.grant = {dynamic: {origin}};
@@ -48,57 +77,67 @@ const ms_day = 1000*60*60*24;
 const store = new PrismaSessionStore(db, {ttl: ms_day*14, checkPeriod: ms_day});
 app.use(session({secret: 'track-time', saveUninitialized: true, resave: false, store})); // defaults: httpOnly
 app.use(grant.express(auth_config));
-type profile = { // just for google, same for others?
-  sub: string;
-  name: string;
-  given_name: string;
-  family_name: string;
-  picture: string;
-  email: string;
-  email_verified: boolean;
-  locale: string;
-}
-const getAuth = (req: express.Request) => {
-  const session = req.session as typeof req.session & { grant?: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
-  const r = session.grant?.response;
-  if (!r || !r.access_token || !r.profile) return undefined;
-  return r as typeof r & {profile: profile};
-};
+import axios from 'axios';
 app.get('/signin', async (req, res) => {
-  // const session = req.session as typeof req.session & { grant: GrantSession }; // otherwise need to ts-ignore access to req.session.grant
-  // res.end(JSON.stringify(session.grant.response, null, 2));
-  const auth = getAuth(req);
-  const user = auth?.profile;
-  if (!auth?.access_token) return res.status(500).end('Did not get access_token from OAuth provider!');
-  if (!user) return res.status(500).end(`Did not get profile from OAuth provider!. Got: ${user}`);
-  const dbUser = await db.user.upsert({where: {sub: user.sub}, update: user, create: user});
-  // await db.session.create({data: {user: {connect: {id: dbUser.id}}, token: auth?.access_token}}); // error: Invalid response data: the query result was required, but an empty Object((Weak)) was returned instead.
+  const provider = req.session.grant?.provider;
+  if (!provider) return res.status(500).end('OAuth provider missing!');
+  const r = req.session.grant?.response;
+  if (!r || !r.access_token) return res.status(500).end('Did not get access_token from OAuth provider!');
+  const user: prisma.Prisma.UserCreateInput = {email: '', name: '', provider};
+  if (provider == 'google') {
+    const profile = r.profile as google_profile;
+    user.email = profile.email;
+    user.name = profile.name;
+    user.locale = profile.locale;
+    user.picture = profile.picture;
+  }
+  if (provider == 'github') {
+
+  }
+  if (provider == 'facebook') {
+    const {data} = await axios.get(`https://graph.facebook.com/me?fields=email,name,locale,picture&access_token=${r.access_token}`);
+    console.log('query email from facebook', data);
+    user.email = data.email;
+    user.name = data.name;
+    // somehow locale is missing
+    user.picture = data.picture.data.url;
+  }
+  if (provider == 'twitter') {
+
+  }
+  if (!user.email || user.email == '') return res.status(500).end('Did not get email from OAuth provider!');;
+  req.session.email = user.email;
+  const dbUser = await db.user.upsert({where: {email: user.email}, update: user, create: user}); // assumes that email identifies user across providers
   console.log('signin', user.email, dbUser);
+  req.session.userId = dbUser.id;
   res.redirect('/');
 });
-import axios from 'axios';
 app.get('/logout', async (req, res) => {
-  const auth = getAuth(req);
-  console.log('logout', auth?.profile.email);
-  req.session.destroy(console.log);
-  if (req.query.revoke && auth?.access_token) { // if not revoked, google login will be automatic and not allow to choose a different account
-    const r = await axios.post(`https://oauth2.googleapis.com/revoke?token=${auth.access_token}`);
-    console.log('revoked token for', auth.profile.email);
+  console.log('logout', req.session.email);
+  const token = req.session.grant?.response?.access_token;
+  const provider = req.session.grant?.provider;
+  if (provider == 'google') {
+    if (req.query.revoke && token) { // if not revoked, google login will be automatic and not allow to choose a different account
+      await axios.post(`https://oauth2.googleapis.com/revoke?token=${token}`);
+    }
   }
+  if (provider == 'facebook') { // https://developers.facebook.com/docs/facebook-login/permissions/requesting-and-revoking#revokelogin
+    await axios.delete(`https://graph.facebook.com/me/permissions?access_token=${token}`);
+  }
+  console.log('revoked token for', req.session.email);
+  req.session.destroy(console.log);
   res.redirect('/');
 });
 const isAuthorized = (req: express.Request) => {
-  // TODO verify token, check that user in query matches user from token, or somehow add user to queries on server?
+  // TODO check that user in query matches user from token, or somehow add user to queries on server?
   return true;
 };
 app.use('/db', (req, res, next) => {
   console.log('check auth for', req.method, req.originalUrl, inspect(req.body, { depth: null, colors: true })); // , req.session
-  const auth = getAuth(req);
-  if (!auth?.access_token || !auth.profile) return res.status(401).json({error: 'Not authenticated'});
-  console.log('Authenticated as', auth.profile.email);
+  if (!req.session.userId || !req.session.email) return res.status(401).json({error: 'Not authenticated'});
+  console.log('Authenticated as', req.session.email);
   if (!isAuthorized(req)) return res.status(403).json({error: 'Not authorized'});
   next();
-  // res.redirect('/login');
 });
 
 
@@ -172,13 +211,13 @@ const fillData = async (req: express.Request, js: string) => {
   // type r = typeof replacements[file][number]; // error on reduce below: none of those signatures are compatible with each other
   type r = { variable: string, query: (user: string) => Promise<any> }; // can't call reduce on incompatible Promise types
   if (file in replacements) { // file is not narrowed to file because of subtyping and lack of closed types
-    const auth = getAuth(req);
-    if (!auth?.profile.email) return js;
+    const email = req.session.email;
+    if (!email) return js;
     const rs: r[] = replacements[file as file]; // so we need to assert the type on both (rs up, file down)
     console.log('fillData', file, rs.map(x => x.variable));
     return await rs.reduce((a, r) => a.then(async s => s.replace(
       new RegExp(`const ${r.variable} = .+;`), // can't use variable in /regexp/
-      `const ${r.variable} = ${JSON.stringify(await r.query(auth.profile.email))};`)), Promise.resolve(js));
+      `const ${r.variable} = ${JSON.stringify(await r.query(email))};`)), Promise.resolve(js));
   }
   return js;
 }
