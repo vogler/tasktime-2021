@@ -102,7 +102,7 @@ export default function Tasks() { // Collect
 
   return (
     <>
-      <VStack w='100%' maxW={450}>
+      <VStack w='100%' maxW={420}>
         <AddTodo />
         <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%'>
           {filteredTodos.length
