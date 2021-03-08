@@ -84,7 +84,7 @@ import axios from 'axios';
 import Twitter from 'twitter';
 app.get('/signin', async (req, res) => {
   const provider = req.session.grant?.provider;
-  console.log(req.session.grant);
+  // console.log(req.session.grant);
   if (!provider) return res.status(500).end('OAuth provider missing!');
   const r = req.session.grant?.response;
   const token = r?.access_token;
