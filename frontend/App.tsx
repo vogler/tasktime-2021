@@ -8,7 +8,8 @@ export const user: User | undefined = undefined;
 
 export const maxW = 420;
 
-function Navigation() {
+import ThemeToggle from './lib/ThemeToggle';
+function NavBar() {
   const location = useLocation();
   // console.log('location', location); // re-executes on e.g. setTodo (also if component definition is moved out)
   useEffect(() => {
@@ -23,6 +24,7 @@ function Navigation() {
         <NavButton text="History" />
       </ButtonGroup>
       <Spacer />
+      <ThemeToggle />
       <Center><UserMenu /></Center>
     </Flex>
   );
@@ -52,7 +54,7 @@ function App() {
   return (
     <Router>
       <VStack mx={2}>
-        <Navigation />
+        <NavBar />
         <Suspense fallback={<div>Loading...</div>}>
           <Switch>
             <Route exact path="/">

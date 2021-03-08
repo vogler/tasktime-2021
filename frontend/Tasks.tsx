@@ -6,7 +6,6 @@ import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-i
 import { useAsyncDepEffect } from './lib/react';
 import { diff, equals } from './lib/util';
 import InputForm from './lib/InputForm';
-import ThemeToggle from './lib/ThemeToggle';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
 import { Todo, include, todoOrderBy, TimeMutation } from '../shared/db';
@@ -142,7 +141,6 @@ export default function Tasks() { // Collect
         <Text>Page has been open for <code><Timer /></code> seconds.</Text>
         <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
       </VStack>
-      <ThemeToggle />
     </>
   );
 }
