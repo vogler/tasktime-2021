@@ -25,21 +25,22 @@ declare module 'express-session' { // fields we want to add to session
     grant: GrantSession
   }
 }
-import grant, { GrantResponse, GrantSession } from 'grant';
+import grant, { GrantSession } from 'grant';
 const auth_config = {
   'defaults': {
     'origin': process.env.auth_origin ?? `http://localhost:${port}`, // set dynamically below, https://github.com/simov/grant/issues/227
     'transport': 'session',
     'state': true,
     'nonce': true,
-    'scope': ['openid', 'email', 'profile'],
-    'response': ['tokens', 'profile'],
     'callback': '/signin',
+    'scope': ['email'],
   },
   'google': { // https://console.developers.google.com/
     'key': process.env.auth_google_key,
     'secret': process.env.auth_google_secret,
     'custom_params': { 'access_type': 'offline' },
+    'scope': ['openid', 'email', 'profile'],
+    'response': ['tokens', 'profile'],
   },
   'github': { // https://github.com/settings/applications/1492468
     'key': process.env.auth_github_key,
@@ -50,8 +51,9 @@ const auth_config = {
     'secret': process.env.auth_facebook_secret,
     'scope': ['email', 'public_profile'], // {name: string, id: string}; email is not returned by oauth! have to query after.
   },
-  'twitter': {
-
+  'twitter': { // https://developer.twitter.com/en/portal/projects
+    'key': process.env.auth_twitter_key,
+    'secret': process.env.auth_twitter_secret,
   }
 };
 type google_profile = {
@@ -78,16 +80,21 @@ const store = new PrismaSessionStore(db, {ttl: ms_day*14, checkPeriod: ms_day});
 app.use(session({secret: 'track-time', saveUninitialized: true, resave: false, store})); // defaults: httpOnly
 app.use(grant.express(auth_config));
 import axios from 'axios';
+import Twitter from 'twitter';
 app.get('/signin', async (req, res) => {
   const provider = req.session.grant?.provider;
+  // console.log(req.session.grant);
   if (!provider) return res.status(500).end('OAuth provider missing!');
   const r = req.session.grant?.response;
-  if (!r || !r.access_token) return res.status(500).end('Did not get access_token from OAuth provider!');
+  const token = r?.access_token;
+  if (!r || !token) return res.status(500).end('Did not get access_token from OAuth provider!');
   const user: prisma.Prisma.UserCreateInput = {email: '', name: '', provider};
   if (provider == 'google') {
     const profile = r.profile as google_profile;
     user.email = profile.email;
     user.name = profile.name;
+    user.first_name = profile.given_name;
+    user.last_name = profile.family_name;
     user.locale = profile.locale;
     user.picture = profile.picture;
   }
@@ -95,15 +102,24 @@ app.get('/signin', async (req, res) => {
 
   }
   if (provider == 'facebook') {
-    const {data} = await axios.get(`https://graph.facebook.com/me?fields=email,name,locale,picture&access_token=${r.access_token}`);
+    const {data} = await axios.get(`https://graph.facebook.com/me?fields=email,name,first_name,last_name,locale,picture&access_token=${token}`);
     console.log('query email from facebook', data);
     user.email = data.email;
     user.name = data.name;
+    user.first_name = data.first_name;
+    user.last_name = data.last_name;
     // somehow locale is missing
     user.picture = data.picture.data.url;
   }
   if (provider == 'twitter') {
-
+    // console.log(await axios.get(`https://api.twitter.com/1.1/account/verify_credentials.json?access_token=${token}&include_email=true`)); // 400 Bad Authentication data.
+    // use lib send signed oauth headers:
+    const client = new Twitter({consumer_key: process.env.auth_twitter_key ?? '', consumer_secret: process.env.auth_twitter_secret ?? '', access_token_key: r.access_token ?? '', access_token_secret: r.access_secret ?? ''});
+    const data = await client.get('account/verify_credentials.json', {include_email: true});
+    console.log('query email from twitter', data);
+    user.email = data.email;
+    user.name = data.name;
+    user.picture = data.profile_image_url_https;
   }
   if (!user.email || user.email == '') return res.status(500).end('Did not get email from OAuth provider!');;
   req.session.email = user.email;
@@ -114,17 +130,28 @@ app.get('/signin', async (req, res) => {
 });
 app.get('/logout', async (req, res) => {
   console.log('logout', req.session.email);
-  const token = req.session.grant?.response?.access_token;
+  const r = req.session.grant?.response;
+  const token = r?.access_token;
   const provider = req.session.grant?.provider;
-  if (provider == 'google') {
-    if (req.query.revoke && token) { // if not revoked, google login will be automatic and not allow to choose a different account
-      await axios.post(`https://oauth2.googleapis.com/revoke?token=${token}`);
+  if (req.query.revoke && r && token) { // if not revoked, login will be automatic and not allow to choose a different account
+    try {
+      if (provider == 'google') {
+          await axios.post(`https://oauth2.googleapis.com/revoke?token=${token}`);
+      }
+      if (provider == 'facebook') { // https://developers.facebook.com/docs/facebook-login/permissions/requesting-and-revoking#revokelogin
+        await axios.delete(`https://graph.facebook.com/me/permissions?access_token=${token}`);
+      }
+      if (provider == 'twitter') { // https://developer.twitter.com/en/docs/authentication/api-reference/invalidate_bearer_token
+        const client = new Twitter({consumer_key: process.env.auth_twitter_key ?? '', consumer_secret: process.env.auth_twitter_secret ?? '', access_token_key: r.access_token ?? '', access_token_secret: r.access_secret ?? ''});
+
+          console.log(await client.post('oauth/invalidate_token', {access_token: token}));
+
+      }
+      console.log('revoked token for', req.session.email, 'on', provider);
+    } catch (e) {
+      console.error(e);
     }
   }
-  if (provider == 'facebook') { // https://developers.facebook.com/docs/facebook-login/permissions/requesting-and-revoking#revokelogin
-    await axios.delete(`https://graph.facebook.com/me/permissions?access_token=${token}`);
-  }
-  console.log('revoked token for', req.session.email);
   req.session.destroy(console.log);
   res.redirect('/');
 });
