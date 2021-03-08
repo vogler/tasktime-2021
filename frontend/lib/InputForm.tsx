@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage, InputProps } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage, InputProps, Box, ChakraComponent, ChakraProps } from '@chakra-ui/react';
 // import { css, jsx } from '@emotion/react'
 import type { IconType } from 'react-icons';
 import { FaArrowRight } from 'react-icons/fa';
@@ -38,9 +38,15 @@ export default function InputForm({
     }
   };
 
+  // could just use <form>, but want to be able to use chakra style props
+  function Form(props: React.ComponentProps<'form'> & ChakraProps) { // https://github.com/chakra-ui/chakra-ui/issues/518
+    const FormBox = Box as ChakraComponent<'form'>;
+    return <FormBox as="form" {...props}>{props.children}</FormBox>;
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
-      <FormControl isRequired isInvalid={error != ''} w={332}>
+    <Form onSubmit={handleSubmit} w='100%' maxW='400px'>
+      <FormControl isRequired isInvalid={error != ''}>
         <HStack>
           <Input {...{value}} onChange={event => setValue(event.currentTarget.value)} {...p.inputProps} />
           { (typeof IconOrText === 'string') // using just Button with rightIcon and no text instead of IconButton has wrong spacing
@@ -50,6 +56,6 @@ export default function InputForm({
         </HStack>
         <FormErrorMessage>{error}</FormErrorMessage>
       </FormControl>
-    </form>
+    </Form>
   );
 }
