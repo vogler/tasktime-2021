@@ -106,7 +106,7 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
   return (
     <Flex opacity={todo.done ? '40%' : '100%'}>
       {/* <IconButtonSG aria-label="drag to reorder" icon={<FaGripVertical />} /> */}
-      <Checkbox mx={2} isChecked={todo.done} onChange={e => toggle(e.target.checked)} colorScheme="green" />
+      <Checkbox m={2} alignSelf="start" isChecked={todo.done} onChange={e => toggle(e.target.checked)} colorScheme="green" />
       {/* <IconButtonSG onClick={e => {todo.done = !todo.done; set(todo);}} aria-label="done" icon={todo.done ? <FaRegCheckCircle /> : <FaRegCircle />} isRound={true} /> */}
       <Editable defaultValue={todo.text} submitOnBlur={true} w="100%" onSubmit={submit} onCancel={e => console.log('Editable.cancel:', e)}>
         {(p) => (<>
@@ -118,7 +118,7 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
             <Spacer />
             <EditableControls />
           </Flex>
-          { showDetails && <Box><DateDist prefix="created" date={todo.createdAt}/>, <DateDist prefix="updated" date={todo.updatedAt}/></Box> }
+          { showDetails && <Box><DateDist prefix="created" date={todo.createdAt}/><br/><DateDist prefix="updated" date={todo.updatedAt}/></Box> }
         </>)}
       </Editable>
       <Spacer />
