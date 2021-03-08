@@ -71,8 +71,10 @@ export default function Tasks() { // Collect
   const delTodo = (index: number) => async () => {
     const todo = todos[index];
     const count = await db.time.count({where: {todoId: todo.id}});
-    if (count && confirm(`There are ${count} time entries recorded for this item. Do you want to delete this item and all its history?`)) {
-      await db.time.deleteMany({where: {todoId: todo.id}});
+    if (count) {
+      if (confirm(`There are ${count} time entries recorded for this item. Do you want to delete this item and all its history?`)) {
+        await db.time.deleteMany({where: {todoId: todo.id}});
+      } else return;
     }
     await db.todoMutation.deleteMany({where: {todoId: todo.id}});
     await db.todo.delete({where: {id: todo.id}});
