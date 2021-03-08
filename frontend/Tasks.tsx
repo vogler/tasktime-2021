@@ -102,14 +102,16 @@ export default function Tasks() { // Collect
 
   return (
     <>
-      <AddTodo />
-      <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%' maxW={400}>
-        {filteredTodos.length
-          ? filteredTodos.map((todo, index) => (
-              <TodoItem {...{ todo, showDetails }} key={todo.id} del={delTodo(index)} set={setTodo(index)} />
-            )) // do not use index as key since it changes with the order of the list and on deletion
-          : 'Nothing to show...'}
-      </Box>
+      <VStack w='100%' maxW={450}>
+        <AddTodo />
+        <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%'>
+          {filteredTodos.length
+            ? filteredTodos.map((todo, index) => (
+                <TodoItem {...{ todo, showDetails }} key={todo.id} del={delTodo(index)} set={setTodo(index)} />
+              )) // do not use index as key since it changes with the order of the list and on deletion
+            : 'Nothing to show...'}
+        </Box>
+      </VStack>
       <HStack mb={2}>
         <Button size="sm" leftIcon={showDone ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDone(!showDone)}>{showDone ? 'hide' : 'show'} done</Button>
         <Button size="sm" leftIcon={showDetails ? <FaRegEyeSlash /> : <FaRegEye />} onClick={_ => setShowDetails(!showDetails)}>{showDetails ? 'hide' : 'show'} details</Button>

@@ -45,7 +45,7 @@ export default function InputForm({
   }
 
   return (
-    <Form onSubmit={handleSubmit} w='100%' maxW='400px'>
+    <Form onSubmit={handleSubmit} w='100%'>
       <FormControl isRequired isInvalid={error != ''}>
         <HStack>
           <Input {...{value}} onChange={event => setValue(event.currentTarget.value)} {...p.inputProps} />
