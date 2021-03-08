@@ -83,7 +83,7 @@ app.get('/logout', async (req, res) => {
   req.session.destroy(console.log);
   if (req.query.revoke && auth?.access_token) { // if not revoked, google login will be automatic and not allow to choose a different account
     const r = await axios.post(`https://oauth2.googleapis.com/revoke?token=${auth.access_token}`);
-    console.log('revoked token', r);
+    console.log('revoked token for', auth.profile.email);
   }
   res.redirect('/');
 });
