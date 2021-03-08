@@ -45,6 +45,7 @@ const auth_config = {
   'github': { // https://github.com/settings/applications/1492468
     'key': process.env.auth_github_key,
     'secret': process.env.auth_github_secret,
+    'scope': ['read:user', 'user:email'],
   },
   'facebook': { // https://developers.facebook.com/apps/{key}/fb-login/settings/
     'key': process.env.auth_facebook_key,
@@ -83,7 +84,7 @@ import axios from 'axios';
 import Twitter from 'twitter';
 app.get('/signin', async (req, res) => {
   const provider = req.session.grant?.provider;
-  // console.log(req.session.grant);
+  console.log(req.session.grant);
   if (!provider) return res.status(500).end('OAuth provider missing!');
   const r = req.session.grant?.response;
   const token = r?.access_token;
