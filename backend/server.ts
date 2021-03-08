@@ -233,32 +233,32 @@ app.post('/db/:model/:action', async (req, res) => {
 const replacements = {
   '/dist/App.js': [
     { variable: 'user',
-      query: (email: string) => db.user.findUnique({where: {email}}) },
+      query: (id: number) => db.user.findUnique({where: {id}}) },
   ],
   '/dist/Tasks.js': [
     { variable: 'dbTodos',
-      query: (email: string) => db.todo.findMany({include, orderBy: todoOrderBy, where: {user: {email}}}) },
+      query: (userId: number) => db.todo.findMany({include, orderBy: todoOrderBy, where: {userId}}) },
   ],
   '/dist/History.js': [
     { variable: 'dbTimes',
-      query: (email: string) => db.time.findMany({...historyOpt, where: {todo: {user: {email}}}}) },
+      query: (userId: number) => db.time.findMany({...historyOpt, where: {todo: {userId}}}) },
     { variable: 'dbTodoMutations',
-      query: (email: string) => db.todoMutation.findMany({...historyOpt, where: {todo: {user: {email}}}}) },
+      query: (userId: number) => db.todoMutation.findMany({...historyOpt, where: {todo: {userId}}}) },
   ],
 };
 const fillData = async (req: express.Request, js: string) => {
   const file = req.url.replace(/\?.*$/, ''); // strip query string of HMR requests which append ?mtime=...
   type file = keyof typeof replacements;
   // type r = typeof replacements[file][number]; // error on reduce below: none of those signatures are compatible with each other
-  type r = { variable: string, query: (user: string) => Promise<any> }; // can't call reduce on incompatible Promise types
+  type r = { variable: string, query: (userId: number) => Promise<any> }; // can't call reduce on incompatible Promise types
   if (file in replacements) { // file is not narrowed to file because of subtyping and lack of closed types
-    const email = req.session.email;
-    if (!email) return js;
+    const userId = req.session.userId;
+    if (!userId) return js;
     const rs: r[] = replacements[file as file]; // so we need to assert the type on both (rs up, file down)
     console.log('fillData', file, rs.map(x => x.variable));
     return await rs.reduce((a, r) => a.then(async s => s.replace(
       new RegExp(`const ${r.variable} = .+;`), // can't use variable in /regexp/
-      `const ${r.variable} = ${JSON.stringify(await r.query(email))};`)), Promise.resolve(js));
+      `const ${r.variable} = ${JSON.stringify(await r.query(userId))};`)), Promise.resolve(js));
   }
   return js;
 }
