@@ -70,7 +70,7 @@ function Timer({ todo, set, done }: { todo: Todo, set: set, done: boolean }) {
       }
       setStartTime(Date.now());
       set(newTodo, { create: { } });
-    } else if (time) {
+    } else if (time - todo.time) { // to ignore trigger from HMR
       console.log(`timer stop: interval from counter: ${time - todo.time}, interval from startTime: ${interval}`);
       newTodo.time += interval;
       set(newTodo, { updateMany: { data: { end: new Date() }, where: { end: null } } }); // TODO is there a symbol for now() on the server? local end time might be not in sync with server start time... https://github.com/prisma/prisma/discussions/5582
