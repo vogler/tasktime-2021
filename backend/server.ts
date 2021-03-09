@@ -1,5 +1,5 @@
 import express from 'express';
-import bodyParser from 'body-parser';
+import {json as bodyParserJson} from 'body-parser';
 import { inspect } from 'util';
 
 // access database with prisma:
@@ -10,7 +10,7 @@ export const db = new prisma.PrismaClient();
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.use(bodyParser.json());
+app.use(bodyParserJson());
 // app.use(cookieParser());
 // app.use(compress());
 // https://github.com/yosuke-furukawa/server-timing
