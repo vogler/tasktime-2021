@@ -31,7 +31,7 @@ declare module 'express-session' { // fields we want to add to session
 import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 const ms_day = 1000*60*60*24;
 const store = new PrismaSessionStore(db, {ttl: ms_day*14, checkPeriod: ms_day});
-app.use(session({secret: 'track-time', saveUninitialized: true, resave: false, store})); // defaults: httpOnly
+app.use(session({secret: 'track-time', saveUninitialized: false, resave: false, store})); // defaults: httpOnly
 const auth_config = {
   'defaults': {
     'origin': process.env.auth_origin ?? `http://localhost:${port}`, // set dynamically below, https://github.com/simov/grant/issues/227
