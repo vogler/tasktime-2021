@@ -41,7 +41,7 @@ Maybe check out [Next.js](https://nextjs.org/) for easier SSR; example: https://
 ### DRY: server+client API from schema
 Seems strange that there is no framework/library that only requires the database schema and automatically provides an API on the server for it.
 Also, no one seems to care about duplication. GraphQL just introduces more boilerplate for little benefit compared to just calling database functions on the client (can also select subset of fields to save data; authentication/authorization can be a middleware on the server, just need some access annotations for the schema).
-Use row-level security in PostgreSQL for authorization and https://jwt.io to authenticate API requests as in [PostgREST's auth](https://postgrest.org/en/v7.0.0/auth.html)?
+Use [row-level security in PostgreSQL](https://www.postgresql.org/docs/13/ddl-rowsecurity.html) for authorization and https://jwt.io to authenticate API requests as in [PostgREST's auth](https://postgrest.org/en/v7.0.0/auth.html)? Would need to `CREATE ROLE` for every user?
 
 Was not happy with
 - https://github.com/redwoodjs/redwood - only serverless, but need to manually setup a database server...
