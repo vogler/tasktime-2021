@@ -1,6 +1,7 @@
 import type prisma from '@prisma/client'; // default import since CJS does not support named import
 import { ModelName, Model, Await } from '../shared/db';
 import { db } from './server';
+import { uncapitalize } from './util';
 
 // The following are experiments to allow union queries (also see top of History.tsx)
 
@@ -31,8 +32,7 @@ export const unionFindMany = <M extends ModelName, F extends Delegate<M>['findMa
   // Distributive conditional types (naked type parameter) are distributed over union types. Can't define a type-level map due to lack of higher kinded types.
   // First conditional maps over models (R<m1 | m2> -> R<m1> | R<m2>); second conditional establishes constraint F on new M - without we'd get the cross-product.
   type row = M extends any ? F extends Delegate<M>['findMany'] ? Await<ReturnType<F>>[number] & {model: M} : never : never;
-  const uc = (m: ModelName) => m[0].toLowerCase() + m.slice(1) as Uncapitalize<ModelName>;
-  const ps = ms.map(uc).map(async model =>
+  const ps = ms.map(uncapitalize).map(async model =>
     // @ts-ignore This expression is not callable. Each member of the union type '...' has signatures, but none of those signatures are compatible with each other.
     (await db[model].findMany(arg)).map(r => ({...r, model})) as row[] // no way to introduce a fresh type/existential?
   );

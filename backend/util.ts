@@ -9,3 +9,36 @@ export function assertIncludes<A extends readonly string[], K extends string>(a:
 export function assertIncludes(a: readonly string[], k: string): string {
   return a.includes(k) ? k : fail(`Invalid parameter: ${k} is not in [${a.join(', ')}]!`);
 }
+
+export const capitalize = <S extends string> (s: S) => s[0].toUpperCase() + s.slice(1) as Capitalize<S>;
+export const uncapitalize = <S extends string> (s: S) => s[0].toLowerCase() + s.slice(1) as Uncapitalize<S>;
+
+class GenericError <T> extends Error {
+  constructor(public message: string, public o: T) {
+      // super(message + ', ' + (typeof o == 'object' ? 'toString' in o ? (o as any).toString() : JSON.stringify(o) : o));
+      super(message);
+      // Set the prototype explicitly.
+      Object.setPrototypeOf(this, GenericError.prototype);
+  }
+}
+// try {
+//   throw new GenericError('no', 123);
+// } catch (e) {
+//   if (e instanceof GenericError) {
+//     console.log(e.o); // o is still any
+//   }
+// }
+
+export class HttpError extends Error {
+  constructor(public message: string, public status: number) {
+    super(message);
+    Object.setPrototypeOf(this, HttpError.prototype);
+  }
+}
+// try {
+//   throw new HttpError('no', 400);
+// } catch (e) {
+//   if (e instanceof HttpError) {
+//     console.log(e.status);
+//   }
+// }

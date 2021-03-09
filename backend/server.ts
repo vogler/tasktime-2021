@@ -168,24 +168,49 @@ app.get('/logout', async (req, res) => {
   req.session.destroy(console.log);
   res.redirect('/');
 });
-const isAuthorized = (req: express.Request) => {
-  // TODO check that user in query matches user from token, or somehow add user to queries on server?
-  return true;
-};
 app.use('/db', (req, res, next) => {
-  console.log('check auth for', req.method, req.originalUrl, inspect(req.body, { depth: null, colors: true })); // , req.session
-  if (!req.session.userId || !req.session.email) return res.status(401).json({error: 'Not authenticated'});
-  console.log('Authenticated as', req.session.email);
-  if (!isAuthorized(req)) return res.status(403).json({error: 'Not authorized'});
-  // req.body = {...req.body, where: {...req.body.where, userId: req.session.userId}};
+  console.log(req.method, req.originalUrl, inspect(req.body, { depth: null, colors: true })); // , req.session
+  if (!req.session.userId || !req.session.email) {
+    console.log('Not authenticated!');
+    return res.status(401).json({error: 'Not authenticated! Please login.'});
+  }
+  // console.log('Authenticated as', req.session.email);
+  // req.body = {...req.body, where: {...req.body.where, userId: req.session.userId}}; // can't just extend with all possible conditions since prisma complains about excess fields
   next();
 });
 
 
 // db endpoints
-import { actions, models, include, todoOrderBy, historyOpt, ModelName } from '../shared/db';
-import { assertIncludes } from './util';
+import { action, model, actions, models, include, todoOrderBy, historyOpt, ModelName } from '../shared/db';
+import { assertIncludes, capitalize, HttpError, uncapitalize } from './util';
 import { naturalFullJoin, unionFindMany } from './db_union';
+
+// Throws an error if user is not authorized for action on model; make sure to use await!
+// Only needs to query db in case of TodoWhereUniqueInput, otherwise patches where to include userId.
+const authorized = async (req: express.Request, res: express.Response, model_ac: model | Capitalize<model>, action: action) => {
+  // TODO check that user in query matches user from token, or somehow add user to queries on server?
+  const userId = req.session.userId;
+  const arg = req.body;
+  const where = arg?.where;
+  if (!userId) throw new HttpError('Not authenticated! Please login.', 401);
+  const model = capitalize(model_ac);
+  if (model == ModelName.Todo) {
+    if (action == 'create' && arg?.data?.user?.connect?.id == userId) return;
+    if (where?.userId == userId) return;
+    if (where?.id || !where?.userId) {
+      // where.userId = userId; // can't add: TodoWhereUniqueInput needs exactly one argument, but you provided id and userId.
+      const todo = await db.todo.findUnique({where});
+      if (todo?.userId == userId) return;
+    }
+  } else if (model == ModelName.Time || model == ModelName.TodoMutation) {
+    if (where?.todo?.userId == userId) return;
+    if (where?.todoId && !where.todo) {
+      where.todo = {userId}; // patch request
+      return;
+    }
+  }
+  throw new HttpError(`Not authorized: /db/${uncapitalize(model_ac)}/${action} ${JSON.stringify(arg)}`, 403);
+};
 
 // The following are experiments to allow union queries (also see top of History.tsx) - the main endpoint for db access is the below /db/:model/:action
 
@@ -194,9 +219,12 @@ app.get('/db/union-raw/:models', async (req, res) => {
   try {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
     const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
+    await Promise.all(ms.map(m => authorized(req, res, m, 'findMany')));
     res.json(await naturalFullJoin(...ms));
   } catch (error) {
-    res.status(400).json({ error: error.toString() });
+    const status = error instanceof HttpError ? error.status : 400;
+    console.error(status, error.message);
+    res.status(status).json({ error: error.message });
   }
 });
 
@@ -205,10 +233,13 @@ app.post('/db/union/:models', async (req, res) => {
   try {
     const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
     const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
+    await Promise.all(ms.map(m => authorized(req, res, m, 'findMany')));
     const xs = await unionFindMany(...ms)(req.body);
     res.json(xs);
   } catch (error) {
-    res.status(400).json({ error: error.toString() });
+    const status = error instanceof HttpError ? error.status : 400;
+    console.error(status, error.message);
+    res.status(status).json({ error: error.message });
   }
 });
 
@@ -217,11 +248,14 @@ app.post('/db/:model/:action', async (req, res) => {
   try {
     const model = assertIncludes(models, req.params.model);
     const action = assertIncludes(actions, req.params.action); // see PrismaAction, but no value for the type
+    await authorized(req, res, model, action);
     // @ts-ignore
     const r = await db[model][action](req.body);
     res.json(r);
   } catch (error) {
-    res.status(400).json({ error: error.toString() });
+    const status = error instanceof HttpError ? error.status : 400;
+    console.error(status, error.message);
+    res.status(status).json({ error: error.message });
   }
 });
 
