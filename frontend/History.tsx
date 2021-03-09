@@ -6,7 +6,7 @@ import { useAsyncEffect } from './lib/react';
 import { duration, cmpBy, groupBy, toDateLS, toTimeLS } from './lib/util';
 import { db, db_union } from './api'; // api to db on server
 import { Time, TodoMutation, historyOpt, ModelName } from '../shared/db';
-import { maxW } from './App';
+import { maxW, user } from './App';
 
 // initial data from db replaced by the server:
 const dbTimes: Time[] = [];
@@ -109,8 +109,9 @@ export default function History() {
   const [history, setHistory] = useState(dbHistory);
   const [preMu, setPreMu] = useState(dbPreMu);
   useAsyncEffect(async () => {
-    const times = await db.time.findMany(historyOpt);
-    const mutations = await db.todoMutation.findMany(historyOpt);
+    const opt = {...historyOpt, where: {todo: {userId: user?.id}}};
+    const times = await db.time.findMany(opt);
+    const mutations = await db.todoMutation.findMany(opt);
     setPreMu(calcPreMu(mutations));
     setHistory(groupBy(toDate, mergeSort(times, mutations)));
     console.log('History reloaded');

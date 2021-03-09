@@ -178,6 +178,7 @@ app.use('/db', (req, res, next) => {
   if (!req.session.userId || !req.session.email) return res.status(401).json({error: 'Not authenticated'});
   console.log('Authenticated as', req.session.email);
   if (!isAuthorized(req)) return res.status(403).json({error: 'Not authorized'});
+  // req.body = {...req.body, where: {...req.body.where, userId: req.session.userId}};
   next();
 });
 

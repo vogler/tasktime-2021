@@ -64,7 +64,7 @@ export default function Tasks() { // Collect
   // no need for extra fetch anymore since server already sets initialTodos from db
   useAsyncDepEffect(async () => {
     console.log(orderBy);
-    setTodos(await db.todo.findMany({include, orderBy}));
+    setTodos(await db.todo.findMany({include, orderBy, where: {userId: user?.id}}));
   }, [orderBy]); // TODO sort locally?
 
   const delTodo = (index: number) => async () => {
