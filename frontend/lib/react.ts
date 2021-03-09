@@ -21,3 +21,5 @@ export const useAsyncEffect = (f: () => Promise<void>, deps: React.DependencyLis
 
 export const useAsyncDepEffect: typeof useAsyncEffect = (f, deps) =>
   useDepEffect(breakPromise(f), deps);
+
+// more hooks: https://github.com/streamich/react-use
