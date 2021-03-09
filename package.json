@@ -44,7 +44,6 @@
     "@types/snowpack-env": "^2.3.3",
     "@types/twitter": "^1.7.0",
     "axios": "^0.21.1",
-    "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "grant": "^5.4.9",
@@ -56,7 +55,7 @@
     "twitter": "^1.7.1",
     "typescript": "^4.1.5"
   },
-  "_comment_devDependencies": "Only needed for src/server.ts: nodemon, ts-node, express, body-parser, @types/express, @types/node",
+  "_comment_devDependencies": "Only needed for src/server.ts: nodemon, ts-node, express, express-session, prisma-session-store, grant, axios, twitter, @types/..",
   "type": "module",
   "_comment_type": "module is needed for the server to allow import (--loader ts-node/esm) instead of require."
 }
