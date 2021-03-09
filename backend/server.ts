@@ -18,6 +18,7 @@ app.use(bodyParser.json());
 
 // oauth with grant
 import session from 'express-session';
+import grant, { GrantSession } from 'grant';
 declare module 'express-session' { // fields we want to add to session
   interface SessionData {
     userId: number
@@ -25,7 +26,12 @@ declare module 'express-session' { // fields we want to add to session
     grant: GrantSession
   }
 }
-import grant, { GrantSession } from 'grant';
+// https://github.com/expressjs/session#secret should be random from env to avoid session hijacking`
+// default session store: "Warning: connect.session() MemoryStore is not designed for a production environment, as it will leak memory, and will not scale past a single process." -> use https://github.com/kleydon/prisma-session-store
+import { PrismaSessionStore } from '@quixo3/prisma-session-store';
+const ms_day = 1000*60*60*24;
+const store = new PrismaSessionStore(db, {ttl: ms_day*14, checkPeriod: ms_day});
+app.use(session({secret: 'track-time', saveUninitialized: true, resave: false, store})); // defaults: httpOnly
 const auth_config = {
   'defaults': {
     'origin': process.env.auth_origin ?? `http://localhost:${port}`, // set dynamically below, https://github.com/simov/grant/issues/227
@@ -73,12 +79,6 @@ type google_profile = {
 //   console.log(req.originalUrl, res.locals.grant);
 //   next();
 // });
-// https://github.com/expressjs/session#secret should be random from env to avoid session hijacking`
-// "Warning: connect.session() MemoryStore is not designed for a production environment, as it will leak memory, and will not scale past a single process." -> use https://github.com/kleydon/prisma-session-store
-import { PrismaSessionStore } from '@quixo3/prisma-session-store';
-const ms_day = 1000*60*60*24;
-const store = new PrismaSessionStore(db, {ttl: ms_day*14, checkPeriod: ms_day});
-app.use(session({secret: 'track-time', saveUninitialized: true, resave: false, store})); // defaults: httpOnly
 app.use(grant.express(auth_config));
 import axios from 'axios';
 import Twitter from 'twitter';
