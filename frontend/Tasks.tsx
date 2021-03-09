@@ -10,6 +10,7 @@ import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
 import { Todo, include, todoOrderBy, TimeMutation } from '../shared/db';
 import { maxW, user } from './App';
+import Autocomplete from './lib/Autocomplete';
 
 // initial data from db replaced by the server:
 const dbTodos: Todo[] = [];
@@ -105,6 +106,7 @@ export default function Tasks() { // Collect
     <>
       <VStack w='100%' maxW={maxW}>
         <AddTodo />
+        <Autocomplete />
         <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%'>
           {filteredTodos.length
             ? filteredTodos.map((todo, index) => (
