@@ -39,10 +39,10 @@ declare module 'express-session' { // fields we want to add to session
 import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 const ms_day = 1000*60*60*24;
 const store = new PrismaSessionStore(db, {ttl: ms_day*14, checkPeriod: ms_day});
-app.use(session({secret: 'track-time', saveUninitialized: false, resave: false, store, cookie: {secure: true}})); // defaults: httpOnly
+app.use(session({secret: 'track-time', saveUninitialized: false, resave: false, store})); // defaults: httpOnly
 const auth_config = {
   'defaults': {
-    'origin': process.env.auth_origin ?? `https://localhost:${port}`, // set dynamically below, https://github.com/simov/grant/issues/227
+    'origin': process.env.auth_origin ?? `http://localhost:${port}`, // set dynamically below, https://github.com/simov/grant/issues/227
     'transport': 'session',
     'state': true,
     'nonce': true,
@@ -351,17 +351,18 @@ if (process.env.NODE_ENV != 'production') {
 }
 
 // start the Express server
-// app.listen(port, () => {
-//   console.log(`server started at http://localhost:${port}`);
-// });
-import spdy from 'spdy'; // https://github.com/spdy-http2/node-spdy
-// https://ivanjov.com/running-express-koa-and-hapi-on-http-2/
-const spdy_options = {
-  // https://letsencrypt.org/docs/certificates-for-localhost/#making-and-trusting-your-own-certificates
-  key: readFileSync('./backend/localhost.key'),
-  cert:  readFileSync('./backend/localhost.crt')
-};
-spdy.createServer(spdy_options, app).listen(port, () => {
-  console.log(`server started at https://localhost:${port}`);
+app.listen(port, () => {
+  console.log(`server started at http://localhost:${port}`);
 });
-// fails with ERR_HTTP2_PROTOCOL_ERROR once session cookie is set. worked before node v15: https://github.com/spdy-http2/node-spdy/issues/380
+// import spdy from 'spdy'; // https://github.com/spdy-http2/node-spdy
+// // https://ivanjov.com/running-express-koa-and-hapi-on-http-2/
+// const spdy_options = {
+//   // https://letsencrypt.org/docs/certificates-for-localhost/#making-and-trusting-your-own-certificates
+//   key: readFileSync('./backend/localhost.key'),
+//   cert:  readFileSync('./backend/localhost.crt')
+// };
+// spdy.createServer(spdy_options, app).listen(port, () => {
+//   console.log(`server started at https://localhost:${port}`);
+// });
+// // -> fails with ERR_HTTP2_PROTOCOL_ERROR once session cookie is set. worked before node v15: https://github.com/spdy-http2/node-spdy/issues/380
+// // also, how to get key/cert for heroku?
