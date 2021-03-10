@@ -104,6 +104,7 @@ Estimated Savings: Enable text compression: 4.2 s (@chakra-ui/react.js 555.9 KB 
 ~~~
 
 Load time >= with [compression](https://github.com/expressjs/compression). Probably because it re-compresses every time.
+With [shrink-ray](https://github.com/Alorel/shrink-ray) 791 kB -> 740 kB transferred (both 460 kB with cache).
 
 ---
 

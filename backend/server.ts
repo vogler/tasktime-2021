@@ -1,5 +1,4 @@
 import express from 'express';
-import compression from 'compression';
 import { inspect } from 'util';
 
 // access database with prisma:
@@ -14,9 +13,12 @@ app.use(express.json());
 // app.use(cookieParser());
 
 // https://web.dev/uses-text-compression/ recommends brotli
-// https://github.com/aickin/shrink-ray has brotli and async cache but did not compile
+// https://github.com/Alorel/shrink-ray has brotli and async cache but did not compile on heroku due to missing g++
+import shrinkRay from 'shrink-ray-current';
+app.use(shrinkRay());
 // https://github.com/expressjs/compression supports deflate and gzip, no cache?
-app.use(compression()); // compress all responses on the fly?
+// import compression from 'compression';
+// app.use(compression()); // compress all responses on the fly?
 // static compression in webpack: https://tech.treebo.com/a-tale-of-brotli-compression-bcb071d9780a
 // https://github.com/yosuke-furukawa/server-timing
 
