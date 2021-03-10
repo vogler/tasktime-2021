@@ -9,19 +9,16 @@
 // https://github.com/ejmudi/react-autocomplete-hint
 
 import React, { useState } from "react";
-import { VStack, HStack, Flex, Input, IconButton, Text, Button, InputRightElement, InputGroup, Menu, MenuButton, MenuItem, MenuOptionGroup, MenuList, VisuallyHidden, MenuItemOption, InputLeftElement, Badge, Tag, TagLabel, TagCloseButton } from "@chakra-ui/react";
+import { VStack, HStack, Flex, Input, IconButton, Text, Button, InputRightElement, InputGroup, Menu, MenuButton, MenuItem, MenuOptionGroup, MenuList, VisuallyHidden, MenuItemOption, InputLeftElement, Badge, Tag, TagLabel, TagCloseButton, color } from "@chakra-ui/react";
 import { FaArrowDown, FaArrowRight, FaArrowUp, FaChevronDown, FaChevronUp, FaPlus } from "react-icons/fa";
 
-// options for chakra's colorScheme (minus "whiteAlpha" | "blackAlpha")
-const colors = ['gray', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink', 'linkedin', 'facebook', 'messenger', 'whatsapp', 'twitter', 'telegram'];
-
-const items = colors;
-
-const suggestions = (item: string) => items.filter(x => x.toLowerCase().indexOf(item.toLowerCase()) > -1);
+// subset of chakra's colorScheme
+const colors = ['gray', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink']; // , 'linkedin', 'facebook', 'messenger', 'whatsapp', 'twitter', 'telegram', 'whiteAlpha', 'blackAlpha'];
 
 export default function() {
   const [value, setValue] = useState('');
-  const [selected, setSelected] = useState(['Birne', 'Katze'] as string[]);
+  const [items, setItems] = useState(colors); // example: color matches text
+  const [selected, setSelected] = useState([] as string[]);
   const [show, setShow] = useState(false);
   const [inputFocus, setInputFocus] = useState(false);
 
@@ -30,15 +27,16 @@ export default function() {
     console.log(e.key, e.code, e.metaKey, e.shiftKey, e.altKey, e.ctrlKey);
   };
 
+  const suggestions = (item: string) => items.filter(x => x.toLowerCase().indexOf(item.toLowerCase()) > -1);
   const unselect = (item: string) => setSelected(selected.filter(x => x != item));
 
-  const props = {tags: {show: true, closeButton: true}, menu: {matchWidth: false}};
+  const props = {tags: {show: true, closeButton: true, colors: true}, menu: {matchWidth: false}};
   return (
     <Flex w='100%' direction="column">
       <HStack w='100%'>
-        {props.tags.show && <HStack>
-          {selected.map((item, index) =>
-            <Tag key={item} onClick={_ => unselect(item)} cursor="pointer" colorScheme={colors[index % colors.length]}>
+        {props.tags.show && selected.length && <HStack>
+          {selected.map(item =>
+            <Tag key={item} onClick={_ => unselect(item)} cursor="pointer" colorScheme={props.tags.colors ? colors[items.findIndex(x => x == item) % colors.length] : undefined} userSelect="none">
               {item}{props.tags.closeButton && <TagCloseButton ml={1} onClick={_ => unselect(item)} />}
             </Tag>)}
         </HStack>}
@@ -58,7 +56,7 @@ export default function() {
         <MenuList mt={-2} minW={100}>
           <MenuOptionGroup type="checkbox" value={selected} onChange={xs => {console.log('MenuOptionGroup.onChange', xs); setSelected([xs].flat());}}>
             {suggestions(value).map(item => <MenuItemOption key={item} value={item}>{item}</MenuItemOption>)}
-            {value && !suggestions(value).includes(value) && <MenuItem icon={<FaPlus />} color="green.500">Create {value}</MenuItem>}
+            {value && !suggestions(value).includes(value) && <MenuItem icon={<FaPlus />} color="green.500" onClick={_ => {setItems([...items, value]); setSelected([...selected, value]); setValue('');}}>Create {value}</MenuItem>}
           </MenuOptionGroup>
         </MenuList>
       </Menu>
