@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import { inspect } from 'util';
 
 // access database with prisma:
@@ -11,7 +12,12 @@ const port = process.env.PORT || 8080;
 
 app.use(express.json());
 // app.use(cookieParser());
-// app.use(compress());
+
+// https://web.dev/uses-text-compression/ recommends brotli
+// https://github.com/aickin/shrink-ray has brotli and async cache but did not compile
+// https://github.com/expressjs/compression supports deflate and gzip, no cache?
+app.use(compression()); // compress all responses on the fly?
+// static compression in webpack: https://tech.treebo.com/a-tale-of-brotli-compression-bcb071d9780a
 // https://github.com/yosuke-furukawa/server-timing
 
 

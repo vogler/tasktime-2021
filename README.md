@@ -84,6 +84,27 @@ FP/types/meta:
 - https://github.com/sindresorhus/type-fest
 - https://github.com/piotrwitek/utility-types
 
+### Performance
+Before adding auth, Chrome Dev Tools' network tab said ~300ms/350ms for DOM/Load in incognito mode with `npm start` (snowpack dev), and ~600ms in normal mode.
+
+Noticed that the longer time was due to extensions (Surfingkeys, React dev tools, others?) -> only measure in incognito mode.
+
+After adding auth, not logged in, at 350ms/360ms. Can see in waterfall that it's due to pending websocket request to hmr-client.js -- strange that affects load time despite staying open forever.
+
+With `npm run start-prod` at 200ms/206ms (no bundler yet) -> no more hmr-client.
+
+Seems like favicon.ico (and manifest.webmanifest only when not in incognito) are loaded after load is done.
+However, last request is started at 120ms and done in 8ms, but then there's nothing in the waterfall and result is 208ms/213ms -> not changed by removing favicon.ico/manifest.webmanifest.
+
+https://web.dev/measure for https://vogler-track-time.herokuapp.com performance 40, accessibility 85, best practices 100, SEO 100.
+
+~~~
+First Contentful Paint 5.2 s, Time to Interactive 8.8 s, Speed Index 10.1 s
+Estimated Savings: Enable text compression: 4.2 s (@chakra-ui/react.js 555.9 KB / 731.4 KB), Remove unused JavaScript 3.6 s, Use HTTP/2 2.91 s, Minify JavaScript 1.95 s
+~~~
+
+Load time >= with [compression](https://github.com/expressjs/compression). Probably because it re-compresses every time.
+
 ---
 
 > ✨ Bootstrapped with Create Snowpack App (CSA).
