@@ -119,7 +119,7 @@ export default function History() {
     // const hs = await db_union(ModelName.Time, ModelName.TodoMutation)({include: {todo: true}, orderBy: {at: 'desc'}});
     // console.log(hs);
   }, []);
-  return (<Box w='100%' maxW={maxW}>
+  return (<Box w='100%' maxW={maxW} as="main">
     {!history.length && 'Nothing to show yet...'}
     {history.map((group, _) =>
       <React.Fragment key={group.group}>

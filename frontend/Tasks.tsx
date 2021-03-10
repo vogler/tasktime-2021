@@ -107,7 +107,7 @@ export default function Tasks() { // Collect
       <VStack w='100%' maxW={maxW}>
         <AddTodo />
         <Autocomplete />
-        <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%'>
+        <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%' as="main">
           {filteredTodos.length
             ? filteredTodos.map((todo, index) => (
                 <TodoItem {...{ todo, showDetails }} key={todo.id} del={delTodo(index)} set={setTodo(index)} />
@@ -137,7 +137,7 @@ export default function Tasks() { // Collect
         </Menu>
       </HStack>
       <Divider />
-      <VStack color="gray.500">
+      <VStack color="gray.500" as="footer">
         <Text>Usage: click an item to edit it (escape to cancel, enter/blur to save).</Text>
         <Text>Marking as completed stops the timer; starting a completed task marks it as uncompleted.</Text>
         <Text>Page has been open for <code><Timer /></code> seconds.</Text>

@@ -18,8 +18,8 @@ function NavBar() {
   const NavButton = ({ text, to = '/'+encodeURIComponent(text.toLowerCase()) } : { text: string, to?: string }) =>
     <Button as={Link} to={to} isActive={location.pathname.replace(/\/$/, '') == to.replace(/\/$/, '')} borderTopRadius="0">{text}</Button>; // heroku adds a trailing slash on reload, so we strip it before checking
   return (
-    <Flex w='100%' maxW={maxW}>
-      <ButtonGroup isAttached variant="outline">
+    <Flex as="header" w="100%" maxW={maxW}>
+      <ButtonGroup as="nav" isAttached variant="outline">
         <NavButton text="Tasks" to="/" />
         <NavButton text="History" />
       </ButtonGroup>
