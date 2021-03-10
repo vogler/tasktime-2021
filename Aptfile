@@ -1,4 +1,0 @@
-# https://github.com/heroku/heroku-buildpack-apt
-
-# install g++ needed for npm install shrink-ray-current
-g++
