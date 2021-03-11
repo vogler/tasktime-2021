@@ -4,7 +4,7 @@ import { atom, selectorFamily, useRecoilState } from 'recoil';
 import { Box, Button, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Text, VStack } from '@chakra-ui/react';
 import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { useAsyncDepEffect } from './lib/react';
-import { diff, equals } from './lib/util';
+import { cmpBy, diff, equals } from './lib/util';
 import InputForm from './lib/InputForm';
 import TodoItem from './TodoItem';
 import { db } from './api'; // api to db on server
@@ -59,14 +59,16 @@ export default function Tasks() { // Collect
   const [showDetails, setShowDetails] = useState(false);
   const [orderBy, setOrderBy] = useState(todoOrderBy); // this can sort by multiple fields, below we just sort by one
   const order = {
-    field: Object.keys(orderBy)[0],
-    order: Object.values(orderBy)[0] ?? 'asc' };
+    field: Object.keys(orderBy)[0] as keyof Todo,
+    order: (Object.values(orderBy)[0] ?? 'asc') as 'asc' | 'desc', // TODO type-safe
+  };
 
   // no need for extra fetch anymore since server already sets initialTodos from db
   useAsyncDepEffect(async () => {
     console.log(orderBy);
-    setTodos(await db.todo.findMany({include, orderBy, where: {userId: user?.id}}));
-  }, [orderBy]); // TODO sort locally?
+    // setTodos(await db.todo.findMany({include, orderBy, where: {userId: user?.id}}));
+    // we sort locally now, see orderedTodos below
+  }, [orderBy]);
 
   const delTodo = (index: number) => async () => {
     const todo = todos[index];
@@ -101,6 +103,7 @@ export default function Tasks() { // Collect
   };
 
   const filteredTodos = !showDone ? todos.filter(todo => !todo.done) : todos;
+  const orderedTodos = [...filteredTodos].sort(cmpBy(x => x[order.field], order.order));
 
   return (
     <>
@@ -108,8 +111,8 @@ export default function Tasks() { // Collect
         <AddTodo />
         <Autocomplete />
         <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%' as="main">
-          {filteredTodos.length
-            ? filteredTodos.map((todo, index) => (
+          {orderedTodos.length
+            ? orderedTodos.map((todo, index) => (
                 <TodoItem {...{ todo, showDetails }} key={todo.id} del={delTodo(index)} set={setTodo(index)} />
               )) // do not use index as key since it changes with the order of the list and on deletion
             : <Text px={2} py={1}>Nothing to show...</Text>}
