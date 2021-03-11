@@ -301,11 +301,13 @@ const fillData = async (req: express.Request, js: string) => {
     rs = replacements[file as file]; // so we need to assert the type on both (rs up, file down)
   }
   const userId = req.session.userId;
-  if (!userId) return js;
-  console.log('fillData', file, rs.map(x => x.variable));
-  return await rs.reduce((a, r) => a.then(async s => s.replace(
-    new RegExp(`(const|var) ${r.variable} = .+;`), // can't use variable in /regexp/; esbuild replaces const with var :(
-    `const ${r.variable} = ${JSON.stringify(await r.query(userId))};`)), Promise.resolve(js));
+  if (userId && rs.length) {
+    console.log('fillData', file, rs.map(x => x.variable));
+    return await rs.reduce((a, r) => a.then(async s => s.replace(
+      new RegExp(`(const|var) ${r.variable} = .+;`), // can't use variable in /regexp/; esbuild replaces const with var :(
+      `const ${r.variable} = ${JSON.stringify(await r.query(userId))};`)), Promise.resolve(js));
+  }
+  return js;
 }
 
 
