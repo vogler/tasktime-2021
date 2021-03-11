@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Box, Flex, Heading, Icon, Tag, TagLabel, TagLeftIcon, Text, Tooltip } from '@chakra-ui/react';
-import { FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit } from 'react-icons/fa';
+import { FaCaretRight, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit } from 'react-icons/fa';
 import { useAsyncEffect } from './lib/react';
 import { duration, cmpBy, groupBy, toDateLS, toTimeLS } from './lib/util';
 import { db, db_union } from './api'; // api to db on server
@@ -85,7 +85,7 @@ function HistoryEntry({timu, preMu}: {timu: Time | TodoMutation, preMu: typeof d
     const index = preMu[mutation.todoId]?.findIndex(({at}) => at == mutation.at.toString());
     const oldText = preMu[mutation.todoId][index+1]?.text ?? '';
     const now = mutation.text != timu.todo.text ? `(now ${timu.todo.text})` : '';
-    return <>{`${oldText} -> ${mutation.text} ${now}`}</>;
+    return <>{oldText}<Icon mb={1} as={FaCaretRight} />{`${mutation.text} ${now}`}</>;
   };
   const time = toTimeLS(new Date(at(timu)));
   return <Flex>
