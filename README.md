@@ -107,6 +107,16 @@ Load time >= with [compression](https://github.com/expressjs/compression). Proba
 With [shrink-ray](https://github.com/Alorel/shrink-ray) 791 kB -> 740 kB transferred (both 460 kB with cache).
 Did not compile on heroku when installing via ssh, but then worked on automatic deploy. Encoding is br for bigger files.
 
+Bundlers: bundle, but don't minify for now since we replace variables on the server. Values from dev tools with 'disable cache'.
+First row is not logged in, second is logged in.
+
+| bundle            | transferred      | resources        | finish           | DOMContentLoaded | Load             |
+|-------------------|------------------|------------------|------------------|------------------|------------------|
+| none<br>dev       | 861 kB<br>940 kB | 4.1 MB<br>4.7 MB | 190 ms<br>1.60 s | 351 ms<br>1.25 s | 366 ms<br>1.61 s |
+| none<br>build     | 250 kB<br>287 kB | 1.1 MB<br>1.3 MB | 126 ms<br>327 ms | 201 ms<br>275 ms | 206 ms<br>334 ms |
+| esbuild<br>es2018 | 208 kB<br>213 kB | 1.1 MB<br>1.1 MB | 59 ms<br>279 ms  | 183 ms<br>258 ms | 196 ms<br>366 ms |
+| webpack           |                  |                  |                  |                  |                  |
+
 ---
 
 > ✨ Bootstrapped with Create Snowpack App (CSA).
