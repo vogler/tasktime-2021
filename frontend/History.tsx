@@ -74,18 +74,18 @@ const TimeDetail = ({time}: {time: Time}) => {
     <Text>{running}</Text>
   </>;
 };
+const MutationIcon = ({mutation}: {mutation: TodoMutation}) => {
+  return (<>
+    {mutation.done !== null && <Icon as={mutation.done ? FaRegCheckCircle : FaRegCircle} />}
+    {mutation.text !== null && <Icon as={FaRegEdit} />}
+  </>)
+};
 function HistoryEntry({timu, preMu}: {timu: Time | TodoMutation, preMu: typeof dbPreMu}) {
-  const MutationDetail = ({mutation, text = false}: {mutation: TodoMutation, text?: boolean}) => { // could pull out, but would need to add timu, preMu
-    if (text) {
-      const index = preMu[mutation.todoId]?.findIndex(({at}) => at == mutation.at.toString());
-      const oldText = preMu[mutation.todoId][index+1]?.text ?? '';
-      const now = mutation.text != timu.todo.text ? `(now ${timu.todo.text})` : '';
-      return <>{`${oldText} -> ${mutation.text} ${now}`}</>;
-    }
-    return (<>
-      {mutation.done !== null && <Icon as={mutation.done ? FaRegCheckCircle : FaRegCircle} />}
-      {mutation.text !== null && <Icon as={FaRegEdit} />}
-    </>);
+  const MutationDetail = ({mutation}: {mutation: TodoMutation}) => { // could pull out, but would need to add preMu
+    const index = preMu[mutation.todoId]?.findIndex(({at}) => at == mutation.at.toString());
+    const oldText = preMu[mutation.todoId][index+1]?.text ?? '';
+    const now = mutation.text != timu.todo.text ? `(now ${timu.todo.text})` : '';
+    return <>{`${oldText} -> ${mutation.text} ${now}`}</>;
   };
   const time = toTimeLS(new Date(at(timu)));
   return <Flex>
@@ -93,13 +93,16 @@ function HistoryEntry({timu, preMu}: {timu: Time | TodoMutation, preMu: typeof d
     <Box w={95} textAlign="center">
       {'end' in timu
         ? <TimeDetail time={timu} />
-        : <MutationDetail mutation={timu} />
+        : <MutationIcon mutation={timu} />
       }
     </Box>
-    {'text' in timu && timu.text !== null
-      ? <MutationDetail mutation={timu} text={true} />
-      : timu.todo.text
-    }
+    <Box flex="1">
+      {'text' in timu && timu.text !== null
+        ? <MutationDetail mutation={timu} />
+        :
+        timu.todo.text
+      }
+    </Box>
   </Flex>;
 }
 
