@@ -117,6 +117,12 @@ First row is not logged in, second is logged in.
 | esbuild<br>es2018 | 208 kB<br>213 kB | 1.1 MB<br>1.1 MB | 59 ms<br>279 ms  | 183 ms<br>258 ms | 196 ms<br>366 ms |
 | webpack           |                  |                  |                  |                  |                  |
 
+https://web.dev/measure with esbuild es2018:
+~~~
+First Contentful Paint 2.2 s, Time to Interactive 2.7 s, Speed Index 4.2 s
+Estimated Savings: Remove unused JavaScript: 0.75 s, Reduce initial server response time: 0.7 s, Minify JavaScript: 0.3 s
+~~~
+
 ---
 
 > ✨ Bootstrapped with Create Snowpack App (CSA).
