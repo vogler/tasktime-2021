@@ -289,13 +289,13 @@ const replacements = {
       query: (userId: number) => db.todoMutation.findMany({...historyOpt, where: {todo: {userId}}}) },
   ],
 };
-const fillData = async (req: express.Request, js: string) => {
+const fillData = async (req: express.Request, js: string, bundled = false) => {
   const file = req.url.replace(/\?.*$/, ''); // strip query string of HMR requests which append ?mtime=...
   type file = keyof typeof replacements;
   // type r = typeof replacements[file][number]; // error on reduce below: none of those signatures are compatible with each other
   type r = { variable: string, query: (userId: number) => Promise<any> }; // can't call reduce on incompatible Promise types
   let rs: r[] = [];
-  if (file == '/dist/index.js') { // if we use a bundler, there's just one file where we do all the replacements
+  if (bundled) { // if we use a bundler, we do all the replacements in index.js
     rs = Object.values(replacements).flat();
   } else if (file in replacements) { // file is not narrowed to file because of subtyping and lack of closed types
     rs = replacements[file as file]; // so we need to assert the type on both (rs up, file down)
@@ -352,7 +352,7 @@ if (process.env.NODE_ENV != 'production') {
 
   app.get(jsFiles, async (req, res) => {
     res.contentType('application/javascript');
-    res.send(await fillData(req, fileContents[req.url]));
+    res.send(await fillData(req, fileContents[req.url], true)); // bundled = true
   });
   app.use(express.static('build'));
 }
