@@ -127,6 +127,7 @@ export default function Tasks() { // Collect
               <MenuItemOption value="createdAt">createdAt</MenuItemOption>
               <MenuItemOption value="updatedAt">updatedAt</MenuItemOption>
               <MenuItemOption value="text">text</MenuItemOption>
+              <MenuItemOption value="time">time</MenuItemOption>
             </MenuOptionGroup>
             <MenuDivider />
             <MenuOptionGroup defaultValue={order.order.toString()} title="Order" type="radio" onChange={s => setOrderBy({[order.field]: s})}>
