@@ -87,7 +87,7 @@ export default function Tasks() { // Collect
   };
 
   // TODO make generic and pull out list component
-  const setTodo = (index: number) => async ({id, updatedAt, ...todo}: Todo, times?: TimeMutation) => { // omit updatedAt so that it's updated by the db
+  const setTodo = (index: number) => async ({id, createdAt, updatedAt, ...todo}: Todo, times?: TimeMutation) => { // omit updatedAt so that it's updated by the db; omit createdAt because diff detects it as different because dates in todos are string insteada of Date TODO create Date in db wrapper
     const data = diff(todos[index], todo);
     console.log('setTodo: diff:', data, 'times:', times);
     if (equals(data, {}) && !times) return; // no changes
