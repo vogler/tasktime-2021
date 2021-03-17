@@ -5,4 +5,6 @@
 # The 512MB RAM of the free dyno is not enough for node's default 1.5GB heap, so we need to limit it:
 # https://devcenter.heroku.com/articles/node-memory-use#tuning-the-garbage-collector
 
+# Also run `prisma migrate deploy` every time? https://www.prisma.io/blog/prisma-migrate-ga-b5eno5g08d0b#running-migrations-in-cicd
+
 web: NODE_OPTIONS="--max_old_space_size=460" npm run build && node --optimize_for_size --loader ts-node/esm --es-module-specifier-resolution=node backend/server.ts
