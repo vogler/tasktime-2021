@@ -70,8 +70,7 @@ export default function Tasks() { // Collect
     // we sort locally now, see orderedTodos below
   }, [orderBy]);
 
-  const delTodo = (index: number) => async () => {
-    const todo = todos[index];
+  const delTodo = (todo: Todo) => async () => {
     const count = await db.time.count({where: {todoId: todo.id}});
     if (count) {
       if (confirm(`There are ${count} time entries recorded for this item. Do you want to delete this item and all its history?`)) {
@@ -80,15 +79,14 @@ export default function Tasks() { // Collect
     }
     await db.todoMutation.deleteMany({where: {todoId: todo.id}});
     await db.todo.delete({where: {id: todo.id}});
-    const newTodos = [...todos];
-    newTodos.splice(index, 1); // delete element at index
+    const newTodos = [...todos].filter(x => x.id != todo.id);
     setTodos(newTodos);
     console.log('delTodo', todo);
   };
 
   // TODO make generic and pull out list component
-  const setTodo = (index: number) => async ({id, createdAt, updatedAt, ...todo}: Todo, times?: TimeMutation) => { // omit updatedAt so that it's updated by the db; omit createdAt because diff detects it as different because dates in todos are string insteada of Date TODO create Date in db wrapper
-    const data = diff(todos[index], todo);
+  const setTodo = (todo: Todo) => async ({id, createdAt, updatedAt, ...todo2}: Todo, times?: TimeMutation) => { // omit updatedAt so that it's updated by the db; omit createdAt because diff detects it as different because dates in todos are string insteada of Date TODO create Date in db wrapper
+    const data = diff(todo, todo2); // entries from todo2 that are different from todo
     console.log('setTodo: diff:', data, 'times:', times);
     if (equals(data, {}) && !times) return; // no changes
     const {time, ...mutableData} = data; // need to filter out memoized fields. TODO generic pick of fields in TodoMutation?
@@ -97,8 +95,7 @@ export default function Tasks() { // Collect
     data.times = times;
     const newTodo = await db.todo.update({data, where: {id}, include});
     console.log('setTodo: db:', newTodo);
-    const newTodos = [...todos];
-    newTodos[index] = newTodo;
+    const newTodos = [...todos].map(x => x.id == newTodo.id ? newTodo : x);
     setTodos(newTodos);
   };
 
@@ -112,8 +109,8 @@ export default function Tasks() { // Collect
         <Autocomplete />
         <Box shadow="md" borderWidth="1px" my="2" p="1" w='100%' as="main">
           {orderedTodos.length
-            ? orderedTodos.map((todo, index) => (
-                <TodoItem {...{ todo, showDetails }} key={todo.id} del={delTodo(index)} set={setTodo(index)} />
+            ? orderedTodos.map(todo => (
+                <TodoItem {...{ todo, showDetails }} key={todo.id} del={delTodo(todo)} set={setTodo(todo)} />
               )) // do not use index as key since it changes with the order of the list and on deletion
             : <Text px={2} py={1}>Nothing to show...</Text>}
         </Box>
