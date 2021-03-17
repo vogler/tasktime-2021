@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage, InputProps, Box, ChakraComponent, ChakraProps } from '@chakra-ui/react';
+import { FormControl, HStack, Input, Button, IconButton, ButtonProps, FormErrorMessage, InputProps, Box, ChakraComponent, ChakraProps, InputGroup, InputRightElement } from '@chakra-ui/react';
 // import { css, jsx } from '@emotion/react'
 import type { IconType } from 'react-icons';
-import { FaArrowRight } from 'react-icons/fa';
+import { FaArrowRight, FaTimes } from 'react-icons/fa';
 
 export default function InputForm({
   IconOrText = FaArrowRight,
@@ -49,7 +49,12 @@ export default function InputForm({
     <form onSubmit={handleSubmit} style={{width: '100%'}}>
       <FormControl isRequired isInvalid={error != ''}>
         <HStack>
-          <Input {...{value}} onChange={event => setValue(event.currentTarget.value)} {...p.inputProps} />
+          <InputGroup>
+            <Input {...{value}} onChange={event => setValue(event.currentTarget.value)} {...p.inputProps} />
+            {value && <InputRightElement>
+              <IconButton size="sm" icon={<FaTimes />} variant="ghost" aria-label="delete input" onClick={_ => setValue('')} />
+            </InputRightElement>}
+          </InputGroup>
           { (typeof IconOrText === 'string') // using just Button with rightIcon and no text instead of IconButton has wrong spacing
               ? <Button type="submit" isLoading={isLoading} {...p.buttonProps}>{IconOrText}</Button>
               : <IconButton type="submit" isLoading={isLoading} aria-label="submit" icon={<IconOrText />} {...p.buttonProps} />
