@@ -3,6 +3,5 @@ build
 web_modules
 node_modules
 sqlite.db
-migrations/
 .env
 backend/localhost.*
