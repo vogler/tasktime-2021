@@ -38,14 +38,15 @@ export default function InputForm({
     }
   };
 
-  // could just use <form>, but want to be able to use chakra style props
-  function Form(props: React.ComponentProps<'form'> & ChakraProps) { // https://github.com/chakra-ui/chakra-ui/issues/518
+  // allows to use chakra style props, but with it Input loses focus on every change: https://github.com/chakra-ui/chakra-ui/issues/518#issuecomment-801266531
+  // no focus problem when using <form>
+  function Form(props: React.ComponentProps<'form'> & ChakraProps) {
     const FormBox = Box as ChakraComponent<'form'>;
     return <FormBox as="form" {...props}>{props.children}</FormBox>;
   }
 
   return (
-    <Form onSubmit={handleSubmit} w='100%'>
+    <form onSubmit={handleSubmit} style={{width: '100%'}}>
       <FormControl isRequired isInvalid={error != ''}>
         <HStack>
           <Input {...{value}} onChange={event => setValue(event.currentTarget.value)} {...p.inputProps} />
@@ -56,6 +57,6 @@ export default function InputForm({
         </HStack>
         <FormErrorMessage>{error}</FormErrorMessage>
       </FormControl>
-    </Form>
+    </form>
   );
 }
