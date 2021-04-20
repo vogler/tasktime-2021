@@ -14,7 +14,7 @@ app.use(express.json());
 // app.use(cookieParser());
 
 // https://web.dev/uses-text-compression/ recommends brotli
-// https://github.com/Alorel/shrink-ray has brotli and async cache but did not compile on heroku due to missing g++
+// https://github.com/Alorel/shrink-ray (shrink-ray-current) has brotli and async cache; on heroku node-zopfli-es does not install due to missing g++, but brotli works (see Content-Encoding for bigger files in Network tab in Chrome devtools) since it's included in node >=11.8
 import shrinkRay from 'shrink-ray-current';
 app.use(shrinkRay());
 // https://github.com/expressjs/compression supports deflate and gzip, no cache?
