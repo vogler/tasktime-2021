@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRecoilValue } from 'recoil';
-import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tooltip, useEditableState } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Checkbox, Editable, EditableInput, EditablePreview, Flex, IconButton, IconButtonProps, Spacer, Tooltip, useEditableControls } from '@chakra-ui/react';
 import { FaCheck, FaGripVertical, FaPlay, FaRegCheckCircle, FaRegCircle, FaRegClock, FaRegEdit, FaRegTrashAlt, FaStop, FaStopwatch, FaTimes } from 'react-icons/fa';
 import { formatDistance } from 'date-fns'; // TODO remove, but Intl.RelativeTimeFormat does not pick unit, see https://github.com/you-dont-need/You-Dont-Need-Momentjs#time-from-now
 import { duration } from './lib/util';
@@ -15,11 +15,11 @@ function IconButtonSG(props: IconButtonProps) {
 }
 
 function EditableControls() { // TODO pull out into lib
-  const p = useEditableState();
+  const p = useEditableControls(); // was useEditableState before, but then could not click cancel without submit; fixed in https://github.com/chakra-ui/chakra-ui/issues/3198
   return p.isEditing ? (
     <ButtonGroup size="sm" isAttached variant="outline">
-      <IconButton onClick={p.onSubmit} aria-label="submit" icon={<FaCheck />} />
-      {/* <IconButton onClick={p.onCancel} aria-label="cancel" icon={<FaTimes />} /> */}
+      <IconButton {...p.getSubmitButtonProps()} aria-label="submit" icon={<FaCheck />} />
+      <IconButton {...p.getCancelButtonProps()} aria-label="cancel" icon={<FaTimes />} />
     </ButtonGroup>
   ) : (
     // <IconButtonSG onClick={p.onEdit} aria-label="edit" icon={<FaRegEdit />} />
@@ -102,7 +102,7 @@ export default function TodoItem({ todo, del, set, showDetails }: { todo: Todo, 
     set({...todo, text});
   };
   // useEffect(() => { console.log('todo changed', todo); }, [todo]);
-  // submitOnBlur true (default) will also submit on Esc (only with Surfingkeys enabled) and when clicking the cancel button, see https://github.com/chakra-ui/chakra-ui/issues/3198
+  // submitOnBlur true (default) will also submit on Esc if the Chrome extension Surfingkeys is enabled
   return (
     <Flex opacity={todo.done ? '40%' : '100%'}>
       {/* <IconButtonSG aria-label="drag to reorder" icon={<FaGripVertical />} /> */}
