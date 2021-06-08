@@ -352,7 +352,9 @@ if (process.env.NODE_ENV != 'production') {
   });
 } else { // above snowpack serves frontend-static/ and dist/ on demand and modifies index.html for HMR
   // in production we first do `npm run build` which puts both in build/
-  const bundled = true; // TODO load from snowpack.config.cjs?
+  const { loadConfiguration } = await import('snowpack');
+  const config = await loadConfiguration(); // loads snowpack.config.cjs (.cjs instead of .js needed because it's internally loaded with require instead of import)
+  const bundled = config.optimize?.bundle;
   // bundler combines files into index.js, so we do all the replacements there...
   const jsFiles = bundled ? ['/dist/index.js'] : Object.keys(replacements);
   const fileContents = Object.fromEntries(jsFiles.map(s => [s, readFileSync(`./build${s}`).toString()]));
