@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { atom, selectorFamily, useRecoilState } from 'recoil';
-import { Box, Button, Divider, HStack, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Text, VStack } from '@chakra-ui/react';
-import { FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
+import { Box, Button, Divider, HStack, Icon, Link, Menu, MenuButton, MenuDivider, MenuItemOption, MenuList, MenuOptionGroup, Text, VStack } from '@chakra-ui/react';
+import { FaGithub, FaRegEye, FaRegEyeSlash, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { useAsyncDepEffect } from './lib/react';
 import { cmpBy, diff, equals } from './lib/util';
 import InputForm from './lib/InputForm';
@@ -143,6 +143,7 @@ export default function Tasks() { // Collect
         <Text>Marking as completed stops the timer; starting a completed task marks it as uncompleted.</Text>
         <Text>Page has been open for <code><Timer /></code> seconds.</Text>
         <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
+        <Link href="https://github.com/vogler/track-time_snowpack-react-chakra-prisma"><Icon as={FaGithub} /></Link>
       </VStack>
     </>
   );
