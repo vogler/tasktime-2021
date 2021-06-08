@@ -173,6 +173,13 @@ app.get('/logout', async (req, res) => {
     } catch (e) {
       console.error(e);
     }
+    if (req.query.delete && r && token) {
+      const user = await db.user.findUnique({where: {email: req.session.email}});
+      if (!user) return res.status(401).json({error: 'Not authenticated! Please login.'})
+      // TODO deleteMany Time & TodoMutation for every Todo since Prisma does not support cascading deletes in their schema yet... https://www.prisma.io/docs/guides/database/advanced-database-tasks/cascading-deletes
+      await db.todo.deleteMany({where: {userId: user.id}});
+      console.log('deleted data for', req.session.email);
+    }
   }
   req.session.destroy(console.log);
   res.redirect('/');

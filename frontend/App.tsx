@@ -41,6 +41,7 @@ function UserMenu() {
       <MenuList>
         <MenuItem icon={<FaSignOutAlt />} as="a" href="/logout">Logout</MenuItem>
         <MenuItem icon={<FaSignOutAlt />} as="a" href="/logout?revoke=1">Logout and revoke OAuth</MenuItem>
+        {/* <MenuItem icon={<FaSignOutAlt />} as="a" href="/logout?revoke=1&delete=1">Logout and delete account</MenuItem> */}
       </MenuList>
     </Menu>
   );
