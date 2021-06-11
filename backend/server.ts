@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { RequestHandler } from 'express';
 import { readFileSync } from 'fs';
 import { inspect } from 'util';
 
@@ -10,7 +10,7 @@ export const db = new prisma.PrismaClient();
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.use(express.json());
+app.use(express.json() as RequestHandler);
 // app.use(cookieParser());
 
 // https://web.dev/uses-text-compression/ recommends brotli
@@ -340,6 +340,7 @@ if (process.env.NODE_ENV != 'production') {
   app.use(async (req, res, next) => {
     try {
       const buildResult = await server.loadUrl(req.url);
+      if (!buildResult) throw new HttpError('loadUrl undefined', 404);
       // console.log('snowpack.loadUrl:', req.url, '->', buildResult.originalFileLoc, `(${buildResult.contentType})`);
       if (buildResult.contentType)
         res.contentType(buildResult.contentType);
