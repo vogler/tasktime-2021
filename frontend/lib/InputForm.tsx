@@ -52,7 +52,8 @@ export default function InputForm({
           <InputGroup>
             <Input {...{value}} onChange={event => setValue(event.currentTarget.value)} {...p.inputProps} />
             {value && <InputRightElement>
-              <IconButton size="sm" icon={<FaTimes />} variant="ghost" aria-label="delete input" onClick={_ => setValue('')} />
+              {/* we need as="a" since without it, pressing enter will 'click' this button instead of submitting the form (even if tabIndex is set to 0 or -1) */}
+              <IconButton as="a" size="sm" icon={<FaTimes />} variant="ghost" aria-label="delete input" onClick={_ => setValue('')} />
             </InputRightElement>}
           </InputGroup>
           { (typeof IconOrText === 'string') // using just Button with rightIcon and no text instead of IconButton has wrong spacing
