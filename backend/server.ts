@@ -10,7 +10,7 @@ export const db = new prisma.PrismaClient();
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.use(express.json() as RequestHandler);
+app.use(express.json() as RequestHandler); // TODO remove cast once possible. Introduced in commit 1617084 by sub-dep up of @types/express from 4.17.11 to .12
 // app.use(cookieParser());
 
 // https://web.dev/uses-text-compression/ recommends brotli
