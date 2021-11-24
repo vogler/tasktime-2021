@@ -1,6 +1,7 @@
 {
   "scripts": {
     "start": "nodemon -x 'node --loader ts-node/esm --es-module-specifier-resolution=node' -w backend -w shared backend/server.ts",
+    "_comment_start": "has to be invoked via node, overview: https://github.com/TypeStrong/ts-node/issues/1007 TODO try faster ts-node-dev once it supports ESM modules with node resolution",
     "frontend": "snowpack dev",
     "build": "snowpack build",
     "start-prod": "npm run build && NODE_ENV=production npm start",
@@ -15,7 +16,7 @@
     "schema": "backend/schema.prisma"
   },
   "engines": {
-    "node": "15.x"
+    "node": ">=15.x"
   },
   "dependencies": {
     "@chakra-ui/react": "^1.6.3",
