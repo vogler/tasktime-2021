@@ -9,7 +9,7 @@ import { uncapitalize } from './util';
 export const naturalFullJoin = <m extends ModelName> (...ms: m[]) : Promise<Model<m>[]> => {
   const joins = ms.map(m => `(select *, \'${m}\' as "model" from "${m}") as "_${m}"`).join(' natural full join ');
   // db.$queryRaw`...` does not allow variables for tables, TODO SQL injection?
-  return db.$queryRaw(`select * from ${joins} order by "at" desc`); // TODO type-safe orderBy on intersection of fields?
+  return db.$queryRawUnsafe(`select * from ${joins} order by "at" desc`); // TODO type-safe orderBy on intersection of fields?
 }
 
 // The above works, but is missing prisma's options like include, select, where, orderBy etc.

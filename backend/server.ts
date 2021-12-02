@@ -232,47 +232,29 @@ const authorized = async (req: express.Request, res: express.Response, model_ac:
 
 // raw query with natural full join, fixed order by "at" desc
 app.get('/db/union-raw/:models', async (req, res) => {
-  try {
-    const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
-    const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
-    await Promise.all(ms.map(m => authorized(req, res, m, 'findMany')));
-    res.json(await naturalFullJoin(...ms));
-  } catch (error) {
-    const status = error instanceof HttpError ? error.status : 400;
-    console.error(status, error.message);
-    res.status(status).json({ error: error.message });
-  }
+  const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
+  const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
+  await Promise.all(ms.map(m => authorized(req, res, m, 'findMany')));
+  res.json(await naturalFullJoin(...ms));
 });
 
 // generic union of findMany over models, merge, sort. Caveats: arg type unsound, arg does not influence return type.
 app.post('/db/union/:models', async (req, res) => {
-  try {
-    const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
-    const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
-    await Promise.all(ms.map(m => authorized(req, res, m, 'findMany')));
-    const xs = await unionFindMany(...ms)(req.body);
-    res.json(xs);
-  } catch (error) {
-    const status = error instanceof HttpError ? error.status : 400;
-    console.error(status, error.message);
-    res.status(status).json({ error: error.message });
-  }
+  const models = Object.keys(ModelName) as (keyof typeof ModelName)[];
+  const ms = req.params.models.split(',').map(m => assertIncludes(models, m));
+  await Promise.all(ms.map(m => authorized(req, res, m, 'findMany')));
+  const xs = await unionFindMany(...ms)(req.body);
+  res.json(xs);
 });
 
 // serves db.model.action(req.body)
 app.post('/db/:model/:action', async (req, res) => {
-  try {
-    const model = assertIncludes(models, req.params.model);
-    const action = assertIncludes(actions, req.params.action); // see PrismaAction, but no value for the type
-    await authorized(req, res, model, action);
-    // @ts-ignore
-    const r = await db[model][action](req.body);
-    res.json(r);
-  } catch (error) {
-    const status = error instanceof HttpError ? error.status : 400;
-    console.error(status, error.message);
-    res.status(status).json({ error: error.message });
-  }
+  const model = assertIncludes(models, req.params.model);
+  const action = assertIncludes(actions, req.params.action); // see PrismaAction, but no value for the type
+  await authorized(req, res, model, action);
+  // @ts-ignore
+  const r = await db[model][action](req.body);
+  res.json(r);
 });
 
 
@@ -366,6 +348,14 @@ if (process.env.NODE_ENV != 'production') {
   });
   app.use(express.static('build'));
 }
+
+// https://expressjs.com/en/guide/error-handling.html
+const errorHandler : express.ErrorRequestHandler = (err, req, res, next) => {
+  const status = err.statusCode || 400;
+  console.error(status, err.statusMessage);
+  res.status(status).json({ error: err.statusMessage});
+};
+app.use(errorHandler);
 
 // start the Express server
 app.listen(port, () => {

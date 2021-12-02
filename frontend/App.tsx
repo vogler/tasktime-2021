@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect } from 'react';
 import { Avatar, Button, ButtonGroup, Center, Flex, Menu, MenuButton, MenuItem, MenuList, Spacer, VStack } from '@chakra-ui/react';
-import { BrowserRouter as Router, Switch, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import type { User } from '@prisma/client';
 
 // replaced by server:
@@ -53,21 +53,17 @@ function App() {
   const Tasks = React.lazy(() => import('./Tasks'));
   const History = React.lazy(() => import('./History'));
   return (
-    <Router>
+    <BrowserRouter>
       <VStack mx={2}>
         <NavBar />
         <Suspense fallback={<div>Loading...</div>}>
-          <Switch>
-            <Route exact path="/">
-              <Tasks />
-            </Route>
-            <Route path="/history">
-              <History />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path="/" element={<Tasks />} />
+            <Route path="/history" element={<History />} />
+          </Routes>
         </Suspense>
       </VStack>
-    </Router>
+    </BrowserRouter>
   );
 }
 

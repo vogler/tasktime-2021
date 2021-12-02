@@ -15,7 +15,7 @@ export const include = {times: {orderBy: {at: 'desc' as const}}}; // {times: tru
 // export type TodoFlat = Todo;
 type TodoFull = Prisma.TodoGetPayload<{include: typeof include}>;
 export {TodoFull as Todo};
-export const todoOrderBy: Prisma.TodoOrderByInput = { createdAt: 'asc' };
+export const todoOrderBy: Prisma.TodoOrderByWithRelationInput = { createdAt: 'asc' };
 
 const todoInclude = {todo: {select: {text: true, time: true, done: true}}};
 export const historyOpt = {include: todoInclude, orderBy: {at: 'desc' as const}};
