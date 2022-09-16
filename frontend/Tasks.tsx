@@ -143,7 +143,7 @@ export default function Tasks() { // Collect
         <Text>Marking as completed stops the timer; starting a completed task marks it as uncompleted.</Text>
         <Text>Page has been open for <code><Timer /></code> seconds.</Text>
         <a href="#" onClick={_ => console.table(todos)}>console.table(todos)</a>
-        <Link href="https://github.com/vogler/track-time_snowpack-react-chakra-prisma"><Icon as={FaGithub} /></Link>
+        <Link href="https://github.com/vogler/tasktime_snowpack-react-chakra-prisma"><Icon as={FaGithub} /></Link>
       </VStack>
     </>
   );

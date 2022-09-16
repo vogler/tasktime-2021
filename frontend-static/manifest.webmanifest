@@ -1,7 +1,7 @@
 { // https://web.dev/add-manifest/
-  "short_name": "track-time",
-  "name": "track-time",
-  "description": "Manage todos and track time.",
+  "short_name": "tasktime",
+  "name": "tasktime",
+  "description": "Manage tasks and track time.",
   // "icons": [
   //   {
   //     "src": "/images/icons-192.png",

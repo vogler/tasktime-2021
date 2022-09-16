@@ -1,4 +1,4 @@
-# track-time_snowpack-react-chakra-prisma
+# tasktime_snowpack-react-chakra-prisma
 
 Demo: https://vogler-track-time.herokuapp.com
 
@@ -20,15 +20,15 @@ This is a test project building some todo/time-tracking app using:
   - [auth0](https://auth0.com/) free plan has 7k users and 2 social connections; their React example uses hook, so page first loads, then checks auth and then loads rest -> too many round trips (same as with firebase)
   - [passport](https://github.com/jaredhanson/passport) has passport-local for username+password and normalized profile information, but requires way too much code
 
-Tried Svelte and Firebase in an older iteration: https://github.com/vogler/track-time_svelte-firebase.
+Tried Svelte and Firebase in an older iteration: https://github.com/vogler/tasktime_svelte-firebase.
 By now Svelte seems to officially support TypeScript: https://svelte.dev/blog/svelte-and-typescript.
 
 ## Setup
 Run `npm install`.
 If you want to use sqlite instead of PostgreSQL, edit `backend/schema.prisma`.
 
-- setup DB: `brew install postgresql && brew services start postgresql && createdb track-time`
-- set `DATABASE_URL`, e.g. create `.env` file with `DATABASE_URL = 'postgresql://user@localhost:5432/track-time'`
+- setup DB: `brew install postgresql && brew services start postgresql && createdb tasktime`
+- set `DATABASE_URL`, e.g. create `.env` file with `DATABASE_URL = 'postgresql://user@localhost:5432/tasktime'`
 - setup tables: `npm run db-push`
 
 Use `npm start` to start the server with reload on changes and HMR via snowpack.
@@ -128,7 +128,7 @@ Estimated Savings: Remove unused JavaScript: 0.75 s, Reduce initial server respo
 > ✨ Bootstrapped with Create Snowpack App (CSA).
 
 ~~~
-npx create-snowpack-app track-time_snowpack-react-chakra-prisma --template @snowpack/app-template-react-typescript
+npx create-snowpack-app tasktime_snowpack-react-chakra-prisma --template @snowpack/app-template-react-typescript
 ~~~
 
 ## Available Scripts
